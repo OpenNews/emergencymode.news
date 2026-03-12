@@ -1,0 +1,18 @@
+/*
+Theme Name:   EMFN Child
+Theme URI:    https://github.com/OpenNews/emergencymode.news
+Description:  Child theme for emergencymode.news, extending the active Newspack theme.
+              Add site-specific style overrides here and in assets/css/emfn-child.css.
+Author:       Emergency Mode / EMFN
+Author URI:   https://emergencymode.news
+Template:     newspack-theme
+Version:      1.0.0
+License:      GNU General Public License v2 or later
+License URI:  http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain:  emfn-child
+*/
+
+/*
+ * Style overrides go here or in assets/css/emfn-child.css (enqueued via functions.php).
+ * Keep this file lean; prefer the external stylesheet for larger rule-sets.
+ */

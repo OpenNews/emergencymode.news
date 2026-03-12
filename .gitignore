@@ -1,0 +1,40 @@
+# WordPress core files – do not commit the full WP install
+wp-admin/
+wp-includes/
+wp-content/uploads/
+wp-login.php
+wp-*.php
+index.php
+xmlrpc.php
+license.txt
+readme.html
+
+# Environment / config
+.env
+wp-config.php
+wp-config-local.php
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Node (if using build tools)
+node_modules/
+npm-debug.log*
+yarn-error.log
+dist/
+build/
+
+# Composer
+vendor/
+
+# IDE / editor
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log

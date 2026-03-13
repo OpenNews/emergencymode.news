@@ -10,15 +10,6 @@ This repository holds custom code that extends and customizes the [Newspack](htt
 
 ```
 emergencymode.news/
-├── customizations/          # Standalone CSS/JS injected via Newspack or a custom plugin
-│   ├── css/
-│   │   └── emfn-custom.css  # Site-wide style overrides
-│   └── js/
-│       └── emfn-custom.js   # Site-wide script enhancements
-│
-├── mu-plugins/              # Must-use plugins (auto-loaded; no activation required)
-│   └── emfn-mu-loader.php   # Loads any shared utilities needed site-wide
-│
 ├── plugins/                 # Custom plugins (activated through WP Admin > Plugins)
 │   └── emfn-example-plugin/ # Example Telex-generated plugin scaffold
 │       ├── emfn-example-plugin.php
@@ -47,21 +38,21 @@ emergencymode.news/
 
 ### Newspack / WordPress Server
 
-| Repo path | WordPress server path |
-|---|---|
-| `mu-plugins/` | `wp-content/mu-plugins/` |
-| `plugins/<plugin-name>/` | `wp-content/plugins/<plugin-name>/` |
-| `themes/emfn-child/` | `wp-content/themes/emfn-child/` |
-| `customizations/` | Deployed via Newspack > Customization or enqueued by a plugin |
+| Repo path                | WordPress server path                                         |
+| ------------------------ | ------------------------------------------------------------- |
+| `mu-plugins/`            | `wp-content/mu-plugins/`                                      |
+| `plugins/<plugin-name>/` | `wp-content/plugins/<plugin-name>/`                           |
+| `themes/emfn-child/`     | `wp-content/themes/emfn-child/`                               |
+| `customizations/`        | Deployed via Newspack > Customization or enqueued by a plugin |
 
 ### Deploying Changes
 
-1. **Child theme** – Copy `themes/emfn-child/` to `wp-content/themes/emfn-child/` and activate it in *Appearance > Themes*.
-2. **Custom plugins** – Copy the plugin folder to `wp-content/plugins/` and activate in *Plugins*.
+1. **Child theme** – Copy `themes/emfn-child/` to `wp-content/themes/emfn-child/` and activate it in _Appearance > Themes_.
+2. **Custom plugins** – Copy the plugin folder to `wp-content/plugins/` and activate in _Plugins_.
 3. **Must-use plugins** – Copy files to `wp-content/mu-plugins/`; they are active automatically.
-4. **Custom CSS/JS** – Either enqueue through the child theme's `functions.php` or upload to Newspack's *Customization > Additional CSS/JS* panels.
+4. **Custom CSS/JS** – Either enqueue through the child theme's `functions.php` or upload to Newspack's _Customization > Additional CSS/JS_ panels.
 
-> **Tip:** For Telex-generated plugins, the AI tool produces a ready-to-install ZIP file. Unzip it into `plugins/` here and install it via *Plugins > Add New > Upload Plugin* or by copying directly to the server.
+> **Tip:** For Telex-generated plugins, the AI tool produces a ready-to-install ZIP file. Unzip it into `plugins/` here and install it via _Plugins > Add New > Upload Plugin_ or by copying directly to the server.
 
 ## Telex Plugin Workflow
 
@@ -81,18 +72,17 @@ emergencymode.news/
    └── languages/          ← .pot translation template
    ```
 4. Commit the unzipped folder to this repo for version control.
-5. Deploy to the server (see *Deploying Changes* above).
+5. Deploy to the server (see _Deploying Changes_ above).
 
 ## Newspack Customization Notes
 
-- **Custom CSS** can be added in WordPress Admin under *Newspack > Customization* or through the standard WordPress *Appearance > Customize > Additional CSS* panel.
+- **Custom CSS** can be added in WordPress Admin under _Newspack > Customization_ or through the standard WordPress _Appearance > Customize > Additional CSS_ panel.
 - **Hooks and filters** for Newspack-specific behavior live in `themes/emfn-child/functions.php` or in a dedicated mu-plugin.
 - **Newspack Plugin documentation:** https://github.com/Automattic/newspack-plugin
 - **Newspack Blocks documentation:** https://github.com/Automattic/newspack-blocks
 
 ## Development Notes
 
-- WordPress version and plugin dependencies are managed on the hosted Newspack environment; this repo stores only *custom* code.
+- WordPress version and plugin dependencies are managed on the hosted Newspack environment; this repo stores only _custom_ code.
 - Follow WordPress coding standards: https://developer.wordpress.org/coding-standards/
 - Prefix all custom functions, classes, and hooks with `emfn_` to avoid conflicts.
-

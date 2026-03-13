@@ -32,9 +32,13 @@ vendor/
 
 # IDE / editor
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 *.sublime-project
 *.sublime-workspace
 
 # Logs
 *.log
+
+# Temporary files
+tmp/*

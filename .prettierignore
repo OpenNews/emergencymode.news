@@ -1,0 +1,19 @@
+# Build outputs
+dist/
+build/
+
+# Dependencies
+vendor/
+node_modules/
+.bundle/
+
+# Compiled/minified files (don't format)
+*.min.js
+*.min.css
+
+# Git metadata
+.git/
+
+# WordPress core (if present)
+wp-admin/
+wp-includes/

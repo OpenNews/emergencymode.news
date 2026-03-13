@@ -1,0 +1,14 @@
+{
+  "name": "emergencymode-news",
+  "version": "1.0.0",
+  "description": "emergencymode.news WordPress customizations",
+  "private": true,
+  "scripts": {
+    "format": "prettier --write '**/*.{html,css,js,json,yml,yaml,md}'",
+    "format:check": "prettier --check '**/*.{html,css,js,json,yml,yaml,md}'",
+    "lint": "prettier --check '**/*.{html,css,js,json,yml,yaml,md}'"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5"
+  }
+}

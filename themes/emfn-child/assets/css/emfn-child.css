@@ -122,15 +122,14 @@ h2.dont-panic {
 #matches {
 	background-color: #fff7ed;
 	border-radius: 16px;
-	padding: 20px;
+  margin-top: 0px;
+  padding: 0px;
 	color: var(--newspack-theme-color-primary-against-white);
 	list-style: none;
 }
-#match li#match-template {
-	opacity: 1.0;
+#match-template {
+  padding: 20px;
 }
-
-
 /* custom geolocation risk logic*/
 #risks {
 	background-color: oklab(0.98 -0.02 0.01);
@@ -139,11 +138,35 @@ h2.dont-panic {
 	color: #009966;
 	list-style: none;
 }
-#risks li#risk-explainer {
-	opacity: 1.0;
+#matches li,
+#risks li {
+	overflow: hidden;
+	height: auto;
+	opacity: 1;
+	transition: opacity 0.2s ease-in-out, height 0.2s ease-in-out;
 }
-#risks li#risk-template {
-	opacity: 0.0;
+
+#matches.is-visible,
+#matches li.is-visible,
+#risks li.is-visible {
+	opacity: 1;
+	height: auto;
+}
+#matches.is-hidden,
+#matches li.is-hidden,
+#risks li.is-hidden {
+	opacity: 0;
+	height: 0;
+	pointer-events: none;
+}
+
+/*trim back text-to-icon snap*/
+#matches li .material-symbols-outlined, 
+#risks li .material-symbols-outlined {
+  float: left;
+  padding-right: 10px;
+  max-width: 46px;
+  text-overflow: hidden;
 }
 
 

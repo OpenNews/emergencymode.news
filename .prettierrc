@@ -17,20 +17,6 @@
       "options": {
         "parser": "html"
       }
-    },
-    {
-      "files": ["*.md"],
-      "options": {
-        "parser": "markdown",
-        "proseWrap": "preserve"
-      }
-    },
-    {
-      "files": ["*.yml", "*.yaml"],
-      "options": {
-        "parser": "yaml",
-        "tabWidth": 2
-      }
     }
   ]
 }

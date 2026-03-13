@@ -5,11 +5,14 @@
   // Format on save to surface issues
   "editor.formatOnSave": true,
 
+  // Limit formatting work during save to changed regions when supported
+  "editor.formatOnSaveMode": "modificationsIfAvailable",
+
   // Enable format on paste
-  "editor.formatOnPaste": true,
+  "editor.formatOnPaste": false,
 
   // Prettier configuration
-  "prettier.requireConfig": false,
+  "prettier.requireConfig": true,
   "prettier.useEditorConfig": true,
 
   // Language-specific formatters

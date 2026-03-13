@@ -6,6 +6,11 @@ build/
 vendor/
 node_modules/
 .bundle/
+.vscode/
+tmp/
+
+# skip markdown for now
+*.md
 
 # Compiled/minified files (don't format)
 *.min.js

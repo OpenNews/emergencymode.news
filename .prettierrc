@@ -13,6 +13,14 @@
   "embeddedLanguageFormatting": "auto",
   "overrides": [
     {
+      "files": ["*.css"],
+      "options": {
+        "parser": "css",
+        "tabWidth": 2,
+        "useTabs": false
+      }
+    },
+    {
       "files": ["*.html"],
       "options": {
         "parser": "html"

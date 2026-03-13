@@ -15,6 +15,13 @@
   "prettier.requireConfig": true,
   "prettier.useEditorConfig": true,
 
+  // Disable ESLint save hooks in this workspace; Prettier is the formatter of record
+  "eslint.enable": false,
+  "eslint.format.enable": false,
+
+  // Use Prettier as the only JavaScript formatter and disable built-in formatter fallback
+  "js/ts.format.enable": false,
+
   // Language-specific formatters
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -23,7 +30,12 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "never",
+      "source.fixAll.eslint": "never"
+    }
   },
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

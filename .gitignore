@@ -43,3 +43,5 @@ vendor/
 # Temporary files
 tmp/*
 output/
+*.egg-info/
+.venv/

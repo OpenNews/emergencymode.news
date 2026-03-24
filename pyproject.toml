@@ -23,7 +23,7 @@ dependencies = [
 [tool.setuptools]
 packages = []
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pytest",
 ]

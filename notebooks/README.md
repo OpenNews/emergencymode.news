@@ -53,9 +53,20 @@ This project uses `uv` for dependency management. To get started:
 
 ## Output Format
 
-The notebook generates a **wide CSV file** with the following structure:
+The notebook generates **per-state CSV files** (e.g., `california_risk_data_20260324.csv`, `texas_risk_data_20260324.csv`) with the following structure:
 
-- **Rows**: County FIPS codes
+### Why Per-State Files?
+
+- **Reduced lookup costs**: Smaller files load faster
+- **State-level analysis**: Focus on specific states without loading all data
+- **Better performance**: Only load what you need
+- **Parallel processing**: Process multiple states simultaneously
+- **Version control friendly**: Smaller diffs when data updates
+
+### File Structure
+
+Each state CSV contains:
+- **Rows**: County FIPS codes within that state
 - **Columns**: 
   - `county_fips`: 5-digit FIPS code identifying the county
   - `state`: State name (if available)
@@ -91,18 +102,25 @@ The notebook analyzes 18 hazard types:
 ## Output Files
 
 Generated files are saved to the `output/` directory:
-- `disaster_risk_wide_YYYYMMDD_HHMMSS.csv`: Wide format CSV with county FIPS and risk scores
+- `{state_name}_risk_data_YYYYMMDD.csv`: Per-state CSV files with county FIPS and risk scores
 - `risk_distributions_YYYYMMDD_HHMMSS.png`: Visualization of risk score distributions
+
+Example output files:
+- `california_risk_data_20260324.csv` (58 counties)
+- `texas_risk_data_20260324.csv` (254 counties)
+- `new_york_risk_data_20260324.csv` (62 counties)
 
 ## Usage
 
 ### Basic Usage
 
 Simply run all cells in the notebook. The notebook will:
-1. Fetch data from FEMA's National Risk Index API
+1. Attempt to fetch live data from FEMA's National Risk Index API
 2. Process and transform the data into wide format
-3. Export a CSV file with County FIPS codes and hazard risk scores
+3. Export per-state CSV files with County FIPS codes and hazard risk scores
 4. Generate visualizations
+
+**Note on CORS**: Python's `requests` library (used in Jupyter notebooks) bypasses browser CORS restrictions, allowing direct access to the FEMA API without CORS issues.
 
 ### Customization
 

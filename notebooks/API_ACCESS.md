@@ -1,12 +1,27 @@
 # API Access Note
 
-## FEMA API Access
+## FEMA API Access and CORS
 
-The FEMA National Risk Index API (`https://www.fema.gov/api/open/v2/FimaNriNationalRiskIndex`) may be restricted in certain environments.
+### CORS Issues Explained
+
+The FEMA National Risk Index API may have CORS (Cross-Origin Resource Sharing) restrictions when accessed from web browsers. However, **this notebook is not affected by CORS issues** because:
+
+1. **Python `requests` library bypasses CORS**: CORS is a browser security feature. Python's `requests` library makes direct HTTP calls that are not subject to browser CORS restrictions.
+
+2. **Jupyter notebooks run server-side**: The notebook runs on your local machine or server, not in a browser's JavaScript context.
+
+3. **No XMLHttpRequest/Fetch API**: CORS only applies to browser APIs like `XMLHttpRequest` or `fetch()`.
+
+### Using Live FEMA API Data
+
+The notebook is configured to **prefer live API data** from:
+- API endpoint: `https://www.fema.gov/api/open/v2/FimaNriNationalRiskIndex`
+
+Simply run the notebook, and it will automatically fetch live data from the FEMA API.
 
 ### Alternative Approaches
 
-If you encounter connection issues with the FEMA API:
+If you encounter connection issues with the FEMA API (network restrictions, not CORS):
 
 1. **Download NRI Data Locally**
    - Visit the [FEMA National Risk Index Data Download](https://hazards.fema.gov/nri/data-resources#csvDownload)

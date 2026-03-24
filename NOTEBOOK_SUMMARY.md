@@ -50,8 +50,10 @@ emergencymode.news/
 
 #### Technical Features
 - **uv package management**: Modern, fast Python package manager
-- **API fallback mechanism**: Automatically uses sample data when API unavailable
-- **Sample data generator**: Creates realistic test data for development
+- **Live API data**: Fetches from FEMA National Risk Index API
+- **CORS bypass**: Python requests bypass browser CORS restrictions
+- **Per-state CSV export**: Reduces data lookup costs
+- **Sample data fallback**: Uses sample data when API unavailable
 - **Error handling**: Robust error handling for API failures
 - **Pagination support**: Handles large datasets from FEMA API
 - **Progress tracking**: Uses tqdm for progress bars during data fetching
@@ -59,20 +61,38 @@ emergencymode.news/
 
 ### 4. Output Format
 
-The notebook generates a CSV file like this:
+The notebook generates **per-state CSV files** like this:
 
+**California (california_risk_data_20260324.csv):**
 ```csv
 county_fips,state,county,AVLN_risk_score,CFLD_risk_score,CWAV_risk_score,...
-01001,Alabama,Autauga,0.00,12.34,5.67,...
 06001,California,Alameda,0.00,45.12,3.45,...
 06037,California,Los Angeles,0.00,67.89,4.56,...
 ```
 
-This "wide" format is ideal for:
-- GIS mapping software (QGIS, ArcGIS)
-- Data visualization tools (Tableau, Power BI)
-- Statistical analysis (R, Python)
-- Web mapping libraries (Leaflet, Mapbox)
+**Texas (texas_risk_data_20260324.csv):**
+```csv
+county_fips,state,county,AVLN_risk_score,CFLD_risk_score,CWAV_risk_score,...
+48001,Texas,Anderson,0.00,12.34,5.67,...
+48201,Texas,Harris,0.00,23.45,6.78,...
+```
+
+### Why Per-State Files?
+
+This "per-state" format provides:
+- **Reduced lookup costs**: Smaller files (~50-250 counties per state vs. 3,143 counties nationwide)
+- **Faster loading**: Load only the states you need
+- **Better performance**: Especially important for web applications and dashboards
+- **Parallel processing**: Process multiple states simultaneously
+- **State-level analysis**: Easier to focus on specific regions
+- **Version control friendly**: Smaller diffs when data updates
+
+Ideal for:
+- State-level GIS mapping (QGIS, ArcGIS)
+- Web mapping applications (load states on demand)
+- State government analysis
+- Regional disaster planning
+- Data journalism focused on specific states
 
 ## Dependencies
 
@@ -106,11 +126,13 @@ uv run jupyter lab
 
 ### With Real FEMA API Data
 
-The notebook will automatically attempt to fetch from the FEMA API. If successful, it will download all county records.
+The notebook **automatically attempts to fetch from the FEMA API first**. If successful, it will download all county records.
+
+**CORS is not an issue**: Python's `requests` library bypasses browser CORS restrictions.
 
 ### With Sample Data (Offline)
 
-If the API is unavailable, the notebook automatically falls back to the included sample data with 100 counties.
+If the API is unavailable (network restrictions, not CORS), the notebook automatically falls back to the included sample data with 100 counties.
 
 To regenerate sample data:
 ```bash

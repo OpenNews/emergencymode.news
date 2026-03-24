@@ -10,6 +10,12 @@ This repository holds custom code that extends and customizes the [Newspack](htt
 
 ```
 emergencymode.news/
+├── notebooks/               # Python notebooks for data analysis (uv-based)
+│   ├── disaster_risk_analysis.ipynb  # FEMA disaster risk data analysis
+│   ├── generate_sample_data.py       # Sample data generator
+│   ├── sample_data/                  # Sample NRI data for testing
+│   └── README.md                     # Notebooks documentation
+│
 ├── plugins/                 # Custom plugins (activated through WP Admin > Plugins)
 │   └── emfn-example-plugin/ # Example Telex-generated plugin scaffold
 │       ├── emfn-example-plugin.php
@@ -44,6 +50,7 @@ emergencymode.news/
 | `plugins/<plugin-name>/` | `wp-content/plugins/<plugin-name>/`                           |
 | `themes/emfn-child/`     | `wp-content/themes/emfn-child/`                               |
 | `customizations/`        | Deployed via Newspack > Customization or enqueued by a plugin |
+| `notebooks/`             | Not deployed to WordPress (data analysis/journalism tools)    |
 
 ### Deploying Changes
 
@@ -73,6 +80,35 @@ emergencymode.news/
    ```
 4. Commit the unzipped folder to this repo for version control.
 5. Deploy to the server (see _Deploying Changes_ above).
+
+## Data Analysis Notebooks
+
+The `notebooks/` directory contains Python notebooks for data journalism and analysis work. These are managed with [uv](https://github.com/astral-sh/uv) and are **not deployed to the WordPress server**.
+
+### Getting Started with Notebooks
+
+1. **Install uv** (if not already installed):
+   ```bash
+   pip install uv
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   uv sync
+   ```
+
+3. **Start JupyterLab**:
+   ```bash
+   uv run jupyter lab
+   ```
+
+4. **Open a notebook**: Navigate to `notebooks/` and open the desired `.ipynb` file
+
+### Available Notebooks
+
+- **disaster_risk_analysis.ipynb**: Analyzes FEMA National Risk Index data and generates county-level disaster risk projections for mapping and visualization
+
+See `notebooks/README.md` for detailed documentation on each notebook.
 
 ## Newspack Customization Notes
 

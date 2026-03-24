@@ -42,3 +42,4 @@ vendor/
 
 # Temporary files
 tmp/*
+output/

@@ -1,0 +1,10 @@
+jupyterlab
+pandas
+requests
+numpy
+matplotlib
+seaborn
+ipykernel
+ipywidgets
+openpyxl
+tqdm

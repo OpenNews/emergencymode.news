@@ -16,29 +16,40 @@ emergencymode.news/
 │   ├── sample_data/                  # Sample NRI data for testing
 │   └── README.md                     # Notebooks documentation
 │
-├── plugins/                 # Custom plugins (activated through WP Admin > Plugins)
-│   └── emfn-example-plugin/ # Example Telex-generated plugin scaffold
-│       ├── emfn-example-plugin.php
+├── plugins/
+│   └── emfn-behavior-plugin/                   # Custom front-end behavior plugin
+│       ├── emfn-behavior-plugin.php            # Plugin entry point + header
 │       ├── readme.txt
 │       ├── includes/
-│       │   └── class-emfn-example-plugin.php
+│       │   └── class-emfn-behavior-plugin.php  # Singleton; enqueues assets + wp_localize_script
 │       ├── assets/
 │       │   ├── css/
-│       │   │   └── emfn-example-plugin.css
-│       │   └── js/
-│       │       └── emfn-example-plugin.js
+│       │   │   └── emfn-behavior-plugin.css    # Site style overrides + component styles
+│       │   ├── js/
+│       │   │   └── emfn-behavior-plugin.js     # Geolocation, NRI risk lookup, form wiring
+│       │   ├── data/
+│       │   │   ├── {ST}.csv                    # Per-state NRI risk scores (e.g. AL.csv)
+│       │   │   ├── NRI_HazardInfo.csv          # NRI hazard metadata reference
+│       │   │   ├── NRIDataDictionary.csv       # Full NRI data dictionary (reference only)
+│       │   │   └── readme.txt                  # Data directory documentation
+│       │   └── html-templates/
+│       │       ├── gravityForms-...-body.html  # HTML for Gravity Forms HTML field
+│       │       └── readme.txt
 │       └── languages/
 │
-└── themes/
-    └── emfn-child/          # Child theme extending the active Newspack theme
-        ├── style.css        # Child theme declaration + style overrides
-        ├── functions.php    # Enqueue scripts/styles; hook customizations
-        └── assets/
-            ├── css/
-            │   └── emfn-child.css
-            └── js/
-                └── emfn-child.js
+└── tmp/                                        # Scratch files; not deployed
 ```
+
+## emfn-behavior-plugin
+
+The primary active plugin. Responsibilities:
+
+- **Site style overrides** – CSS targeting Newspack theme components, Gravity Forms, and custom UI elements.
+- **Geolocation + risk mapping** – On Gravity Forms address input, resolves lat/lng via Google Places v2, looks up county FIPS via the [FCC Area API](https://geo.fcc.gov/api/census/block/find), fetches a per-state NRI CSV from `assets/data/`, and surfaces likely hazards to the user ranked by NRI risk score.
+- **NRI data** – Per-state CSVs (`assets/data/{ST}.csv`) contain FEMA National Risk Index composite risk scores (0–100) for 18 hazard types across all counties. Scores ≥ 50 (configurable via `riskThreshold`) are shown. See `assets/data/readme.txt` for full schema.
+- **HTML templates** – Copy/paste snippets for Gravity Forms HTML fields used in the Action Pack Assessment form.
+
+`window.emfnData.dataUrl` is injected by `wp_localize_script` and points to the plugin's `assets/data/` directory on the server.
 
 ## Connection Points
 
@@ -51,35 +62,14 @@ emergencymode.news/
 | `themes/emfn-child/`     | `wp-content/themes/emfn-child/`                               |
 | `customizations/`        | Deployed via Newspack > Customization or enqueued by a plugin |
 | `notebooks/`             | Not deployed to WordPress (data analysis/journalism tools)    |
+| Repo path                | WordPress server path                                         |
 
 ### Deploying Changes
 
-1. **Child theme** – Copy `themes/emfn-child/` to `wp-content/themes/emfn-child/` and activate it in _Appearance > Themes_.
-2. **Custom plugins** – Copy the plugin folder to `wp-content/plugins/` and activate in _Plugins_.
-3. **Must-use plugins** – Copy files to `wp-content/mu-plugins/`; they are active automatically.
-4. **Custom CSS/JS** – Either enqueue through the child theme's `functions.php` or upload to Newspack's _Customization > Additional CSS/JS_ panels.
+Deployment to the Newspack staging and production environments is handled manually by Newspack Support staff. To prepare a plugin update:
 
-> **Tip:** For Telex-generated plugins, the AI tool produces a ready-to-install ZIP file. Unzip it into `plugins/` here and install it via _Plugins > Add New > Upload Plugin_ or by copying directly to the server.
-
-## Telex Plugin Workflow
-
-[Telex](https://telex.automattic.ai/) is an AI-powered WordPress plugin generator by Automattic. When Telex produces a plugin:
-
-1. It outputs a **ZIP archive** named `<plugin-slug>.zip`.
-2. Unzip the archive into `plugins/<plugin-slug>/`.
-3. The resulting folder follows the standard layout:
-   ```
-   <plugin-slug>/
-   ├── <plugin-slug>.php   ← main file with Plugin Header
-   ├── readme.txt
-   ├── includes/           ← PHP classes
-   ├── assets/
-   │   ├── css/
-   │   └── js/
-   └── languages/          ← .pot translation template
-   ```
-4. Commit the unzipped folder to this repo for version control.
-5. Deploy to the server (see _Deploying Changes_ above).
+1. Commit changes to `main`.
+2. Provide the updated plugin folder to Newspack Support for installation via _Plugins > Add New > Upload Plugin_ or direct server copy.
 
 ## Data Analysis Notebooks
 
@@ -112,8 +102,7 @@ See `notebooks/README.md` for detailed documentation on each notebook.
 
 ## Newspack Customization Notes
 
-- **Custom CSS** can be added in WordPress Admin under _Newspack > Customization_ or through the standard WordPress _Appearance > Customize > Additional CSS_ panel.
-- **Hooks and filters** for Newspack-specific behavior live in `themes/emfn-child/functions.php` or in a dedicated mu-plugin.
+- **Hooks and filters** for Newspack-specific behavior live in the plugin's `includes/class-emfn-behavior-plugin.php`.
 - **Newspack Plugin documentation:** https://github.com/Automattic/newspack-plugin
 - **Newspack Blocks documentation:** https://github.com/Automattic/newspack-blocks
 

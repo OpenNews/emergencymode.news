@@ -1,0 +1,19 @@
+﻿OID_,Hazard,Prefix,Service,Start,End,TotalYears,FrequencyModel,EAL_Building,EAL_Population,EAL_Agriculture,PeriodOfRecord,NRI_VER
+1,Avalanche,AVLN,Avalanche,1994,2023,30,Annualized Frequency,1,1,0,1994-2023 (30 years),December 2025
+2,Coastal Flooding,CFLD,CoastalFlooding,2025,2025,1,Probability,1,1,0,Various (see documentation),December 2025
+3,Cold Wave,CWAV,ColdWave,2005,2024,19,Annualized Frequency,1,1,1,2005-2024 (19 years),December 2025
+4,Drought,DRGT,Drought,2000,2025,25,Annualized Frequency,0,0,1,2000-2025 (25 years),December 2025
+5,Earthquake,ERQK,Earthquake,2024,2024,1,Probability,1,1,0,2024 dataset,December 2025
+6,Hail,HAIL,Hail,1986,2023,38,Annualized Frequency,1,1,1,1986-2023 (38 years),December 2025
+7,Heat Wave,HWAV,HeatWave,2005,2024,19,Annualized Frequency,1,1,1,2005-2024 (19 years),December 2025
+8,Hurricane,HRCN,Hurricane,1851/1949,2024,173/76,Annualized Frequency,1,1,1,East 1851-2024 (173 years) / West 1949-2024 (76 years),December 2025
+9,Ice Storm,ISTM,IceStorm,1946,2014,67,Annualized Frequency,1,1,0,1946-2014 (67 years),December 2025
+10,Inland Flooding,IFLD,InlandFlooding,1996,2023,28,Annualized Frequency,1,1,1,1996-2023 (28 years),December 2025
+11,Landslide,LNDS,Landslide,2023,2023,1,Probability,1,1,0,2023 dataset,December 2025
+12,Lightning,LTNG,Lightning,2023,2023,1,Probability,1,1,0,2023 dataset,December 2025
+13,Strong Wind,SWND,StrongWind,1986,2023,38,Annualized Frequency,1,1,1,1986-2023 (38 years),December 2025
+14,Tornado,TRND,Tornado,1986,2023,38,Annualized Frequency,1,1,1,1986-2023 (38 years),December 2025
+15,Tsunami,TSUN,Tsunami,2021,2021,1,Probability,1,1,0,Various (see documentation),December 2025
+16,Volcanic Activity,VLCN,VolcanicActivity,2023,2023,1,Probability,1,1,0,2023 dataset,December 2025
+17,Wildfire,WFIR,Wildfire,2024,2024,1,Probability,1,1,1,2024 dataset,December 2025
+18,Winter Weather,WNTW,WinterWeather,2005,2024,19,Annualized Frequency,1,1,1,2005-2024 (19 years),December 2025

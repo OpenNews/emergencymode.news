@@ -30,6 +30,9 @@ build/
 # Composer
 vendor/
 
+# ZIP of plugin
+emfn-behavior-plugin.zip
+
 # IDE / editor
 .idea/
 .vscode/*

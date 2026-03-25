@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "emergencymode-disaster-risk"
+description = "Disaster risk projection data analysis for Emergency Mode News"
+version = "1.0.0"
+requires-python = ">=3.14"
+dependencies = [
+    "jupyterlab",
+    "pandas",
+    "requests",
+    "numpy",
+    "matplotlib",
+    "seaborn",
+    "ipykernel",
+    "ipywidgets",
+    "openpyxl",
+    "tqdm",
+]
+
+[tool.setuptools]
+packages = []
+
+[dependency-groups]
+dev = [
+    "pytest",
+]

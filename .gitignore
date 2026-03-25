@@ -45,3 +45,6 @@ emfn-behavior-plugin.zip
 
 # Temporary files
 tmp/*
+output/
+*.egg-info/
+.venv/

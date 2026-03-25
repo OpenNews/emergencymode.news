@@ -1,8 +1,8 @@
 <?php
 /**
- * Main plugin class for EMFN Example Plugin.
+ * Main plugin class for EMFN Behavior Plugin.
  *
- * @package EMFN_Example_Plugin
+ * @package EMFN_Behavior_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -10,11 +10,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class EMFN_Example_Plugin
+ * Class EMFN_Behavior_Plugin
  *
  * Singleton that wires up all hooks for the plugin.
  */
-class EMFN_Example_Plugin {
+class EMFN_Behavior_Plugin {
 
     /**
      * Single instance of this class.
@@ -56,18 +56,27 @@ class EMFN_Example_Plugin {
         // }
 
         wp_enqueue_style(
-            'emfn-example-plugin',
-            EMFN_EXAMPLE_PLUGIN_URL . 'assets/css/emfn-example-plugin.css',
+            'emfn-behavior-plugin',
+            EMFN_BEHAVIOR_PLUGIN_URL . 'assets/css/emfn-behavior-plugin.css',
             array(),
-            EMFN_EXAMPLE_PLUGIN_VERSION
+            EMFN_BEHAVIOR_PLUGIN_VERSION
         );
 
         wp_enqueue_script(
-            'emfn-example-plugin',
-            EMFN_EXAMPLE_PLUGIN_URL . 'assets/js/emfn-example-plugin.js',
+            'emfn-behavior-plugin',
+            EMFN_BEHAVIOR_PLUGIN_URL . 'assets/js/emfn-behavior-plugin.js',
             array(),
-            EMFN_EXAMPLE_PLUGIN_VERSION,
+            EMFN_BEHAVIOR_PLUGIN_VERSION,
             true
+        );
+
+        // Expose the data directory URL to JS so it can fetch per-state NRI CSVs.
+        wp_localize_script(
+            'emfn-behavior-plugin',
+            'emfnData',
+            array(
+                'dataUrl' => EMFN_BEHAVIOR_PLUGIN_URL . 'assets/data',
+            )
         );
     }
 }

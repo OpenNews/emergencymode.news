@@ -19,7 +19,7 @@ for notebook in "${notebooks[@]}"; do
       | select(
           (.execution_count != null)
           or ((.outputs // []) | length > 0)
-          or (((.metadata // {}) | has("execution") or has("ExecuteTime") or has("collapsed") or has("scrolled")))
+          or (((.metadata // {}) | (has("execution") or has("ExecuteTime") or has("collapsed") or has("scrolled"))))
       )
     ]
     | length > 0
@@ -32,7 +32,7 @@ for notebook in "${notebooks[@]}"; do
 done
 
 if [[ $failed -eq 1 ]]; then
-  echo "\nRun scripts/strip-notebook-outputs.sh and commit the cleaned notebooks."
+  printf '\nRun scripts/strip-notebook-outputs.sh and commit the cleaned notebooks.\n'
   exit 1
 fi
 

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIPS Risk Lookup - Local Dev Tool</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f9f8f6;
+            color: #333;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #111;
+            margin-top: 0;
+            font-size: 28px;
+        }
+        
+        h2 {
+            color: #444;
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        .description {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #444;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 2px solid #e2e2e2;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4A90E2;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            border: 2px solid #4A90E2;
+            background-color: #4A90E2;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background-color: #357ABD;
+            border-color: #357ABD;
+        }
+        
+        button.sample {
+            background-color: white;
+            color: #4A90E2;
+        }
+        
+        button.sample:hover {
+            background-color: #f0f7ff;
+        }
+        
+        #results {
+            margin-top: 30px;
+        }
+        
+        .risk-result {
+            background: #f9f9f9;
+            border: 1px solid #e2e2e2;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .location-info {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e2e2;
+        }
+        
+        .location-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111;
+            margin-bottom: 5px;
+        }
+        
+        .location-state {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .risk-list {
+            margin-top: 10px;
+        }
+        
+        .risk-item {
+            display: inline-block;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 6px 12px;
+            margin: 4px 4px 4px 0;
+            font-size: 14px;
+        }
+        
+        .risk-score {
+            color: #d9534f;
+            font-weight: 600;
+        }
+        
+        .error {
+            background: #fff3f3;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .info {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            color: #1565c0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .loading {
+            color: #666;
+            font-style: italic;
+            margin-top: 15px;
+        }
+        
+        .help-text {
+            color: #888;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+        
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FIPS Risk Lookup Tool</h1>
+        <p class="description">
+            Local development tool for testing the EMFN behavior plugin's client-side risk logic.
+            Enter a 5-digit county FIPS code to see FEMA NRI risk scores for various hazards.
+        </p>
+        
+        <div class="form-group">
+            <label for="fips-input">County FIPS Code</label>
+            <input 
+                type="text" 
+                id="fips-input" 
+                placeholder="e.g., 13121 (Fulton County, GA)"
+                maxlength="5"
+                pattern="[0-9]{5}"
+            />
+            <div class="help-text">Enter a 5-digit county FIPS code</div>
+        </div>
+        
+        <div class="button-group">
+            <button onclick="lookupFips()">Lookup Risk Data</button>
+        </div>
+        
+        <h2>Sample FIPS Lookups</h2>
+        <div class="button-group">
+            <button class="sample" onclick="loadSample('13121')">13121 - Fulton, GA</button>
+            <button class="sample" onclick="loadSample('06037')">06037 - Los Angeles, CA</button>
+            <button class="sample" onclick="loadSample('48201')">48201 - Harris, TX</button>
+            <button class="sample" onclick="loadSample('12086')">12086 - Miami-Dade, FL</button>
+            <button class="sample" onclick="loadSample('36061')">36061 - New York, NY</button>
+            <button class="sample" onclick="loadSample('17031')">17031 - Cook, IL</button>
+            <button class="sample" onclick="loadSample('04013')">04013 - Maricopa, AZ</button>
+            <button class="sample" onclick="loadSample('53033')">53033 - King, WA</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Configuration matching the plugin
+        const riskThreshold = 50; // FEMA NRI risk threshold
+        const dataBasePath = '../plugins/emfn-behavior-plugin/assets/data/';
+        
+        // NRI hazard codes => human-friendly labels
+        const NRI_HAZARD_LABELS = {
+            avln: "Avalanche",
+            cfld: "Coastal Flooding",
+            cwav: "Cold Wave",
+            drgt: "Drought",
+            erqk: "Earthquake",
+            hail: "Hail",
+            hwav: "Heat Wave",
+            hrcn: "Hurricane",
+            istm: "Ice Storm",
+            lnds: "Landslide",
+            ltng: "Lightning",
+            ifld: "Inland Flooding",
+            swnd: "Strong Wind",
+            trnd: "Tornado",
+            tsun: "Tsunami",
+            vlcn: "Volcanic Activity",
+            wfir: "Wildfire",
+            wntw: "Winter Weather",
+        };
+        
+        // State code mapping (FIPS prefix to state code)
+        const STATE_CODES = {
+            '01': 'AL', '02': 'AK', '04': 'AZ', '05': 'AR', '06': 'CA', '08': 'CO', '09': 'CT',
+            '10': 'DE', '11': 'DC', '12': 'FL', '13': 'GA', '15': 'HI', '16': 'ID', '17': 'IL',
+            '18': 'IN', '19': 'IA', '20': 'KS', '21': 'KY', '22': 'LA', '23': 'ME', '24': 'MD',
+            '25': 'MA', '26': 'MI', '27': 'MN', '28': 'MS', '29': 'MO', '30': 'MT', '31': 'NE',
+            '32': 'NV', '33': 'NH', '34': 'NJ', '35': 'NM', '36': 'NY', '37': 'NC', '38': 'ND',
+            '39': 'OH', '40': 'OK', '41': 'OR', '42': 'PA', '44': 'RI', '45': 'SC', '46': 'SD',
+            '47': 'TN', '48': 'TX', '49': 'UT', '50': 'VT', '51': 'VA', '53': 'WA', '54': 'WV',
+            '55': 'WI', '56': 'WY'
+        };
+        
+        /**
+         * Load a sample FIPS code into the input and trigger lookup
+         */
+        function loadSample(fips) {
+            const input = document.getElementById('fips-input');
+            input.value = fips;
+            lookupFips();
+        }
+        
+        /**
+         * Main lookup function - fetches CSV and displays results
+         */
+        async function lookupFips() {
+            const fipsInput = document.getElementById('fips-input');
+            const resultsDiv = document.getElementById('results');
+            const fips = fipsInput.value.trim();
+            
+            // Clear previous results
+            resultsDiv.innerHTML = '';
+            
+            // Validate FIPS code
+            if (!/^\d{5}$/.test(fips)) {
+                resultsDiv.innerHTML = '<div class="error">Please enter a valid 5-digit FIPS code.</div>';
+                return;
+            }
+            
+            // Extract state code from FIPS (first 2 digits)
+            const statePrefix = fips.substring(0, 2);
+            const stateCode = STATE_CODES[statePrefix];
+            
+            if (!stateCode) {
+                resultsDiv.innerHTML = '<div class="error">Invalid state code in FIPS. First 2 digits must be a valid state FIPS code.</div>';
+                return;
+            }
+            
+            // Show loading state
+            resultsDiv.innerHTML = '<div class="loading">Loading risk data...</div>';
+            
+            try {
+                // Fetch the state CSV file
+                const csvPath = `${dataBasePath}${stateCode}.csv`;
+                const response = await fetch(csvPath);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load CSV for state ${stateCode}`);
+                }
+                
+                const csvText = await response.text();
+                
+                // Parse CSV and find matching county
+                const countyData = parseCSVForFIPS(csvText, fips);
+                
+                if (!countyData) {
+                    resultsDiv.innerHTML = `<div class="error">County FIPS ${fips} not found in ${stateCode}.csv</div>`;
+                    return;
+                }
+                
+                // Display results
+                displayRiskData(countyData, fips);
+                
+            } catch (error) {
+                console.error('Error fetching risk data:', error);
+                resultsDiv.innerHTML = `<div class="error">Error loading risk data: ${error.message}</div>`;
+            }
+        }
+        
+        /**
+         * Parse CSV and find the row matching the FIPS code
+         */
+        function parseCSVForFIPS(csvText, targetFips) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 2) return null;
+            
+            const headers = lines[0].split(',').map(h => h.trim());
+            const fipsIndex = headers.findIndex(h => h === 'county_fips');
+            
+            if (fipsIndex === -1) {
+                console.error('county_fips column not found in CSV');
+                return null;
+            }
+            
+            // Find matching row
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                if (values[fipsIndex] === targetFips) {
+                    // Create object from headers and values
+                    const rowData = {};
+                    headers.forEach((header, idx) => {
+                        rowData[header] = values[idx] || '';
+                    });
+                    return rowData;
+                }
+            }
+            
+            return null;
+        }
+        
+        /**
+         * Display the risk data in a user-friendly format
+         */
+        function displayRiskData(countyData, fips) {
+            const resultsDiv = document.getElementById('results');
+            
+            // Extract location info
+            const countyName = countyData.county || 'Unknown County';
+            const stateName = countyData.state || 'Unknown State';
+            
+            // Find all hazards with risk scores >= threshold
+            const hazards = [];
+            Object.entries(countyData).forEach(([key, value]) => {
+                if (key.endsWith('_risk_score')) {
+                    const score = parseFloat(value);
+                    if (!isNaN(score) && score >= riskThreshold) {
+                        const hazardCode = key.replace('_risk_score', '').toLowerCase();
+                        const hazardLabel = NRI_HAZARD_LABELS[hazardCode];
+                        if (hazardLabel) {
+                            hazards.push({ label: hazardLabel, score: score });
+                        }
+                    }
+                }
+            });
+            
+            // Sort hazards by score (descending)
+            hazards.sort((a, b) => b.score - a.score);
+            
+            // Build results HTML
+            let html = '<div class="risk-result">';
+            html += '<div class="location-info">';
+            html += `<div class="location-name">${countyName}</div>`;
+            html += `<div class="location-state">${stateName}</div>`;
+            html += `<div class="help-text">FIPS: <code>${fips}</code></div>`;
+            html += '</div>';
+            
+            if (hazards.length > 0) {
+                html += `<div><strong>FEMA's ≥${riskThreshold}% Risk Hazards:</strong></div>`;
+                html += '<div class="risk-list">';
+                hazards.forEach(hazard => {
+                    html += `<span class="risk-item">${hazard.label} <span class="risk-score">(${Math.round(hazard.score)}%)</span></span>`;
+                });
+                html += '</div>';
+            } else {
+                html += '<div class="info">No high-risk hazards found (all scores below ' + riskThreshold + '%).</div>';
+            }
+            
+            html += '</div>';
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        // Allow Enter key to trigger lookup
+        document.getElementById('fips-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                lookupFips();
+            }
+        });
+    </script>
+</body>
+</html>

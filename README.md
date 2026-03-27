@@ -10,10 +10,15 @@ This repository holds custom code that extends and customizes the [Newspack](htt
 
 ```
 emergencymode.news/
+├── .devcontainer/           # VS Code dev container config (not deployed to WordPress)
+│   ├── devcontainer.json    # Container image, extensions, settings, post-create hook
+│   └── setup.sh             # Post-create script: installs uv + Python dependencies
+│
 ├── notebooks/               # Python notebooks for data analysis (uv-based)
 │   ├── US_disaster_risk_analysis.ipynb   # Generates per-US-state NRI risk CSVs
 │   ├── CA-MX_disaster_risk_analysis.ipynb # Research: CA+MX data gaps (no output yet)
-│   └── README.md                          # Notebooks documentation
+│   ├── README.md                          # Notebooks documentation
+│   └── cache/                             # Cached source data downloads
 │
 ├── plugins/
 │   └── emfn-behavior-plugin/                   # Custom front-end behavior plugin
@@ -28,8 +33,6 @@ emergencymode.news/
 │       │   │   └── emfn-behavior-plugin.js     # Geolocation, NRI risk lookup, form wiring
 │       │   ├── data/
 │       │   │   ├── {ST}.csv                    # Per-state NRI risk scores (e.g. AL.csv)
-│       │   │   ├── NRI_HazardInfo.csv          # NRI hazard metadata reference
-│       │   │   ├── NRIDataDictionary.csv       # Full NRI data dictionary (reference only)
 │       │   │   └── readme.txt                  # Data directory documentation
 │       │   └── html-templates/
 │       │       ├── gravityForms-...-body.html  # HTML for Gravity Forms HTML field
@@ -50,25 +53,18 @@ The primary active plugin. Responsibilities:
 
 `window.emfnData.dataUrl` is injected by `wp_localize_script` and points to the plugin's `assets/data/` directory on the server.
 
-## Connection Points
-
-### Newspack / WordPress Server
-
-| Repo path                | WordPress server path                                         |
-| ------------------------ | ------------------------------------------------------------- |
-| `mu-plugins/`            | `wp-content/mu-plugins/`                                      |
-| `plugins/<plugin-name>/` | `wp-content/plugins/<plugin-name>/`                           |
-| `themes/emfn-child/`     | `wp-content/themes/emfn-child/`                               |
-| `customizations/`        | Deployed via Newspack > Customization or enqueued by a plugin |
-| `notebooks/`             | Not deployed to WordPress (data analysis/journalism tools)    |
-| Repo path                | WordPress server path                                         |
-
-### Deploying Changes
+## Deploying Changes
 
 Deployment to the Newspack staging and production environments is handled manually by Newspack Support staff. To prepare a plugin update:
 
 1. Commit changes to `main`.
 2. Provide the updated plugin folder to Newspack Support for installation via _Plugins > Add New > Upload Plugin_ or direct server copy.
+
+| Repo path                | WordPress server path               |
+| ------------------------ | ----------------------------------- |
+| `plugins/<plugin-name>/` | `wp-content/plugins/<plugin-name>/` |
+
+`.devcontainer/` and `notebooks/` are not deployed to WordPress.
 
 ## Data Analysis Notebooks
 

@@ -17,6 +17,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 class EMFN_Gravity_Forms_Handler {
 
 	/**
+	 * CRC32 overflow constant for converting negative hashes to positive.
+	 */
+	const CRC32_OVERFLOW = 4294967296;
+
+	/**
+	 * Cache key for storing parsed quiz map data.
+	 */
+	const QUIZ_MAP_CACHE_KEY = 'emfn_quiz_map_cache';
+
+	/**
+	 * Cache expiration time (24 hours).
+	 */
+	const QUIZ_MAP_CACHE_EXPIRATION = DAY_IN_SECONDS;
+
+	/**
 	 * Single instance of this class.
 	 *
 	 * @var self|null
@@ -53,11 +68,13 @@ class EMFN_Gravity_Forms_Handler {
 	 * Process quiz data before form submission.
 	 *
 	 * Extracts quiz field values, generates a hash, and maps to categories.
+	 * Note: Gravity Forms handles nonce verification before this hook is called.
 	 *
 	 * @param array $form The Gravity Forms form object.
 	 */
 	public function process_quiz_data( $form ) {
 		// Extract quiz data from form submission.
+		// Note: $_POST access is safe here as Gravity Forms validates nonces before this hook.
 		$quiz_data = $this->extract_quiz_data( $form );
 
 		// Generate hash from quiz data.
@@ -160,7 +177,7 @@ class EMFN_Gravity_Forms_Handler {
 		
 		// Ensure positive value for base conversion.
 		if ( $numeric_hash < 0 ) {
-			$numeric_hash = $numeric_hash + 4294967296; // 2^32.
+			$numeric_hash = $numeric_hash + self::CRC32_OVERFLOW;
 		}
 		
 		// Convert to base36 (0-9, a-z) for a short, human-friendly hash.
@@ -178,11 +195,53 @@ class EMFN_Gravity_Forms_Handler {
 	private function map_to_categories( $quiz_data ) {
 		$categories = array();
 		
+		// Get cached CSV data or load from file.
+		$csv_data = $this->get_quiz_map_data();
+		
+		if ( empty( $csv_data ) ) {
+			return $categories;
+		}
+
+		// Loop through quiz data and match against CSV.
+		foreach ( $quiz_data as $key => $value ) {
+			foreach ( $csv_data as $mapping ) {
+				// Match on answer value.
+				if ( (string) $mapping['answer'] === (string) $value ) {
+					// If mode column is not empty, also check mode match.
+					if ( ! empty( $mapping['mode'] ) && isset( $quiz_data['mode'] ) ) {
+						if ( $mapping['mode'] === $quiz_data['mode'] ) {
+							$categories[] = $mapping['slug'];
+						}
+					} else {
+						$categories[] = $mapping['slug'];
+					}
+				}
+			}
+		}
+
+		return array_unique( $categories );
+	}
+
+	/**
+	 * Get quiz map data from cache or file.
+	 *
+	 * Caches the parsed CSV data for 24 hours to improve performance.
+	 *
+	 * @return array Parsed quiz map data.
+	 */
+	private function get_quiz_map_data() {
+		// Try to get from cache first.
+		$cached_data = get_transient( self::QUIZ_MAP_CACHE_KEY );
+		
+		if ( false !== $cached_data && is_array( $cached_data ) ) {
+			return $cached_data;
+		}
+
 		// Load the quiz map CSV.
 		$csv_path = EMFN_BEHAVIOR_PLUGIN_DIR . 'assets/data/quizMap.csv';
 		
 		if ( ! file_exists( $csv_path ) ) {
-			return $categories;
+			return array();
 		}
 
 		// Parse CSV file.
@@ -209,24 +268,10 @@ class EMFN_Gravity_Forms_Handler {
 			}
 		}
 
-		// Loop through quiz data and match against CSV.
-		foreach ( $quiz_data as $key => $value ) {
-			foreach ( $csv_data as $mapping ) {
-				// Match on answer value.
-				if ( (string) $mapping['answer'] === (string) $value ) {
-					// If mode column is not empty, also check mode match.
-					if ( ! empty( $mapping['mode'] ) && isset( $quiz_data['mode'] ) ) {
-						if ( $mapping['mode'] === $quiz_data['mode'] ) {
-							$categories[] = $mapping['slug'];
-						}
-					} else {
-						$categories[] = $mapping['slug'];
-					}
-				}
-			}
-		}
+		// Cache the parsed data for 24 hours.
+		set_transient( self::QUIZ_MAP_CACHE_KEY, $csv_data, self::QUIZ_MAP_CACHE_EXPIRATION );
 
-		return array_unique( $categories );
+		return $csv_data;
 	}
 
 	/**
@@ -323,15 +368,22 @@ class EMFN_Gravity_Forms_Handler {
 	/**
 	 * Preserve actionPack parameter when form submission starts.
 	 *
+	 * This preserves the actionPack query parameter for tracking purposes.
+	 * Note: The actionPack parameter is a hash we generate ourselves and is safe to accept
+	 * without nonce verification. It's used for analytics/tracking, not for authentication
+	 * or authorization.
+	 *
 	 * @param array $form The Gravity Forms form object.
 	 * @param array $entry The form entry being created.
 	 */
 	public function preserve_action_pack( $form, $entry ) {
 		// Check if actionPack parameter exists in the request.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- This is a tracking parameter, not a sensitive action.
 		if ( isset( $_GET['actionPack'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$action_pack = sanitize_text_field( wp_unslash( $_GET['actionPack'] ) );
 			
-			// Store in session or transient for later retrieval.
+			// Store in transient for later retrieval.
 			set_transient( 'emfn_preserved_action_pack_' . $form['id'], $action_pack, HOUR_IN_SECONDS );
 		}
 	}

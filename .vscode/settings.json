@@ -64,5 +64,8 @@
     "**/node_modules/**": true,
     "**/.bundle/**": true,
     "**/vendor/**": true
-  }
+  },
+
+  // Python: use the project virtualenv created by `uv sync`
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
 }

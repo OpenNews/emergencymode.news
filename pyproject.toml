@@ -1,0 +1,18 @@
+[project]
+name = "emergencymode-disaster-risk"
+description = "Disaster risk projection data analysis for Emergency Mode News"
+version = "1.0.0"
+requires-python = ">=3.13"
+dependencies = [
+    "jupyterlab",
+    "pandas",
+    "requests",
+    "numpy",
+    "ipykernel",
+    "tqdm",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]

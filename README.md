@@ -1,6 +1,6 @@
 # emergencymode.news
 
-Code storage for customizations, plugins, and theme work related to the Emergency Mode / EMFN WordPress Newspack instance.
+Code storage for customizations, plugins and theme work related to the Emergency Mode / EMFN WordPress Newspack instance.
 
 ## Overview
 
@@ -11,10 +11,9 @@ This repository holds custom code that extends and customizes the [Newspack](htt
 ```
 emergencymode.news/
 ├── notebooks/               # Python notebooks for data analysis (uv-based)
-│   ├── disaster_risk_analysis.ipynb  # FEMA disaster risk data analysis
-│   ├── generate_sample_data.py       # Sample data generator
-│   ├── sample_data/                  # Sample NRI data for testing
-│   └── README.md                     # Notebooks documentation
+│   ├── US_disaster_risk_analysis.ipynb   # Generates per-US-state NRI risk CSVs
+│   ├── CA-MX_disaster_risk_analysis.ipynb # Research: CA+MX data gaps (no output yet)
+│   └── README.md                          # Notebooks documentation
 │
 ├── plugins/
 │   └── emfn-behavior-plugin/                   # Custom front-end behavior plugin
@@ -44,8 +43,8 @@ emergencymode.news/
 
 The primary active plugin. Responsibilities:
 
-- **Site style overrides** – CSS targeting Newspack theme components, Gravity Forms, and custom UI elements.
-- **Geolocation + risk mapping** – On Gravity Forms address input, resolves lat/lng via Google Places v2, looks up county FIPS via the [FCC Area API](https://geo.fcc.gov/api/census/block/find), fetches a per-state NRI CSV from `assets/data/`, and surfaces likely hazards to the user ranked by NRI risk score.
+- **Site style overrides** – CSS targeting Newspack theme components, Gravity Forms and custom UI elements.
+- **Geolocation + risk mapping** – On Gravity Forms address input, resolves lat/lng via Google Places v2, looks up county FIPS via the [FCC Area API](https://geo.fcc.gov/api/census/block/find), fetches a per-state NRI CSV from `assets/data/` and surfaces likely hazards to the user ranked by NRI risk score.
 - **NRI data** – Per-state CSVs (`assets/data/{ST}.csv`) contain FEMA National Risk Index composite risk scores (0–100) for 18 hazard types across all counties. Scores ≥ 50 (configurable via `riskThreshold`) are shown. See `assets/data/readme.txt` for full schema.
 - **HTML templates** – Copy/paste snippets for Gravity Forms HTML fields used in the Action Pack Assessment form.
 
@@ -96,7 +95,8 @@ The `notebooks/` directory contains Python notebooks for data journalism and ana
 
 ### Available Notebooks
 
-- **disaster_risk_analysis.ipynb**: Analyzes FEMA National Risk Index data and generates county-level disaster risk projections for mapping and visualization
+- **US_disaster_risk_analysis.ipynb**: Downloads FEMA NRI data and generates per-state CSV files (`assets/data/{ST}.csv`) for US states + DC
+- **CA-MX_disaster_risk_analysis.ipynb**: Research notebook demonstrating the data-source and client-side lookup gap for Canada and Mexico (ThinkHazard + FCC API live calls; no output files yet)
 
 See `notebooks/README.md` for detailed documentation on each notebook.
 
@@ -110,4 +110,4 @@ See `notebooks/README.md` for detailed documentation on each notebook.
 
 - WordPress version and plugin dependencies are managed on the hosted Newspack environment; this repo stores only _custom_ code.
 - Follow WordPress coding standards: https://developer.wordpress.org/coding-standards/
-- Prefix all custom functions, classes, and hooks with `emfn_` to avoid conflicts.
+- Prefix all custom functions, classes and hooks with `emfn_` to avoid conflicts.

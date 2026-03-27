@@ -17,12 +17,24 @@ Three notebooks:
 
 This project uses `uv` for dependency management.
 
+Preferred workflow: open the repository in the VS Code devcontainer first, then run:
+
 ```bash
 uv sync
 uv run jupyter lab
 ```
 
 Then open any notebook in `notebooks/`.
+
+### Why the devcontainer matters
+
+Notebook execution depends on a specific Python environment and supporting tooling. The devcontainer provides that baseline automatically so results are consistent across machines.
+
+- Standardized OS/runtime (Debian + configured Python stack)
+- Automatic setup via `.devcontainer/setup.sh` (installs `uv` and project deps)
+- Fewer environment-specific failures from local Python/package differences
+
+Using the devcontainer is the easiest way to keep notebook outputs reproducible and avoid setup issues.
 
 ## Data source
 

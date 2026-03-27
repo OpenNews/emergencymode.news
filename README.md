@@ -54,21 +54,6 @@ The primary active plugin. Responsibilities:
 
 `window.emfnData.dataUrl` is injected by `wp_localize_script` and points to the plugin's `assets/data/` directory on the server.
 
-## Dev Tools
-
-The `dev-tools/` directory contains local development tools for testing plugin functionality without WordPress.
-
-### FIPS Risk Lookup Tool
-
-A standalone HTML page (`fips-risk-lookup.html`) that demonstrates the plugin's client-side risk logic:
-
-- Enter any 5-digit county FIPS code to see FEMA NRI risk scores
-- Sample buttons for quick testing with major US counties
-- Direct filesystem lookups of CSV data (no server-side code required)
-- Matches the plugin's display logic and ≥50% risk threshold
-
-**Usage:** Open `dev-tools/fips-risk-lookup.html` in a browser. See `dev-tools/README.md` for details.
-
 ## Deploying Changes
 
 Deployment to the Newspack staging and production environments is handled manually by Newspack Support staff. To prepare a plugin update:
@@ -85,6 +70,17 @@ Deployment to the Newspack staging and production environments is handled manual
 ## Data Analysis Notebooks
 
 The `notebooks/` directory contains Python notebooks for data journalism and analysis work. These are managed with [uv](https://github.com/astral-sh/uv) and are **not deployed to the WordPress server**.
+
+### Why Use The Devcontainer For Notebooks
+
+The recommended way to run notebooks in this repo is inside the VS Code devcontainer.
+
+- It provides a consistent Debian + Python toolchain for everyone on the project.
+- It runs `.devcontainer/setup.sh`, which installs `uv` and project dependencies expected by the notebooks.
+- It avoids host-machine drift (different Python versions, missing system libs, or mismatched package sets) that can break notebook execution.
+- It keeps notebook tooling isolated from your local/global Python environment.
+
+In short: the devcontainer makes notebook runs reproducible and reduces setup/debug time across contributors.
 
 ### Getting Started with Notebooks
 

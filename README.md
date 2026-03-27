@@ -15,10 +15,11 @@ emergencymode.news/
 │   └── setup.sh             # Post-create script: installs uv + Python dependencies
 │
 ├── notebooks/               # Python notebooks for data analysis (uv-based)
-│   ├── US_disaster_risk_analysis.ipynb   # Generates per-US-state NRI risk CSVs
-│   ├── CA-MX_disaster_risk_analysis.ipynb # Research: CA+MX data gaps (no output yet)
-│   ├── README.md                          # Notebooks documentation
-│   └── cache/                             # Cached source data downloads
+│   ├── US_disaster_risk_analysis.ipynb         # Generates per-US-state NRI risk CSVs
+│   ├── CA-MX_disaster_risk_analysis.ipynb      # Research: CA+MX data gaps (no output yet)
+│   ├── FIPS_risk_lookup_dev.ipynb              # Notebook-native FIPS<>risk for testing
+│   ├── README.md                               # Notebooks documentation
+│   └── cache/                                  # Cached source data downloads
 │
 ├── plugins/
 │   └── emfn-behavior-plugin/                   # Custom front-end behavior plugin
@@ -64,11 +65,22 @@ Deployment to the Newspack staging and production environments is handled manual
 | ------------------------ | ----------------------------------- |
 | `plugins/<plugin-name>/` | `wp-content/plugins/<plugin-name>/` |
 
-`.devcontainer/` and `notebooks/` are not deployed to WordPress.
+`.devcontainer/`, `dev-tools/`, and `notebooks/` are not deployed to WordPress.
 
 ## Data Analysis Notebooks
 
 The `notebooks/` directory contains Python notebooks for data journalism and analysis work. These are managed with [uv](https://github.com/astral-sh/uv) and are **not deployed to the WordPress server**.
+
+### Why Use The Devcontainer For Notebooks
+
+The recommended way to run notebooks in this repo is inside the VS Code devcontainer.
+
+- It provides a consistent Debian + Python toolchain for everyone on the project.
+- It runs `.devcontainer/setup.sh`, which installs `uv` and project dependencies expected by the notebooks.
+- It avoids host-machine drift (different Python versions, missing system libs, or mismatched package sets) that can break notebook execution.
+- It keeps notebook tooling isolated from your local/global Python environment.
+
+In short: the devcontainer makes notebook runs reproducible and reduces setup/debug time across contributors.
 
 ### Getting Started with Notebooks
 
@@ -89,10 +101,28 @@ The `notebooks/` directory contains Python notebooks for data journalism and ana
 
 4. **Open a notebook**: Navigate to `notebooks/` and open the desired `.ipynb` file
 
+### Prevent Notebook Output In Git
+
+This repo uses a pre-commit hook to keep notebooks in a clean, unexecuted state in commits.
+
+1. Install pre-commit:
+   ```bash
+   uv tool install pre-commit
+   ```
+2. Enable hooks in this repo:
+   ```bash
+   pre-commit install
+   ```
+
+On each commit, notebook hooks will:
+- strip notebook code-cell outputs and execution metadata
+- fail the commit if executed notebook state remains
+
 ### Available Notebooks
 
 - **US_disaster_risk_analysis.ipynb**: Downloads FEMA NRI data and generates per-state CSV files (`assets/data/{ST}.csv`) for US states + DC
 - **CA-MX_disaster_risk_analysis.ipynb**: Research notebook demonstrating the data-source and client-side lookup gap for Canada and Mexico (ThinkHazard + FCC API live calls; no output files yet)
+- **FIPS_risk_lookup_dev.ipynb**: Notebook-native county FIPS lookup tool for local testing of hazard rendering using generated state CSVs
 
 See `notebooks/README.md` for detailed documentation on each notebook.
 

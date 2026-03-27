@@ -2,13 +2,16 @@
 
 ## Overview
 
-Two notebooks:
+Three notebooks:
 
 - **`US_disaster_risk_analysis.ipynb`** — downloads FEMA NRI data and generates
   per-state CSV files for US states + DC.
 - **`CA-MX_disaster_risk_analysis.ipynb`** — research notebook documenting the data
   source and client-side lookup gap for Canada and Mexico. Makes live calls to
   ThinkHazard and FCC APIs to demonstrate the issues. Does not yet generate output files.
+- **`FIPS_risk_lookup_dev.ipynb`** — notebook-native county FIPS lookup UI for local
+  testing. Reads generated CSVs from `plugins/emfn-behavior-plugin/assets/data/` and
+  renders hazard results in notebook output.
 
 ## Setup
 
@@ -19,7 +22,7 @@ uv sync
 uv run jupyter lab
 ```
 
-Then open either notebook in `notebooks/`.
+Then open any notebook in `notebooks/`.
 
 ## Data source
 

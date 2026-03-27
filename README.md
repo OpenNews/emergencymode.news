@@ -14,15 +14,12 @@ emergencymode.news/
 │   ├── devcontainer.json    # Container image, extensions, settings, post-create hook
 │   └── setup.sh             # Post-create script: installs uv + Python dependencies
 │
-├── dev-tools/               # Local development tools (not deployed to WordPress)
-│   ├── fips-risk-lookup.html    # Standalone FIPS risk lookup tool
-│   └── README.md                # Dev tools documentation
-│
 ├── notebooks/               # Python notebooks for data analysis (uv-based)
-│   ├── US_disaster_risk_analysis.ipynb   # Generates per-US-state NRI risk CSVs
-│   ├── CA-MX_disaster_risk_analysis.ipynb # Research: CA+MX data gaps (no output yet)
-│   ├── README.md                          # Notebooks documentation
-│   └── cache/                             # Cached source data downloads
+│   ├── US_disaster_risk_analysis.ipynb         # Generates per-US-state NRI risk CSVs
+│   ├── CA-MX_disaster_risk_analysis.ipynb      # Research: CA+MX data gaps (no output yet)
+│   ├── FIPS_risk_lookup_dev.ipynb              # Notebook-native FIPS<>risk for testing
+│   ├── README.md                               # Notebooks documentation
+│   └── cache/                                  # Cached source data downloads
 │
 ├── plugins/
 │   └── emfn-behavior-plugin/                   # Custom front-end behavior plugin
@@ -108,10 +105,28 @@ The `notebooks/` directory contains Python notebooks for data journalism and ana
 
 4. **Open a notebook**: Navigate to `notebooks/` and open the desired `.ipynb` file
 
+### Prevent Notebook Output In Git
+
+This repo uses a pre-commit hook to keep notebooks in a clean, unexecuted state in commits.
+
+1. Install pre-commit:
+   ```bash
+   uv tool install pre-commit
+   ```
+2. Enable hooks in this repo:
+   ```bash
+   pre-commit install
+   ```
+
+On each commit, notebook hooks will:
+- strip notebook code-cell outputs and execution metadata
+- fail the commit if executed notebook state remains
+
 ### Available Notebooks
 
 - **US_disaster_risk_analysis.ipynb**: Downloads FEMA NRI data and generates per-state CSV files (`assets/data/{ST}.csv`) for US states + DC
 - **CA-MX_disaster_risk_analysis.ipynb**: Research notebook demonstrating the data-source and client-side lookup gap for Canada and Mexico (ThinkHazard + FCC API live calls; no output files yet)
+- **FIPS_risk_lookup_dev.ipynb**: Notebook-native county FIPS lookup tool for local testing of hazard rendering using generated state CSVs
 
 See `notebooks/README.md` for detailed documentation on each notebook.
 

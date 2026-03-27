@@ -19,7 +19,7 @@ for notebook in "${notebooks[@]}"; do
       | select(
           (.execution_count != null)
           or ((.outputs // []) | length > 0)
-          or (((.metadata // {}) | has("execution") or has("ExecuteTime") or has("collapsed") or has("scrolled")))
+          or (((.metadata // {}) | (has("execution") or has("ExecuteTime") or has("collapsed") or has("scrolled"))))
       )
     ]
     | length > 0

@@ -14,6 +14,10 @@ emergencymode.news/
 │   ├── devcontainer.json    # Container image, extensions, settings, post-create hook
 │   └── setup.sh             # Post-create script: installs uv + Python dependencies
 │
+├── dev-tools/               # Local development tools (not deployed to WordPress)
+│   ├── fips-risk-lookup.html    # Standalone FIPS risk lookup tool
+│   └── README.md                # Dev tools documentation
+│
 ├── notebooks/               # Python notebooks for data analysis (uv-based)
 │   ├── US_disaster_risk_analysis.ipynb   # Generates per-US-state NRI risk CSVs
 │   ├── CA-MX_disaster_risk_analysis.ipynb # Research: CA+MX data gaps (no output yet)
@@ -53,6 +57,21 @@ The primary active plugin. Responsibilities:
 
 `window.emfnData.dataUrl` is injected by `wp_localize_script` and points to the plugin's `assets/data/` directory on the server.
 
+## Dev Tools
+
+The `dev-tools/` directory contains local development tools for testing plugin functionality without WordPress.
+
+### FIPS Risk Lookup Tool
+
+A standalone HTML page (`fips-risk-lookup.html`) that demonstrates the plugin's client-side risk logic:
+
+- Enter any 5-digit county FIPS code to see FEMA NRI risk scores
+- Sample buttons for quick testing with major US counties
+- Direct filesystem lookups of CSV data (no server-side code required)
+- Matches the plugin's display logic and ≥50% risk threshold
+
+**Usage:** Open `dev-tools/fips-risk-lookup.html` in a browser. See `dev-tools/README.md` for details.
+
 ## Deploying Changes
 
 Deployment to the Newspack staging and production environments is handled manually by Newspack Support staff. To prepare a plugin update:
@@ -64,7 +83,7 @@ Deployment to the Newspack staging and production environments is handled manual
 | ------------------------ | ----------------------------------- |
 | `plugins/<plugin-name>/` | `wp-content/plugins/<plugin-name>/` |
 
-`.devcontainer/` and `notebooks/` are not deployed to WordPress.
+`.devcontainer/`, `dev-tools/`, and `notebooks/` are not deployed to WordPress.
 
 ## Data Analysis Notebooks
 

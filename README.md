@@ -54,6 +54,44 @@ The primary active plugin. Responsibilities:
 
 `window.emfnData.dataUrl` is injected by `wp_localize_script` and points to the plugin's `assets/data/` directory on the server.
 
+### Gravity Forms: hashing responses for custom Action Pack display (JS-only)
+
+The Action Pack hash flow is client-side and depends on Gravity Forms frontend events.
+
+Current flow:
+1. The plugin binds `controlFormSubmission()` after Gravity Forms JS initializes.
+2. On `gform/submission/submission_started`, the script reads `new FormData(data.form)`.
+3. It keeps `input_*` keys, sorts them, serializes as `key:value|...`, and computes a base36 hash.
+4. It writes the hash to a hidden field with class `.hashMarker`.
+5. Gravity Forms merge tags then place that value in the confirmation URL.
+
+Code location:
+- `plugins/emfn-behavior-plugin/assets/js/emfn-behavior-plugin.js`
+
+Expected confirmation pattern:
+- `https://emergencymode.news/action-pack/?mode={Mode:38}&actionPack={Hash Marker:75}`
+
+#### Troubleshooting `.hashMarker`
+
+If `actionPack` is missing or empty, troubleshoot in this order:
+
+1. Confirm Gravity Forms frontend JS is present on the page.
+   - Browser console should not show: `Gravity Forms JS API not available; skipping submission filter binding.`
+
+2. Confirm the hash-marker input exists at submit time.
+   - The submitted form must contain an input with class `.hashMarker`.
+   - Browser console warning indicates this issue: `.hashMarker input not found; actionPack will not appear in Confirmation URL.`
+
+3. Confirm the field has not moved outside the `<form>` during template edits.
+   - If the field "wanders off" into markup outside the form element, it will not be included in submitted `FormData`.
+   - Keep the hidden field inside the same Gravity Form instance targeted by `form.emfn-forms`.
+
+4. Confirm confirmation uses the correct merge tag field ID.
+   - If field IDs changed, update `{Hash Marker:ID}` accordingly.
+
+5. Confirm your dynamic field naming strategy remains stable.
+   - The hash intentionally uses only `input_*` keys and sorted key order for determinism.
+
 ## Deploying Changes
 
 Deployment to the Newspack staging and production environments is handled manually by Newspack Support staff. To prepare a plugin update:

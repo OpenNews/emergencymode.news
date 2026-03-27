@@ -11,8 +11,7 @@
         "esbenp.prettier-vscode"
       ],
       "settings": {
-        "python.defaultInterpreterPath": ".venv/bin/python",
-        "jupyter.kernels.filter": [{ "path": ".venv/bin/python", "type": "pythonEnvironment" }]
+        "python.defaultInterpreterPath": ".venv/bin/python"
       }
     }
   },

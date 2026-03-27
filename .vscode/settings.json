@@ -67,8 +67,5 @@
   },
 
   // Python: use the project virtualenv created by `uv sync`
-  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-  "jupyter.kernels.excludePythonEnvironments": [
-    "${workspaceFolder}/.venv/bin/python"
-  ]
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
 }

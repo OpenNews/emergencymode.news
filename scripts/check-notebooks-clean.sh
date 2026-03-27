@@ -32,7 +32,7 @@ for notebook in "${notebooks[@]}"; do
 done
 
 if [[ $failed -eq 1 ]]; then
-  echo "\nRun scripts/strip-notebook-outputs.sh and commit the cleaned notebooks."
+  printf '\nRun scripts/strip-notebook-outputs.sh and commit the cleaned notebooks.\n'
   exit 1
 fi
 

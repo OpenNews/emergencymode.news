@@ -2,24 +2,39 @@
 
 ## Overview
 
-Two notebooks:
+Three notebooks:
 
 - **`US_disaster_risk_analysis.ipynb`** — downloads FEMA NRI data and generates
   per-state CSV files for US states + DC.
 - **`CA-MX_disaster_risk_analysis.ipynb`** — research notebook documenting the data
   source and client-side lookup gap for Canada and Mexico. Makes live calls to
   ThinkHazard and FCC APIs to demonstrate the issues. Does not yet generate output files.
+- **`FIPS_risk_lookup_dev.ipynb`** — notebook-native county FIPS lookup UI for local
+  testing. Reads generated CSVs from `plugins/emfn-behavior-plugin/assets/data/` and
+  renders hazard results in notebook output.
 
 ## Setup
 
 This project uses `uv` for dependency management.
+
+Preferred workflow: open the repository in the VS Code devcontainer first, then run:
 
 ```bash
 uv sync
 uv run jupyter lab
 ```
 
-Then open either notebook in `notebooks/`.
+Then open any notebook in `notebooks/`.
+
+### Why the devcontainer matters
+
+Notebook execution depends on a specific Python environment and supporting tooling. The devcontainer provides that baseline automatically so results are consistent across machines.
+
+- Standardized OS/runtime (Debian + configured Python stack)
+- Automatic setup via `.devcontainer/setup.sh` (installs `uv` and project deps)
+- Fewer environment-specific failures from local Python/package differences
+
+Using the devcontainer is the easiest way to keep notebook outputs reproducible and avoid setup issues.
 
 ## Data source
 

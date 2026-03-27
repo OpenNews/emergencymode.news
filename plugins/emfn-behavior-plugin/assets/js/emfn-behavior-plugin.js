@@ -268,16 +268,19 @@ const mapLocationToRisks = async (place) => {
     .map(([key, val]) => [NRI_HAZARD_LABELS[key.replace("_risk_score", "").toLowerCase()] ?? null, parseFloat(val)])
     .filter(([label]) => label !== null)
     .sort(([, a], [, b]) => b - a)  // sort descending by risk score
-    .map(([label]) => label);
+    .map(([label, score]) => `${label} (${Math.round(score)}%)`);
 
   if (!likelyHazards.length) {
     console.debug("No high-risk hazards found for FIPS", place.fips);
   }
+
+  // build user-facing risk list
+  const riskList = `FEMA's >=${riskThreshold}% risks: ${likelyHazards.join(", ")}`;
   
   // populate for users
   riskType.textContent = (riskType && likelyHazards.length) 
-    ? `FEMA's >=${riskThreshold}% risks: ${likelyHazards.join(", ")}`
-    :"No high risk for any specific hazards based on our data.";
+    ? riskList
+    : "No high risk for any specific hazards based on our data.";
 };
 
 /**

@@ -58,7 +58,7 @@ class EMFN_Gravity_Forms_Handler {
 	 */
 	public function process_quiz_data( $form ) {
 		// Extract quiz data from form submission.
-		$quiz_data = $this->extract_quiz_data();
+		$quiz_data = $this->extract_quiz_data( $form );
 
 		// Generate hash from quiz data.
 		$hash = $this->generate_hash( $quiz_data );
@@ -77,21 +77,63 @@ class EMFN_Gravity_Forms_Handler {
 	/**
 	 * Extract quiz data from the current form submission.
 	 *
+	 * Attempts to extract data from both custom input names and standard Gravity Forms field IDs.
+	 *
+	 * @param array $form The Gravity Forms form object.
 	 * @return array Quiz data with keys: mode, size, offlineResiliency, pubSituation, disInfo.
 	 */
-	private function extract_quiz_data() {
-		$quiz_data = array(
-			'mode'              => isset( $_POST['input_mode'] ) ? sanitize_text_field( wp_unslash( $_POST['input_mode'] ) ) : null,
-			'size'              => isset( $_POST['input_size'] ) ? sanitize_text_field( wp_unslash( $_POST['input_size'] ) ) : null,
-			'offlineResiliency' => isset( $_POST['input_offline_resiliency'] ) ? sanitize_text_field( wp_unslash( $_POST['input_offline_resiliency'] ) ) : null,
-			'pubSituation'      => isset( $_POST['input_pub_situation'] ) ? sanitize_text_field( wp_unslash( $_POST['input_pub_situation'] ) ) : null,
-			'disInfo'           => isset( $_POST['input_dis_info'] ) ? sanitize_text_field( wp_unslash( $_POST['input_dis_info'] ) ) : null,
+	private function extract_quiz_data( $form ) {
+		$quiz_data = array();
+
+		// Define field mappings: data_key => possible POST keys and field labels.
+		$field_mappings = array(
+			'mode'              => array( 'keys' => array( 'input_mode', 'mode' ), 'labels' => array( 'mode', 'timeline', 'when' ) ),
+			'size'              => array( 'keys' => array( 'input_size', 'size' ), 'labels' => array( 'size', 'group size', 'household size' ) ),
+			'offlineResiliency' => array( 'keys' => array( 'input_offline_resiliency', 'offlineResiliency', 'offline_resiliency' ), 'labels' => array( 'offline resiliency', 'offline', 'connectivity' ) ),
+			'pubSituation'      => array( 'keys' => array( 'input_pub_situation', 'pubSituation', 'pub_situation' ), 'labels' => array( 'publication situation', 'publishing', 'pub situation' ) ),
+			'disInfo'           => array( 'keys' => array( 'input_dis_info', 'disInfo', 'dis_info' ), 'labels' => array( 'disinformation', 'disinfo', 'misinformation' ) ),
 		);
 
-		// Filter out null values.
-		return array_filter( $quiz_data, function( $value ) {
-			return ! is_null( $value ) && '' !== $value;
-		});
+		// Try to find each field in POST data.
+		foreach ( $field_mappings as $key => $mapping ) {
+			$value = null;
+			
+			// First, try to find by custom input names.
+			foreach ( $mapping['keys'] as $post_key ) {
+				if ( isset( $_POST[ $post_key ] ) && '' !== $_POST[ $post_key ] ) {
+					$value = sanitize_text_field( wp_unslash( $_POST[ $post_key ] ) );
+					break;
+				}
+			}
+			
+			// If not found, try to find by field label in the form.
+			if ( null === $value && isset( $form['fields'] ) && is_array( $form['fields'] ) ) {
+				foreach ( $form['fields'] as $field ) {
+					if ( ! isset( $field->label ) ) {
+						continue;
+					}
+					
+					$field_label = strtolower( trim( $field->label ) );
+					
+					foreach ( $mapping['labels'] as $search_label ) {
+						if ( false !== strpos( $field_label, strtolower( $search_label ) ) ) {
+							// Found matching field - get its value from POST.
+							$input_name = 'input_' . $field->id;
+							if ( isset( $_POST[ $input_name ] ) && '' !== $_POST[ $input_name ] ) {
+								$value = sanitize_text_field( wp_unslash( $_POST[ $input_name ] ) );
+								break 2;
+							}
+						}
+					}
+				}
+			}
+			
+			if ( null !== $value ) {
+				$quiz_data[ $key ] = $value;
+			}
+		}
+
+		return $quiz_data;
 	}
 
 	/**

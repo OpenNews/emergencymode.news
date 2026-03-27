@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if ! command -v jq &> /dev/null; then
+  echo "jq is required but not installed. Install it with: apt-get update && apt-get install -y jq"
+  exit 1
+fi
+
 if [[ $# -gt 0 ]]; then
   notebooks=("$@")
 else

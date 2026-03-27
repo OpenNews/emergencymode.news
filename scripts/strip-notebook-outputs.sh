@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if ! command -v jq >/dev/null 2>&1; then
+  echo "Error: 'jq' is required but not installed. Please install jq (e.g., 'brew install jq' on macOS or 'sudo apt-get install jq' on Debian/Ubuntu)." >&2
+  exit 1
+fi
 if [[ $# -gt 0 ]]; then
   notebooks=("$@")
 else

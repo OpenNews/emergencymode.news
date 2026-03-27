@@ -67,5 +67,8 @@
   },
 
   // Python: use the project virtualenv created by `uv sync`
-  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+
+  // PHP: point validator to the installed CLI executable
+  "php.validate.executablePath": "/usr/bin/php"
 }

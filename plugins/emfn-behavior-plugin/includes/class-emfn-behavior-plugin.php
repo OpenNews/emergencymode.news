@@ -40,6 +40,20 @@ class EMFN_Behavior_Plugin {
      */
     private function __construct() {
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+        
+        // Initialize Gravity Forms handler if Gravity Forms is active.
+        add_action( 'init', array( $this, 'init_gravity_forms_handler' ) );
+    }
+
+    /**
+     * Initialize the Gravity Forms handler.
+     */
+    public function init_gravity_forms_handler() {
+        // Check if Gravity Forms is active.
+        if ( class_exists( 'GFForms' ) ) {
+            require_once EMFN_BEHAVIOR_PLUGIN_DIR . 'includes/class-emfn-gravity-forms-handler.php';
+            EMFN_Gravity_Forms_Handler::get_instance();
+        }
     }
 
     /**

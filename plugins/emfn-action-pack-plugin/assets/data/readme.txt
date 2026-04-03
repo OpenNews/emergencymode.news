@@ -1,4 +1,4 @@
-EMFN Risk Assessment Plugin - Data Directory
+EMFN Action Pack Plugin - Data Directory
 ============================================
 
 Source: FEMA National Risk Index (NRI), December 2025 release
@@ -8,7 +8,7 @@ Purpose
 -------
 
 This directory contains per-state county risk files consumed by
-`fetchNriData()` in `assets/js/emfn-risk-assessment-plugin.js`.
+`fetchNriData()` in `assets/js/emfn-action-pack-plugin.js`.
 
 Files in this directory
 -----------------------

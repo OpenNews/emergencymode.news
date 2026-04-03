@@ -10,7 +10,7 @@ Three notebooks:
   source and client-side lookup gap for Canada and Mexico. Makes live calls to
   ThinkHazard and FCC APIs to demonstrate the issues. Does not yet generate output files.
 - **`FIPS_risk_lookup_dev.ipynb`** — notebook-native county FIPS lookup UI for local
-  testing. Reads generated CSVs from `plugins/emfn-behavior-plugin/assets/data/` and
+  testing. Reads generated CSVs from `plugins/emfn-risk-assessment-plugin/assets/data/` and
   renders hazard results in notebook output.
 
 ## Setup
@@ -47,7 +47,7 @@ source is available via FEMA or RAPT).
 
 ## Output
 
-Files are written to `plugins/emfn-behavior-plugin/assets/data/`:
+Files are written to `plugins/emfn-risk-assessment-plugin/assets/data/`:
 
 | Region | Files | Source |
 |--------|-------|--------|

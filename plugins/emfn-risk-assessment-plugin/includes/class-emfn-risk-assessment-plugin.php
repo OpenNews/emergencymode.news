@@ -1,20 +1,20 @@
 <?php
 /**
- * Main plugin class for EMFN Behavior Plugin.
+ * Main plugin class for EMFN Risk Assessment Plugin.
  *
- * @package EMFN_Behavior_Plugin
- */
+ * @package EMFN_Risk_Assessment_Plugin
+ *
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
 /**
- * Class EMFN_Behavior_Plugin
+ * Class EMFN_Risk_Assessment_Plugin
  *
  * Singleton that wires up all hooks for the plugin.
  */
-class EMFN_Behavior_Plugin {
+class EMFN_Risk_Assessment_Plugin {
 
     /**
      * Single instance of this class.
@@ -56,26 +56,26 @@ class EMFN_Behavior_Plugin {
         // }
 
         wp_enqueue_style(
-            'emfn-behavior-plugin',
-            EMFN_BEHAVIOR_PLUGIN_URL . 'assets/css/emfn-behavior-plugin.css',
+            'emfn-risk-assessment-plugin',
+            EMFN_RISK_ASSESSMENT_PLUGIN_URL . 'assets/css/emfn-risk-assessment-plugin.css',
             array(),
-            EMFN_BEHAVIOR_PLUGIN_VERSION
+            EMFN_RISK_ASSESSMENT_PLUGIN_VERSION
         );
 
         wp_enqueue_script(
-            'emfn-behavior-plugin',
-            EMFN_BEHAVIOR_PLUGIN_URL . 'assets/js/emfn-behavior-plugin.js',
+            'emfn-risk-assessment-plugin',
+            EMFN_RISK_ASSESSMENT_PLUGIN_URL . 'assets/js/emfn-risk-assessment-plugin.js',
             array(),
-            EMFN_BEHAVIOR_PLUGIN_VERSION,
+            EMFN_RISK_ASSESSMENT_PLUGIN_VERSION,
             true
         );
 
         // Expose the data directory URL to JS so it can fetch per-state NRI CSVs.
         wp_localize_script(
-            'emfn-behavior-plugin',
+            'emfn-risk-assessment-plugin',
             'emfnData',
             array(
-                'dataUrl' => EMFN_BEHAVIOR_PLUGIN_URL . 'assets/data',
+                'dataUrl' => EMFN_RISK_ASSESSMENT_PLUGIN_URL . 'assets/data',
             )
         );
     }

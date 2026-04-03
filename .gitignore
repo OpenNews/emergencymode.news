@@ -9,6 +9,9 @@ xmlrpc.php
 license.txt
 readme.html
 
+# dev tools short-term integrations
+plugins/emfn-risk-assessment-plugin/assets/js/emergencymode.newspackstaging.com/
+
 # Environment / config
 .env
 wp-config.php
@@ -31,7 +34,7 @@ build/
 vendor/
 
 # ZIP of plugin
-emfn-behavior-plugin.zip
+emfn-risk-assessment-plugin.zip
 
 # IDE / editor
 .idea/

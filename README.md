@@ -22,16 +22,16 @@ emergencymode.news/
 │   └── cache/                                  # Cached source data downloads
 │
 ├── plugins/
-│   └── emfn-behavior-plugin/                   # Custom front-end behavior plugin
-│       ├── emfn-behavior-plugin.php            # Plugin entry point + header
+│   └── emfn-risk-assessment-plugin/               # Custom front-end behavior plugin
+│       ├── plugin entry file                      # Plugin entry point + header
 │       ├── readme.txt
 │       ├── includes/
-│       │   └── class-emfn-behavior-plugin.php  # Singleton; enqueues assets + wp_localize_script
+│       │   └── class-emfn-risk-assessment-plugin.php # Singleton; enqueues assets + wp_localize_script
 │       ├── assets/
 │       │   ├── css/
-│       │   │   └── emfn-behavior-plugin.css    # Site style overrides + component styles
+│       │   │   └── emfn-risk-assessment-plugin.css # Site style overrides + component styles
 │       │   ├── js/
-│       │   │   └── emfn-behavior-plugin.js     # Geolocation, NRI risk lookup, form wiring
+│       │   │   └── emfn-risk-assessment-plugin.js # Geolocation, NRI risk lookup, form wiring
 │       │   ├── data/
 │       │   │   ├── {ST}.csv                    # Per-state NRI risk scores (e.g. AL.csv)
 │       │   │   └── readme.txt                  # Data directory documentation
@@ -43,7 +43,7 @@ emergencymode.news/
 └── tmp/                                        # Scratch files; not deployed
 ```
 
-## emfn-behavior-plugin
+## emfn-risk-assessment-plugin
 
 The primary active plugin. Responsibilities:
 
@@ -66,7 +66,7 @@ Current flow:
 5. Gravity Forms merge tags then place that value in the confirmation URL.
 
 Code location:
-- `plugins/emfn-behavior-plugin/assets/js/emfn-behavior-plugin.js`
+- `plugins/emfn-risk-assessment-plugin/assets/js/emfn-risk-assessment-plugin.js`
 
 Expected confirmation pattern:
 - `https://emergencymode.news/action-pack/?mode={Mode:38}&actionPack={Hash Marker:75}`
@@ -166,7 +166,7 @@ See `notebooks/README.md` for detailed documentation on each notebook.
 
 ## Newspack Customization Notes
 
-- **Hooks and filters** for Newspack-specific behavior live in the plugin's `includes/class-emfn-behavior-plugin.php`.
+- **Hooks and filters** for Newspack-specific behavior live in the plugin's `includes/class-emfn-risk-assessment-plugin.php`.
 - **Newspack Plugin documentation:** https://github.com/Automattic/newspack-plugin
 - **Newspack Blocks documentation:** https://github.com/Automattic/newspack-blocks
 

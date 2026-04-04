@@ -20,7 +20,7 @@
  * @typedef {import("../../../shared/emfn-types").GFormSubmissionStartedData} GFormSubmissionStartedData
  */
 
-const version = "0.6.00"; // debugging versioning
+const version = "0.6.01"; // debugging versioning
 const riskThreshold = 50; // threshold for suggested risks 
 
 /** @type {EmfnWindow} */
@@ -98,6 +98,54 @@ const locData = {
 };
 
 const GeolocationFlow = {
+  /**
+   * Clear persisted and in-memory location state before handling a new place selection
+   * @returns {void}
+   */
+  clearPersistedLocation() {
+    try {
+      sessionStorage.removeItem("emfn_locData");
+    } catch (err) {
+      console.warn("Unable to clear location data from sessionStorage:", err);
+    }
+
+    locData.county = null;
+    locData.state = null;
+    locData.st = null;
+    locData.country = null;
+    locData.fips = null;
+
+    hasResolvedGeolocation = false;
+    hasRenderedRisks = false;
+    lastFetchedCountyState = null;
+    lastFetchedCountyFips = null;
+    lastFetchedNriData = null;
+
+    const formRoot = getGravityForm();
+    if (!formRoot) {
+      return;
+    }
+
+    const risks = /** @type {HTMLDivElement | null} */ (
+      formRoot.querySelector("#risks")
+    );
+    const riskExplainer = /** @type {HTMLDivElement | null} */ (
+      formRoot.querySelector("#risk-explainer")
+    );
+
+    if (risks) {
+      delete risks.dataset.emfnRendered;
+      Array.from(risks.children).forEach((child) => {
+        if (["risk-explainer", "risk-template"].includes(child.id)) return;
+        child.remove();
+      });
+    }
+
+    if (riskExplainer) {
+      riskExplainer.textContent = "Resolving updated risks for your newly selected location.";
+    }
+  },
+
   /**
    * Persist resolved location data so later Gravity Forms "pages" can use it
    * @returns {void}
@@ -256,6 +304,7 @@ const GeolocationFlow = {
 
     autocompleteEl.addEventListener("gmp-select", async (event) => {
       try {
+        GeolocationFlow.clearPersistedLocation();
         await GeolocationFlow.handlePlaceSelection(event);
       } catch (err) {
         console.error("Error handling place selection:", err);

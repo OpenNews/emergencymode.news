@@ -68,7 +68,7 @@ Hashing behavior notes:
 1. On a real submit action, it collects the current form values for controls inside `.hashable`-classed form elements 
     * not every Form entry is `.hashable` -- many are just use-tracking for understanding overall grant reach and impact
 1. Serializes those entries as `name=value&...` in DOM order
-1. HTashes the serialized string with a compact base36 djb2-style hash
+1. Hashes the serialized string with a compact base36 djb2-style hash
 1. Writes the hash into `.hashMarker input` before Gravity Forms continues submission
     * If `.hashMarker input` is missing, the hash cannot be stored with the submission and we lose ability to see & troubleshoot Action Pack edge cases
 

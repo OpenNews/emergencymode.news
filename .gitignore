@@ -36,7 +36,8 @@ build/
 vendor/
 
 # ZIP of plugin
-emfn-risk-assessment-plugin.zip
+emfn-action-pack-plugin.zip
+emfn-rich-search-plugin.zip
 
 # IDE / editor
 .idea/

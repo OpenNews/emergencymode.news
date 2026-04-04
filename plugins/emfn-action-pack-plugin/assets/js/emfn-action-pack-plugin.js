@@ -20,7 +20,7 @@
  * @typedef {import("../../../shared/emfn-types").GFormSubmissionStartedData} GFormSubmissionStartedData
  */
 
-const version = "0.5.01"; // debugging versioning
+const version = "0.6.00"; // debugging versioning
 const riskThreshold = 50; // threshold for suggested risks 
 
 /** @type {EmfnWindow} */
@@ -47,17 +47,18 @@ let lastFetchedNriData = null;
 /** @type {string} */
 const gravityForm = "form.emfn-forms";
 /** @type {string} */
-const gravityGeoInput = `${gravityForm} .location[data-js='geolocation-enabled']`;
+const gravityGeoInput = `.location[data-js='geolocation-enabled']`;
 /** @type {string} */
-const fipsFieldSelection = `${gravityForm} .countyFIPS input`;
+const fipsFieldSelection = `.countyFIPS input`;
 
-/** 
- * @type {HTMLFormElement | null} 
- * important that this is one of the only document.querySelector() calls in file
- *  to ensure we are always targeting the correct form in Gravity Forms' multi-form 
- * environment, and not accidentally binding to stale DOM from a previous form "page"
+/**
+ * Resolve the current Gravity Form node at the moment of use.
+ * Gravity Forms can replace the form element across page-break navigation.
+ * @returns {HTMLFormElement | null}
  */
-const gravityFormEl = document.querySelector(gravityForm);
+function getGravityForm() {
+  return /** @type {HTMLFormElement | null} */ (document.querySelector(gravityForm));
+}
 
 /**
  * NRI hazard codes => human-friendly terms
@@ -175,7 +176,7 @@ const GeolocationFlow = {
    */
   async handlePlaceSelection(event) {
     const { placePrediction } = /** @type {GmpSelectEvent} */ (/** @type {unknown} */ (event));
-    const formRoot = gravityFormEl;
+    const formRoot = getGravityForm();
     if (!formRoot) {
       console.error("Targeted Gravity Form not found.");
       return;
@@ -381,7 +382,7 @@ const RiskRenderer = {
    * @returns {{ resolvedFips: string, resolvedSt: string } | null}
    */
   getResolvedLocation() {
-    const formRoot = gravityFormEl;
+    const formRoot = getGravityForm();
     if (!formRoot) {
       return null;
     }
@@ -469,7 +470,7 @@ const RiskRenderer = {
    * @returns {Promise<void>} - risk data based on FIPS + state
    */
   async mapLocationToRisks() {
-    const formRoot = gravityFormEl;
+    const formRoot = getGravityForm();
     if (!formRoot) {
       console.error("Targeted Gravity Form not found.");
       return;
@@ -535,9 +536,10 @@ const RiskRenderer = {
   },
 };
 
-const QuizResultHashing = {
+const SubmissionHashing = {
+
   /**
-   * Hash the form data string for later retrieval and correlation with quiz results
+   * Hash the form data string for saving/sharing 
    * (not cryptographically secure, just a quick way to compress form submissions)
    * @param {string} dataString - the serialized form data string to hash
    * @returns {string} - the resulting hash string to store and correlate with quiz results
@@ -556,13 +558,40 @@ const QuizResultHashing = {
   },
 
   /**
-   * Intercept form submission via `gform/submission/pre_submission` 
-   * - computes a hash and write it to the .hashMarker hidden input
-   * - blocks submission until hash is set
-   * @returns {Promise<void>} - but modifies form data before submission
+   * Collect the subset of form entries marked as `.hashable` 
+   * @param {HTMLFormElement} form - the active Gravity Form element
+   * @returns {[string, FormDataEntryValue][]}
+   */
+  collectHashableEntries(form) {
+    /** @type {[string, FormDataEntryValue][]} */
+    const hashableEntries = [];
+
+    new FormData(form).forEach((value, name) => {
+      const hashableControl = form.querySelector(
+        `.hashable [name="${CSS.escape(name)}"]`
+      );
+
+      if (hashableControl) {
+        hashableEntries.push([name, value]);
+      }
+    });
+
+    console.debug(`Collected hashable form entries:`, hashableEntries);
+    if (hashableEntries.length === 0) {
+      console.warn("No form entries marked as .hashable; submission hash will be empty.");
+      return [];
+    }
+
+    return hashableEntries;
+  },
+
+  /**
+   * Intercept form submission and write a hashed summary to the .hashMarker input
+   * @returns {void}
    */
   controlFormSubmission() {
     if (hasBoundSubmissionFilter) {
+      console.debug("Submission filter already bound; skipping duplicate binding.");
       return;
     }
 
@@ -575,8 +604,6 @@ const QuizResultHashing = {
       /** @TODO - consider fallback form-submission binding */
       return;
     }
-
-    hasBoundSubmissionFilter = true;
     
     gformsReady.addAsyncFilter("gform/submission/pre_submission",
       /** @param {GFormSubmissionStartedData} data */ 
@@ -584,38 +611,73 @@ const QuizResultHashing = {
         // Only hash real `submit` actions, not next/previous/save-continue actions.
         if (submitType && data.submissionType !== submitType) return data;
         if (!data.form || !data.form.matches(gravityForm)) return data;
-      
-        console.debug("Pre-submission data:", data);
-        /** @TODO */
-        // data.abort = true; // temporary, leave in place until testing is complete
+
+        // select the values of only .hashable-classed form entries
+        const hashableEntries = SubmissionHashing.collectHashableEntries(data.form);
+
+        // serialize the hashable form entries into a string for hashing
+        const dataString = hashableEntries
+          .map(([name, value]) => `${name}=${String(value)}`)
+          .join("&");
+        console.debug(`Serialized hashable form entries:`, dataString);
+
+        const hash = SubmissionHashing.createHash(dataString);
+        console.debug("Computed submission hash:", hash);
+
+        // set the computed hash to the hidden .hashMarker input
+        const hashMarkerField = /** @type {HTMLInputElement | null} */ (
+          data.form.querySelector(".hashMarker input")
+        );
+        if (hashMarkerField) {
+          hashMarkerField.value = hash;
+          // data.abort = true; // DEBUGGING uncomment to block submission
+        } else {
+          console.error("Hash marker field not found in form; unable to store submission hash.");
+          return data;
+        }
+    
         return data;
     });
 
+    hasBoundSubmissionFilter = true;
     return;
   },
 }
 
 /* ********* INITIALIZATION **********
 * Register one Gravity Forms post_render hook for the whole page. That event
-* wires the Places autocomplete once, and the later risk DOM is populated only
-* from a successful gmp-select flow after state + county FIPS are resolved.
+* rebinds the current form node after page-break navigation, restores location
+* state, and wires Places autocomplete once.
 */
 if (!isGeoFeaturesActivated) {
   isGeoFeaturesActivated = true;
 
   console.info("EMFN Action Pack Plugin active", version);
 
+  if (emfnWindow.gform?.themeScriptsLoaded) {
+    SubmissionHashing.controlFormSubmission();
+  } else {
+    document.addEventListener(
+      "gform/theme/scripts_loaded",
+      () => {
+        SubmissionHashing.controlFormSubmission();
+      },
+      { once: true }
+    );
+  }
+
   // this must be a document-level binding
   document.addEventListener("gform/post_render", () => {
-    if (!gravityFormEl) {
-      console.error("Targeted Gravity Form not found on `post_render`");
+    const formRoot = getGravityForm();
+    if (!formRoot) {
+      console.error(`${gravityForm} not found on gform/post_render`);
       return;
     }
     
     GeolocationFlow.restore();
 
     const geoInput = /** @type {GFormElement | null} */ (
-      gravityFormEl.querySelector(gravityGeoInput)
+      formRoot.querySelector(gravityGeoInput)
     );
 
     if (geoInput && !hasResolvedGeolocation) {
@@ -623,14 +685,12 @@ if (!isGeoFeaturesActivated) {
     }
 
     const riskSection = /** @type {HTMLDivElement | null} */ (
-      gravityFormEl.querySelector("#risks") ?? null
+      formRoot.querySelector("#risks") ?? null
     );
     if (riskSection && Boolean(locData.fips) && !hasRenderedRisks) {
       void RiskRenderer.mapLocationToRisks().catch((error) => {
         console.error("Error mapping location to risks:", error);
       });
     }
-
-    void QuizResultHashing.controlFormSubmission();
   });
 }

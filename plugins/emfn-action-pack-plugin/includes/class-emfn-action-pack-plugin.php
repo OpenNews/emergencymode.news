@@ -3,7 +3,7 @@
  * Main plugin class for EMFN Action Pack Plugin.
  *
  * @package EMFN_Action_Pack_Plugin
- *
+ */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;

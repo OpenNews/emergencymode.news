@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "esnext",
+    "moduleDetection": "force",
+    "checkJs": false,
+    "lib": ["DOM", "ES2022"]
+  },
+  "include": [
+    "plugins/**/*.js",
+    "plugins/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".venv",
+    "tmp"
+  ]
+}

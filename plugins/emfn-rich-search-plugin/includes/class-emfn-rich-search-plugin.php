@@ -1,8 +1,8 @@
 <?php
 /**
- * Main plugin class for EMFN Behavior Plugin.
+ * Main plugin class for EMFN Rich Search Plugin.
  *
- * @package EMFN_Behavior_Plugin
+ * @package EMFN_Rich_Search_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -10,11 +10,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class EMFN_Behavior_Plugin
+ * Class EMFN_Rich_Search_Plugin
  *
  * Singleton that wires up all hooks for the plugin.
  */
-class EMFN_Behavior_Plugin {
+class EMFN_Rich_Search_Plugin {
 
     /**
      * Single instance of this class.
@@ -56,26 +56,26 @@ class EMFN_Behavior_Plugin {
         // }
 
         wp_enqueue_style(
-            'emfn-behavior-plugin',
-            EMFN_BEHAVIOR_PLUGIN_URL . 'assets/css/emfn-behavior-plugin.css',
+            'emfn-rich-search-plugin',
+            EMFN_RICH_SEARCH_PLUGIN_URL . 'assets/css/emfn-rich-search-plugin.css',
             array(),
-            EMFN_BEHAVIOR_PLUGIN_VERSION
+            EMFN_RICH_SEARCH_PLUGIN_VERSION
         );
 
         wp_enqueue_script(
-            'emfn-behavior-plugin',
-            EMFN_BEHAVIOR_PLUGIN_URL . 'assets/js/emfn-behavior-plugin.js',
+            'emfn-rich-search-plugin',
+            EMFN_RICH_SEARCH_PLUGIN_URL . 'assets/js/emfn-rich-search-plugin.js',
             array(),
-            EMFN_BEHAVIOR_PLUGIN_VERSION,
+            EMFN_RICH_SEARCH_PLUGIN_VERSION,
             true
         );
 
         // Expose the data directory URL to JS so it can fetch per-state NRI CSVs.
         wp_localize_script(
-            'emfn-behavior-plugin',
+            'emfn-rich-search-plugin',
             'emfnData',
             array(
-                'dataUrl' => EMFN_BEHAVIOR_PLUGIN_URL . 'assets/data',
+                'dataUrl' => EMFN_RICH_SEARCH_PLUGIN_URL . 'assets/data',
             )
         );
     }

@@ -10,7 +10,9 @@ license.txt
 readme.html
 
 # dev tools short-term integrations
-plugins/emfn-risk-assessment-plugin/assets/js/emergencymode.newspackstaging.com/
+plugins/emfn-action-pack-plugin/assets/js/emergencymode.newspackstaging.com/
+plugins/emfn-rich-search-plugin/assets/js/emergencymode.newspackstaging.com/
+plugins/*.zip
 
 # Environment / config
 .env

@@ -17,11 +17,9 @@
  * @typedef {import("../../../shared/emfn-types").GFormSubmissionStartedData} GFormSubmissionStartedData
  */
 
-const version = "0.6.03"; // debugging versioning
+const version = "0.6.08"; // debugging versioning
 const riskThreshold = 50; // threshold for suggested risks 
-
-/** @type {EmfnWindow} */
-const emfnWindow = window;
+const emfnWindow = /** @type {EmfnWindow} */ (window);
 
 /** @type {EmfnData} - path exposed by plugin */
 const { 
@@ -32,11 +30,6 @@ const {
   actionPackPayloadPrefix: "ap2.",
 };
 
-/** @type {string[]} */
-let resolvedActionPackTokenOrder = [];
-/** @type {Promise<string[]> | null} */
-let actionPackTokenOrderPromise = null;
-
 // prevent duplicate initialization and listener registration
 let hasInitializedSubmissionBinding = false;
 let isGeoFeaturesActivated = false;
@@ -45,10 +38,8 @@ let hasRenderedRisks = false;
 let hasBoundSubmissionFilter = false;
 
 // DOM selectors
-/** @type {string} */
-const gravityForm = "form.emfn-forms";
-/** @type {string} */
-const fipsFieldSelection = `.countyFIPS input`;
+const gravityForm = /** @type {string} */ ("form.emfn-forms");
+const fipsFieldSelection = /** @type {string} */ (`.countyFIPS input`);
 
 /**
  * global helper: get the current Gravity Form node at the moment of use
@@ -59,17 +50,14 @@ const getGravityForm = () => {
   return /** @type {HTMLFormElement | null} */ (document.querySelector(gravityForm));
 }
 
-/**
- * in-memory location state for the current quiz session
- * @type {LocationData}
- */
-const locData = {
+// in-memory location state for the current quiz session
+const locData = /** @type {LocationData} */ ({
   county: null,
   state: null,
   st: null,
   country: null,
   fips: null,
-};
+});
 
 const GeolocationFlow = {
   /** @type {string} */
@@ -106,20 +94,13 @@ const GeolocationFlow = {
     const risks = /** @type {HTMLDivElement | null} */ (
       formRoot.querySelector("#risks")
     );
-    const riskExplainer = /** @type {HTMLDivElement | null} */ (
-      formRoot.querySelector("#risk-explainer")
-    );
 
     if (risks) {
       delete risks.dataset.emfnRendered;
       Array.from(risks.children).forEach((child) => {
-        if (["risk-explainer", "risk-template"].includes(child.id)) return;
+        if (["risk-template"].includes(child.id)) return;
         child.remove();
       });
-    }
-
-    if (riskExplainer) {
-      riskExplainer.textContent = "Resolving updated risks for your newly selected location.";
     }
   },
 
@@ -411,9 +392,30 @@ const RiskRenderer = {
    */
   clearRenderedRisks(risks) {
     Array.from(risks.children).forEach((child) => {
-      if (["risk-explainer", "risk-template"].includes(child.id)) return;
+      if (["risk-template"].includes(child.id)) return;
       child.remove();
     });
+  },
+
+  /**
+   * Render a visible fallback row while preserving the hidden template node.
+   * @param {HTMLElement} risks - the root risk section DOM element
+   * @param {HTMLElement} risksTemplate - the hidden risk template DOM element
+   * @returns {void}
+   */
+  renderFallbackRisk(risks, risksTemplate) {
+    const fallbackElements = RiskRenderer.createRiskElements(risks, risksTemplate);
+    if (!fallbackElements) {
+      return;
+    }
+
+    const { riskItem, riskRegion, riskType } = fallbackElements;
+    if (riskItem) riskItem.textContent = locData.county ?? "Unable to resolve location";
+    if (riskRegion) riskRegion.textContent = locData.state ?? "Location unavailable";
+    riskType.textContent = [
+      "Unable to determine specific risks for your location.",
+      "Please try a broader location (e.g. just city or state)."
+    ].join(" ");
   },
 
   /**
@@ -483,8 +485,9 @@ const RiskRenderer = {
       return null;
     }
 
-    if (riskItem) riskItem.textContent = locData.county ?? "Unknown Location";
-    if (riskRegion) riskRegion.textContent = locData.state ?? "Unknown State";
+    if (riskItem) riskItem.textContent = locData.county ?? "Unable to resolve location";
+    if (riskRegion) riskRegion.textContent = locData.state ?? "Missing";
+    if (riskType) riskType.textContent = "Resolving risks based on your location...";
     riskEl.classList.remove("is-hidden");
     riskEl.classList.add("is-visible");
     risks.appendChild(riskEl);
@@ -512,14 +515,13 @@ const RiskRenderer = {
 
   /**
    * Show the user-facing fallback copy when location/risk data is unavailable
-   * @param {HTMLElement} riskExplainer - the DOM element to populate with fallback text
-   * @returns {void} - populates the riskExplainer element with fallback copy for users
+   * @param {HTMLElement} risks - the DOM element to populate with fallback text
+   * @param {HTMLElement} risksTemplate - the hidden risk template DOM element
+   * @returns {void} - populates the risks element with fallback copy for users
    */
-  showMissingData(riskExplainer) {
-    riskExplainer.textContent = [
-      "Unable to determine specific risks for your location.",
-      "Please try a broader location (e.g. just city or state)."
-    ].join(" ");
+  showMissingData(risks, risksTemplate) {
+    RiskRenderer.clearRenderedRisks(risks);
+    RiskRenderer.renderFallbackRisk(risks, risksTemplate);
   },
 
   /**
@@ -539,31 +541,24 @@ const RiskRenderer = {
     const risksTemplate = /** @type {HTMLDivElement | null} */ (
       formRoot.querySelector("#risk-template")
     );
-    const riskExplainer = /** @type {HTMLDivElement | null} */ (
-      formRoot.querySelector("#risk-explainer")
-    );
     GeolocationFlow.restore();
 
-    if (!risks || !risksTemplate || !riskExplainer) {
+    if (!risks || !risksTemplate) {
       console.error("Required DOM for mapping location to risks not found.");
       return;
     }
 
-    hasRenderedRisks = hasRenderedRisks || risks.dataset.emfnRendered === "1";
-    if (hasRenderedRisks) {
-      return;
-    }
+    hasRenderedRisks = risks.dataset.emfnRendered === "1";
+    if (hasRenderedRisks) return;
 
     hasRenderedRisks = true;
     risks.dataset.emfnRendered = "1";
-
-    riskExplainer.innerHTML = "";
 
     const resolvedLocation = RiskRenderer.getResolvedLocation();
     if (!resolvedLocation) {
       RiskRenderer.resetRendering(risks);
       console.error("No County FIPS code available");
-      RiskRenderer.showMissingData(riskExplainer);
+      RiskRenderer.showMissingData(risks, risksTemplate);
       return;
     }
 
@@ -580,7 +575,7 @@ const RiskRenderer = {
     if (!nriData) {
       RiskRenderer.resetRendering(risks);
       console.error("No NRI data available for FIPS", resolvedFips);
-      RiskRenderer.showMissingData(riskExplainer);
+      RiskRenderer.showMissingData(risks, risksTemplate);
       return;
     }
 
@@ -594,6 +589,11 @@ const RiskRenderer = {
 };
 
 const SubmissionHashing = {
+  /** @type {string[]} */
+  resolvedActionPackTokenOrder: [],
+
+  /** @type {Promise<string[]> | null} */
+  actionPackTokenOrderPromise: null,
 
   /**
    * Resolve the canonical Action Pack token order, falling back to the CSV asset
@@ -601,8 +601,8 @@ const SubmissionHashing = {
    * @returns {Promise<string[]>}
    */
   async ensureActionPackTokenOrder() {
-    if (resolvedActionPackTokenOrder.length > 0) {
-      return resolvedActionPackTokenOrder;
+    if (SubmissionHashing.resolvedActionPackTokenOrder.length > 0) {
+      return SubmissionHashing.resolvedActionPackTokenOrder;
     }
 
     if (!dataUrl) {
@@ -610,11 +610,11 @@ const SubmissionHashing = {
       return [];
     }
 
-    if (!actionPackTokenOrderPromise) {
-      actionPackTokenOrderPromise = SubmissionHashing.fetchActionPackTokenOrder();
+    if (!SubmissionHashing.actionPackTokenOrderPromise) {
+      SubmissionHashing.actionPackTokenOrderPromise = SubmissionHashing.fetchActionPackTokenOrder();
     }
 
-    return actionPackTokenOrderPromise;
+    return SubmissionHashing.actionPackTokenOrderPromise;
   },
 
   /**
@@ -622,37 +622,38 @@ const SubmissionHashing = {
    * @returns {Promise<string[]>}
    */
   async fetchActionPackTokenOrder() {
+    /** @type {string|null} */
+    let csvData = null;
+
     try {
-      const csvUrl = `${dataUrl.replace(/\/$/, "")}/_tallCategories.csv`;
-      const response = await fetch(csvUrl);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const csvData = await response.text();
-      const lines = csvData.trim().split(/\r?\n/);
-      const [, ...rows] = lines;
-
-      /** @type {Set<string>} */
-      const tokenOrderSet = new Set();
-
-      rows.forEach((row) => {
-        const entryId = row.split(",")[0]?.trim() ?? "";
-        if (entryId) {
-          tokenOrderSet.add(entryId);
-        }
-      });
-
-      resolvedActionPackTokenOrder = Array.from(tokenOrderSet);
-      if (resolvedActionPackTokenOrder.length === 0) {
-        console.warn("Action Pack token order CSV did not yield any tokens.");
-      }
-
-      return resolvedActionPackTokenOrder;
+      const csvBaseUrl = dataUrl.replace(/\/$/, "");
+      const csvUrl = `${csvBaseUrl}/_tallCategories.csv`;
+      const res = await fetch(csvUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status} for ${csvUrl}`);
+      csvData = await res.text();
+      if (!csvData) throw new Error("Empty CSV response");
     } catch (err) {
       console.warn("Unable to load Action Pack token order from CSV:", err);
       return [];
     }
+
+    const lines = csvData.trim().split(/\r?\n/);
+    const [, ...rows] = lines;
+
+    // use a Set to dedupe tokens while preserving order from the CSV
+    const tokenOrderSet = rows.reduce((tokens, row) => {
+      const entryId = row.split(",")[0]?.trim() ?? "";
+      if (entryId) tokens.add(entryId);
+      return tokens;
+    }, new Set());
+
+    SubmissionHashing.resolvedActionPackTokenOrder = Array.from(tokenOrderSet);
+    console.debug(`Resolved Action Pack token order:`, SubmissionHashing.resolvedActionPackTokenOrder);
+    if (SubmissionHashing.resolvedActionPackTokenOrder.length === 0) {
+      console.warn("Action Pack token order CSV did not yield any tokens.");
+    }
+
+    return SubmissionHashing.resolvedActionPackTokenOrder;
   },
 
   /**
@@ -689,7 +690,7 @@ const SubmissionHashing = {
     const packedSegments = []; // use an array to avoid JS bitwise math pitfalls
     const segmentSize = 31;
     const actionPackTokenIndex = new Map(
-      resolvedActionPackTokenOrder.map((token, index) => [token, index])
+      SubmissionHashing.resolvedActionPackTokenOrder.map((token, index) => [token, index])
     );
 
     for (const token of hashableValues) {
@@ -723,9 +724,9 @@ const SubmissionHashing = {
   collectHashableValues(form) {
     /** @type {Set<string>} */
     const uniqueHashableValues = new Set(); // use a Set to dedupe values before ordering
-    const actionPackTokenSet = new Set(resolvedActionPackTokenOrder); // quick lookup of known tokens
+    const actionPackTokenSet = new Set(SubmissionHashing.resolvedActionPackTokenOrder); // quick lookup of known tokens
 
-    if (resolvedActionPackTokenOrder.length === 0) return [];
+    if (SubmissionHashing.resolvedActionPackTokenOrder.length === 0) return [];
 
     // collect values that are inside fieldset.hashable DOM and match known tokens
     new FormData(form).forEach((value, name) => {
@@ -741,7 +742,7 @@ const SubmissionHashing = {
     });
 
     // keep known, unique values in the order dictated by actionPackTokenOrder
-    const hashableValues = resolvedActionPackTokenOrder.filter((token) => 
+    const hashableValues = SubmissionHashing.resolvedActionPackTokenOrder.filter((token) => 
       uniqueHashableValues.has(token)
     );
 
@@ -847,7 +848,7 @@ if (!isGeoFeaturesActivated) {
     const riskSection = /** @type {HTMLDivElement | null} */ (
       formRoot.querySelector("#risks") ?? null
     );
-    if (riskSection && Boolean(locData.fips) && !hasRenderedRisks) {
+    if (riskSection && Boolean(locData.fips) && riskSection.dataset.emfnRendered !== "1") {
       void RiskRenderer.mapLocationToRisks().catch((error) => {
         console.error("Error mapping location to risks:", error);
       });

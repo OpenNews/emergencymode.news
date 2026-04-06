@@ -5,19 +5,15 @@
  * precedence over the default styles provided by the theme.
  */
 
-/** ********** Gravity Forms adjustments *********
- * form.emfn-forms style overrides 
- */
-.emfn-forms_wrapper {
+/** ********** Gravity Forms adjustments **********/
+.assessment {
   background-color: #fff;
   border-radius: 24px;
   border: 1px solid #e2e2e2 !important;
   box-shadow: rgba(0, 0, 0, 0.04) 0px 0px 15px 5px;
-  padding: 36px 24px;
-  min-height: 500px !important;
-}
-.emfn-forms {
   max-width: 680px;
+  min-height: 500px !important;
+  padding: 36px 24px;
 }
 /*hide these*/
 .emfn-forms_wrapper .gform_required_legend,
@@ -45,20 +41,7 @@
   padding-top: 16px;
 }
 
-/** ********** CUSTOM MATCHING & RISK STYLES **********
- * custom geolocation matching logic
- */
-.emfn-forms_wrapper .emfn-forms #matches {
-  background-color: #fff7ed;
-  border-radius: 16px;
-  margin-top: 0px;
-  padding: 0px;
-  color: var(--newspack-theme-color-primary-against-white);
-  list-style: none;
-}
-.emfn-forms_wrapper .emfn-forms #match-template {
-  padding: 20px;
-}
+/** ********** CUSTOM MATCHING & RISK STYLES ***********/
 /* custom geolocation risk logic*/
 .emfn-forms_wrapper .emfn-forms #risks {
   background-color: oklab(0.98 -0.02 0.01);
@@ -67,8 +50,10 @@
   color: #009966;
   list-style: none;
 }
-.emfn-forms_wrapper .emfn-forms #matches li,
 .emfn-forms_wrapper .emfn-forms #risks li {
+  display: flex;
+  align-items: flex-start; /* Align icon with the top of the text */
+  gap: 16px;               /* Consistent spacing between icon and text column */
   overflow: hidden;
   height: auto;
   opacity: 1;
@@ -76,28 +61,21 @@
     opacity 0.2s ease-in-out,
     height 0.2s ease-in-out;
 }
-
-.emfn-forms_wrapper .emfn-forms #matches.is-visible,
-.emfn-forms_wrapper .emfn-forms #matches li.is-visible,
+.emfn-forms_wrapper .emfn-forms #risks li .material-symbols-outlined {
+  flex-shrink: 0;
+  float: none;
+}
+.emfn-forms_wrapper .emfn-forms #risks li .list {
+  display: block;
+}
 .emfn-forms_wrapper .emfn-forms #risks li.is-visible {
   opacity: 1;
   height: auto;
 }
-.emfn-forms_wrapper .emfn-forms #matches.is-hidden,
-.emfn-forms_wrapper .emfn-forms #matches li.is-hidden,
 .emfn-forms_wrapper .emfn-forms #risks li.is-hidden {
   opacity: 0;
   height: 0;
   pointer-events: none;
-}
-
-/*trim back text-to-icon snap*/
-.emfn-forms_wrapper .emfn-forms #matches li .material-symbols-outlined,
-.emfn-forms_wrapper .emfn-forms #risks li .material-symbols-outlined {
-  float: left;
-  padding-right: 10px;
-  max-width: 46px;
-  overflow: hidden;
 }
 
 /** ********** BIG BUTTONS ********** 

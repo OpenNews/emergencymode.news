@@ -1,5 +1,6 @@
 export interface EmfnData {
   dataUrl: string | null;
+  actionPackPayloadPrefix?: string;
 }
 
 export interface GformRuntime {

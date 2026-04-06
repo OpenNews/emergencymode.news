@@ -57,27 +57,36 @@ Responsibilities:
 - Hits FCC's Area API to resolve `countyFIPS` from Places v2's lat/lng coords
 - Fetches the matching `<st>.csv` and renders likely hazards from FEMA National Risk Index scores
 - Persists resolved location data in `sessionStorage` so multi-page Gravity Forms flows can keep using it, in addition to in-memory client-side variables
-- Computes a compact client-side submission hash for subsequent custom Action Pack resource generation, as well as providing sharing and save-your-search abilities
+- Computes a reversible client-side Action Pack payload for subsequent custom Action Pack resource generation, as well as providing sharing and save-your-search abilities
+- Decodes `actionPack` request payloads on the server and maps them to Newspack Query Loop category filters
 
-### Current Gravity Forms hash flow
+### Current Gravity Forms Action Pack flow
 
-On this branch, the Action Pack hash flow is client-side and runs from `plugins/emfn-action-pack-plugin/assets/js/emfn-action-pack-plugin.js`.
+On this branch, the Action Pack payload flow is coordinated between `plugins/emfn-action-pack-plugin/assets/js/emfn-action-pack-plugin.js` and `plugins/emfn-action-pack-plugin/includes/class-emfn-action-pack-plugin.php`.
 
-Hashing behavior notes:
+Encoding behavior notes:
 
-1. On a real submit action, it collects the current form values for controls inside `.hashable`-classed form elements 
+1. On a real submit action, it collects the current form values for controls inside `fieldset.hashable`
     * not every Form entry is `.hashable` -- many are just use-tracking for understanding overall grant reach and impact
-1. Serializes those entries as `name=value&...` in DOM order
-1. Hashes the serialized string with a compact base36 djb2-style hash
-1. Writes the hash into `.hashMarker input` before Gravity Forms continues submission
-    * If `.hashMarker input` is missing, the hash cannot be stored with the submission and we lose ability to see & troubleshoot Action Pack edge cases
+1. Loads token order from `assets/data/_tallCategories.csv` and stores selected survey tokens in a compact bitmask schema driven by first appearance order in that CSV's `entry_id` column
+1. Encodes that bitmask as one or more versioned base36 segments prefixed with `ap2.`
+1. Writes the encoded payload into `.hashMarker input` before Gravity Forms continues submission
+    * If `.hashMarker input` is missing, the payload cannot be stored with the submission and we lose ability to reconstruct Action Pack inputs later
+1. PHP decodes the same `ap2.` payload format using the CSV-backed token registry and resolves matching WordPress Categories for the `.emfn-action-pack` Query Loop block
 
-**Sample client-side JS hashing in dev tools**
+**Sample client-side JS encoding in dev tools**
 ```js
-Collected hashable form entries: (6) [Array(2), Array(2), Array(2), Array(2), Array(2), Array(2)]
-emfn-action-pack-plugin.js?ver=1.0.0:671 Serialized hashable form entries: input_49.3=flooding&input_10=10&input_30.1=web&input_16=false&input_48=2
-emfn-action-pack-plugin.js?ver=1.0.0:674 Computed submission hash: fcq788
+Collected hashable form values: ["mode-before", "disasterType-flood", "disasterType-wildfires"]
+Serialized hashable form values: ["mode-before", "disasterType-flood", "disasterType-wildfires"]
+// hidden .hashMarker input receives: ap2.sx
 ``` 
+
+**Server-side decode notes**
+
+1. Reads `$_GET['actionPack']` on landing-page requests
+1. Decodes `ap2.` base36 bitmask segments back into semantic survey tokens using `_tallCategories.csv`
+1. Maps those tokens to one or more category names from the same CSV
+1. Resolves category names to WordPress term IDs and applies them to Query Loop blocks with the `emfn-action-pack` class
 
 ### Risk data flow
 
@@ -122,9 +131,9 @@ The `notebooks/` directory contains the Python workflows that support the Action
 
 Current notebooks:
 
-- `US_disaster_risk_analysis.ipynb` downloads FEMA NRI data and generates per-state CSVs for US states plus DC.
-- `CA-MX_disaster_risk_analysis.ipynb` is a research notebook for Canada and Mexico data gaps; it does not currently generate runtime output files.
-- `FIPS_risk_lookup_dev.ipynb` is a notebook-native dev tool for reading generated CSVs and previewing hazard output.
+- `US_disaster_risk_analysis.ipynb` downloads FEMA NRI data and generates per-state CSVs for US states plus DC
+- `CA-MX_disaster_risk_analysis.ipynb` is a research notebook for Canada and Mexico data gaps; it does not currently generate runtime output files
+- `FIPS_risk_lookup_dev.ipynb` is a notebook-native dev tool for reading generated CSVs and previewing hazard output
 
 Current output location:
 
@@ -170,6 +179,8 @@ This plugin exists in the repo but is still a scaffold. Details TK.
 ## Shared JS Types And Tooling
 
 The plugin JavaScript uses JSDoc typing backed by `plugins/shared/emfn-types.d.ts`.
+
+`window.emfnData` now only localizes runtime values that are environment-specific, such as `dataUrl` and the `ap2.` payload prefix. Token order is loaded from `_tallCategories.csv` on both the client and server.
 
 `jsconfig.json` scopes editor support to plugin JS and shared `.d.ts` files so the repo gets lightweight type assistance without a full TypeScript build.
 

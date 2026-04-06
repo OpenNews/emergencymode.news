@@ -1,0 +1,59 @@
+entry_id,category
+mode-before,Before
+mode-during,During
+mode-after,After
+disasterType-hurricane,Hurricane
+disasterType-flood,Flood
+disasterType-drought,Drought
+disasterType-extreme-heat,"Extreme Heat"
+disasterType-flooding,"Flooding"
+disasterType-severe-storms,"Severe Storms"
+disasterType-tornadoes,Tornadoes
+disasterType-wildfires,Wildfires
+disasterType-winter-storms,"Winter Storms"
+disasterType-other-disaster,"Other Disaster"
+size-1,"Single-person newsroom"
+size-1,"Insufficient capacity (limited staff/skills)",
+size-5,"Insufficient capacity (limited staff/skills)",
+size-5,"Small/stretched staff"
+size-10,"Small/stretched staff"
+size-25,"Small/stretched staff"
+size-26,
+distribPlatforms-web,
+distribPlatforms-print,
+distribPlatforms-social,
+distribPlatforms-email,
+distribPlatforms-audio,
+distribPlatforms-video,
+distribPlatforms-sms,
+designee-true,
+designee-false,
+offlineResiliency-3,
+offlineResiliency-2,
+offlineResiliency-1,
+offlineResiliency-0,
+activeReporting-true,
+activeReporting-false,
+pubSituation-4,
+pubSituation-3,
+pubSituation-2,
+pubSituation-1,Internet/connectivity loss
+pubSituation-1,"Backup systems (power, internet, hosting)"
+pubSituation-0,
+contactPlan-true,
+contactPlan-false,
+audienceDemand-3,
+audienceDemand-2,
+audienceDemand-1,
+audienceDemand-0,
+disInfo-3,"Distribution channel disruption"
+disInfo-2,"Distribution channel disruption"
+disInfo-1,"Distribution channel disruption"
+disInfo-0,"Distribution channel disruption"
+mentalHealth-access,"Staff safety"
+mentalHealth-timeoff,"Staff safety"
+mentalHealth-checkins,"Staff safety"
+mentalHealth-training,"Staff safety"
+mentalHealth-breaks,"Staff safety"
+mentalHealth-peer,"Staff safety"
+mentalHealth-none,"Staff safety"

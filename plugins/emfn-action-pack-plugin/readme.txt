@@ -15,7 +15,8 @@ Power the Action Pack enhancement of Gravity Forms for EMFN
 PHP, JS, CSS & data for the Action Pack feature built on top of 
 Gravity Forms for emergencymode.news:
 - client-side JS to fetch and display distaster risk information after geolocation
-- client-side JS to 'hash' form responses into a share-/save-ready URL on generated Action Packs
+- client-side JS to encode form responses into a share-/save-ready Action Pack payload using the CSV-backed token registry
+- server-side PHP to decode Action Pack payloads and filter Newspack Query Loops by mapped categories
 - custom styles for disaster risk reporting
 
 == Installation ==
@@ -26,7 +27,7 @@ Gravity Forms for emergencymode.news:
 == Changelog ==
 
 = 1.0.4 =
-* Added client-side hashing of quiz responses into shareable URLs, saved to Form submissions
+* Added reversible Action Pack payload encoding with shared CSV-backed token order in JS and PHP, plus server-side Query Loop category filtering
 = 1.0.3 =
 * Drafted quiz category mapping and field extraction support
 = 1.0.2 =

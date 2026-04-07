@@ -8,7 +8,7 @@ Current notebooks:
 
 - **`US_disaster_risk_analysis.ipynb`** downloads FEMA National Risk Index county data and generates per-state CSV files for US states plus DC.
 - **`CA-MX_disaster_risk_analysis.ipynb`** is a research notebook that documents the data and lookup gaps for Canada and Mexico. It makes exploratory live API calls but does not currently generate runtime output files for the site.
-- **`FIPS_risk_lookup_dev.ipynb`** is a notebook-native lookup and rendering tool for local testing against the generated CSVs.
+- **`action_pack_roundtrip_dev.ipynb`** is a local validation notebook for the Action Pack category payload contract. It loads `_tallCategories.csv`, resolves selected answer tokens to categories, packs the `ap2.` payload and checks that decoding returns the same canonical category set.
 
 ## Current Output Location
 
@@ -22,6 +22,8 @@ That directory currently contains committed US state files plus DC:
 - `DC.csv`
 
 There are no committed Canada or Mexico runtime CSVs in the current branch.
+
+The same directory also contains `_tallCategories.csv`, which is the current Action Pack category mapping source used by the roundtrip notebook.
 
 ## Data Source
 
@@ -39,6 +41,12 @@ The generated CSV files used by the plugin contain:
 - `{HAZARD}_risk_score` columns for 18 NRI hazard families
 
 The Action Pack plugin matches rows by `county_fips` and filters hazards in client-side JS using its `riskThreshold` setting.
+
+The Action Pack roundtrip notebook validates a separate CSV contract in `_tallCategories.csv` with these columns:
+
+- `answerID`
+- `category`
+- `manualRank`
 
 ## Hazard Codes
 
@@ -77,6 +85,8 @@ uv run jupyter lab
 ```
 
 Then open the desired notebook from `notebooks/`.
+
+For Action Pack contract checks, open `action_pack_roundtrip_dev.ipynb` and run the cells in order.
 
 Python dependencies are managed in `pyproject.toml` and currently include:
 

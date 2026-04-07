@@ -6,8 +6,6 @@
  * ********** TYPES **********
  * @typedef {import("../../../shared/emfn-types").EmfnData} EmfnData
  * @typedef {import("../../../shared/emfn-types").EmfnWindow} EmfnWindow
- * @typedef {import("../../../shared/emfn-types").GFormElement} GFormElement
- * @typedef {import("../../../shared/emfn-types").GFormCustomElement} GFormCustomElement
  * @typedef {import("../../../shared/emfn-types").LatLngLike} LatLngLike
  * @typedef {import("../../../shared/emfn-types").NriCountyRow} NriCountyRow
  * @typedef {import("../../../shared/emfn-types").LocationData} LocationData
@@ -17,7 +15,7 @@
  * @typedef {import("../../../shared/emfn-types").GFormSubmissionStartedData} GFormSubmissionStartedData
  */
 
-const version = "0.6.08"; // debugging versioning
+const version = "0.7.01"; // debugging versioning
 const riskThreshold = 50; // threshold for suggested risks 
 const emfnWindow = /** @type {EmfnWindow} */ (window);
 
@@ -250,12 +248,12 @@ const GeolocationFlow = {
 
   /**
    * Bind to Places v2 autocomplete selection, resolve location data and map to FIPS
-   * @param {GFormElement} geoInput - DOM for geolocation input and autocomplete
+   * @param {HTMLElement} geoInput - DOM for geolocation input and autocomplete
    * @returns {void}
    */
   bindPlaceSelection(geoInput) {
-    /** @type {GFormCustomElement | null} */
-    const autocompleteEl = /** @type {GFormCustomElement | null} */ (
+    /** @type {HTMLElement | null} */
+    const autocompleteEl = /** @type {HTMLElement | null} */ (
       geoInput.querySelector("gmp-place-autocomplete")
     );
     if (!autocompleteEl || autocompleteEl.dataset.placeBound === "1") return;
@@ -412,7 +410,7 @@ const RiskRenderer = {
     const { riskItem, riskRegion, riskType } = fallbackElements;
     if (riskItem) riskItem.textContent = locData.county ?? "Unable to resolve location";
     if (riskRegion) riskRegion.textContent = locData.state ?? "Location unavailable";
-    riskType.textContent = [
+    if (riskType) riskType.textContent = [
       "Unable to determine specific risks for your location.",
       "Please try a broader location (e.g. just city or state)."
     ].join(" ");
@@ -469,7 +467,7 @@ const RiskRenderer = {
    * @returns {{ 
    *   riskItem: Element | null, 
    *   riskRegion: Element | null, 
-   *   riskType: Element | null 
+    *   riskType: Element 
    * } | null} - the key DOM elements to populate with risk data
    */
   createRiskElements(risks, risksTemplate) {
@@ -590,70 +588,190 @@ const RiskRenderer = {
 
 const SubmissionHashing = {
   /** @type {string[]} */
-  resolvedActionPackTokenOrder: [],
+  actionPackCategoryOrder: [],
 
-  /** @type {Promise<string[]> | null} */
-  actionPackTokenOrderPromise: null,
+  /** @type {Object.<string, Array<{ category: string, manual_rank?: number, manualRank?: number }>>} */
+  actionPackCategoryRegistry: {},
 
   /**
-   * Resolve the canonical Action Pack token order, falling back to the CSV asset
-   * when older PHP does not localize it.
-   * @returns {Promise<string[]>}
+   * Load Action Pack category mapping and rank order from `_tallCategories.csv`
+   * @returns {Promise<void>}
    */
-  async ensureActionPackTokenOrder() {
-    if (SubmissionHashing.resolvedActionPackTokenOrder.length > 0) {
-      return SubmissionHashing.resolvedActionPackTokenOrder;
-    }
-
+  async loadCategoryRegistry() {
     if (!dataUrl) {
-      console.warn("Action Pack token order is unavailable; compact payload encoding disabled.");
-      return [];
+      console.error("_tallCategories.csv failed");
+      return;
     }
+    const csvUrl = `${dataUrl.replace(/\/$/, "")}/_tallCategories.csv`;
 
-    if (!SubmissionHashing.actionPackTokenOrderPromise) {
-      SubmissionHashing.actionPackTokenOrderPromise = SubmissionHashing.fetchActionPackTokenOrder();
+    try {
+      const res = await fetch(csvUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status} for ${csvUrl}`);
+
+      const csvText = await res.text();
+      if (!csvText.trim()) throw new Error("Empty CSV response");
+
+      const lines = csvText.trim().split(/\r?\n/);
+      const header = (lines[0] ?? "").split(",").map((value) => value.trim().toLowerCase());
+
+      // validate required columns and get their indices
+      const answerIdIndex = header.indexOf("answerID".toLowerCase());
+      const categoryIndex = header.indexOf("category");
+      const manualRankIndex = header.indexOf("manualRank".toLowerCase());
+      if (answerIdIndex === -1 || categoryIndex === -1 || manualRankIndex === -1) {
+        throw new Error(`CSV header missing required columns: [answerID, category, manualRank]. Found: ${header.join(", ")}`);
+      }
+
+      // build and order the registry of answerID <> Category & manualRank
+      const { registry, categoryRanks, categoryOrder } = lines
+        .slice(1)
+        .reduce((acc, line) => {
+          if (!line.trim()) return acc;
+
+          const columns = line.split(",");
+          const answerId = (columns[answerIdIndex] ?? "").trim();
+          const categoryName = (columns[categoryIndex] ?? "").trim();
+          const manualRank = Number((columns[manualRankIndex] ?? "0").trim() || "0");
+
+          if (!answerId || !categoryName) return acc;
+
+          // keep one entry per answer/category pair with the highest rank seen
+          const answerEntries = acc.registry[answerId] ?? (acc.registry[answerId] = []);
+          const existingEntry = answerEntries.find((entry) => entry.category === categoryName);
+
+          if (existingEntry) {
+            existingEntry.manual_rank = Math.max(existingEntry.manual_rank, manualRank);
+          } else {
+            answerEntries.push({ category: categoryName, manual_rank: manualRank });
+          }
+
+          // keep a first-seen category order then upgrade its rank as needed
+          if (!acc.categoryRanks.has(categoryName)) {
+            acc.categoryOrder.push(categoryName);
+            acc.categoryRanks.set(categoryName, manualRank);
+            return acc;
+          }
+
+          acc.categoryRanks.set(
+            categoryName,
+            Math.max(acc.categoryRanks.get(categoryName) ?? 0, manualRank)
+          );
+          return acc;
+        },
+        {
+          /** @type {Object.<string, Array<{ category: string, manual_rank: number }>>} */
+          registry: {},
+          /** @type {Map<string, number>} */
+          categoryRanks: new Map(),
+          /** @type {string[]} */
+          categoryOrder: [],
+        }
+      );
+
+      Object.values(registry).forEach((entries) => {
+        entries.sort((left, right) => {
+          const leftRank = Number(left.manual_rank ?? 0);
+          const rightRank = Number(right.manual_rank ?? 0);
+          if (leftRank === rightRank) return 0;
+          return rightRank - leftRank;
+        });
+      });
+
+      SubmissionHashing.actionPackCategoryRegistry = registry;
+      SubmissionHashing.actionPackCategoryOrder = categoryOrder.sort((left, right) => {
+        const leftRank = categoryRanks.get(left) ?? 0;
+        const rightRank = categoryRanks.get(right) ?? 0;
+        if (leftRank === rightRank) return 0;
+        return rightRank - leftRank;
+      });
+      console.debug("Loaded Action Pack category registry from CSV:", csvUrl);
+    } catch (err) {
+      console.warn("Unable to load Action Pack categories from CSV", err);
     }
-
-    return SubmissionHashing.actionPackTokenOrderPromise;
   },
 
   /**
-   * Load token order from the CSV registry asset.
-   * @returns {Promise<string[]>}
+   * Resolve the canonical Action Pack category order.
+   * @returns {string[]}
    */
-  async fetchActionPackTokenOrder() {
-    /** @type {string|null} */
-    let csvData = null;
-
-    try {
-      const csvBaseUrl = dataUrl.replace(/\/$/, "");
-      const csvUrl = `${csvBaseUrl}/_tallCategories.csv`;
-      const res = await fetch(csvUrl);
-      if (!res.ok) throw new Error(`HTTP ${res.status} for ${csvUrl}`);
-      csvData = await res.text();
-      if (!csvData) throw new Error("Empty CSV response");
-    } catch (err) {
-      console.warn("Unable to load Action Pack token order from CSV:", err);
-      return [];
+  getActionPackCategoryOrder() {
+    if (SubmissionHashing.actionPackCategoryOrder.length > 0) {
+      return SubmissionHashing.actionPackCategoryOrder;
     }
 
-    const lines = csvData.trim().split(/\r?\n/);
-    const [, ...rows] = lines;
+    /** @type {Map<string, number>} */
+    const categoryRanks = new Map();
+    /** @type {string[]} */
+    const categoryOrder = [];
 
-    // use a Set to dedupe tokens while preserving order from the CSV
-    const tokenOrderSet = rows.reduce((tokens, row) => {
-      const entryId = row.split(",")[0]?.trim() ?? "";
-      if (entryId) tokens.add(entryId);
-      return tokens;
-    }, new Set());
+    Object.values(SubmissionHashing.actionPackCategoryRegistry).forEach((categoryEntries) => {
+      categoryEntries.forEach((entry) => {
+        const categoryName = String(entry.category ?? "").trim();
+        const manualRank = Number(entry.manual_rank ?? entry.manualRank ?? 0);
+        if (!categoryName) return;
 
-    SubmissionHashing.resolvedActionPackTokenOrder = Array.from(tokenOrderSet);
-    console.debug(`Resolved Action Pack token order:`, SubmissionHashing.resolvedActionPackTokenOrder);
-    if (SubmissionHashing.resolvedActionPackTokenOrder.length === 0) {
-      console.warn("Action Pack token order CSV did not yield any tokens.");
+        if (!categoryRanks.has(categoryName)) {
+          categoryOrder.push(categoryName);
+          categoryRanks.set(categoryName, manualRank);
+          return;
+        }
+
+        categoryRanks.set(categoryName, Math.max(categoryRanks.get(categoryName) ?? 0, manualRank));
+      });
+    });
+
+    SubmissionHashing.actionPackCategoryOrder = categoryOrder.sort((left, right) => {
+      const leftRank = categoryRanks.get(left) ?? 0;
+      const rightRank = categoryRanks.get(right) ?? 0;
+
+      if (leftRank === rightRank) return 0;
+      return rightRank - leftRank;
+    });
+
+    console.debug(`Resolved Action Pack category order:`, SubmissionHashing.actionPackCategoryOrder);
+    if (SubmissionHashing.actionPackCategoryOrder.length === 0) {
+      console.warn("Action Pack category order could not be derived from the localized registry.");
     }
 
-    return SubmissionHashing.resolvedActionPackTokenOrder;
+    return SubmissionHashing.actionPackCategoryOrder;
+  },
+
+  /**
+   * Resolve ranked category matches for selected tokens.
+   * @param {string[]} selectedTokens - selected semantic values from the quiz
+   * @returns {string[]}
+   */
+  resolveMatchedCategories(selectedTokens) {
+    /** @type {Map<string, number>} */
+    const categoryRanks = new Map();
+    /** @type {string[]} */
+    const categoryOrder = [];
+
+    selectedTokens.forEach((token) => {
+      const categoryEntries = SubmissionHashing.actionPackCategoryRegistry[token] ?? [];
+
+      categoryEntries.forEach((entry) => {
+        const categoryName = String(entry.category ?? "").trim();
+        const manualRank = Number(entry.manual_rank ?? entry.manualRank ?? 0);
+        if (!categoryName) return;
+
+        if (!categoryRanks.has(categoryName)) {
+          categoryOrder.push(categoryName);
+          categoryRanks.set(categoryName, manualRank);
+          return;
+        }
+
+        categoryRanks.set(categoryName, Math.max(categoryRanks.get(categoryName) ?? 0, manualRank));
+      });
+    });
+
+    return categoryOrder.sort((left, right) => {
+      const leftRank = categoryRanks.get(left) ?? 0;
+      const rightRank = categoryRanks.get(right) ?? 0;
+
+      if (leftRank === rightRank) return 0;
+      return rightRank - leftRank;
+    });
   },
 
   /**
@@ -682,26 +800,27 @@ const SubmissionHashing = {
   },
 
   /**
-   * Pack canonical Action Pack values into compact 31-bit segments
-   * @param {string[]} hashableValues - ordered, semantic values to encode
+   * Pack canonical Action Pack categories into compact 31-bit segments.
+   * @param {string[]} categoryNames - unique category names to encode
    * @returns {number[]}
    */
-  packActionPackBits(hashableValues) {
+  packActionPackBits(categoryNames) {
     const packedSegments = []; // use an array to avoid JS bitwise math pitfalls
     const segmentSize = 31;
-    const actionPackTokenIndex = new Map(
-      SubmissionHashing.resolvedActionPackTokenOrder.map((token, index) => [token, index])
+    const orderedCategories = SubmissionHashing.getActionPackCategoryOrder();
+    const actionPackCategoryIndex = new Map(
+      orderedCategories.map((categoryName, index) => [categoryName, index])
     );
 
-    for (const token of hashableValues) {
-      const tokenIndex = actionPackTokenIndex.get(token);
-      if (tokenIndex === undefined) {
+    for (const categoryName of categoryNames) {
+      const categoryIndex = actionPackCategoryIndex.get(categoryName);
+      if (categoryIndex === undefined) {
         continue;
       }
 
       // each segment stores 31 token flags so JS bitwise math stays predictable
-      const segmentIndex = Math.floor(tokenIndex / segmentSize);
-      const bitIndex = tokenIndex % segmentSize;
+      const segmentIndex = Math.floor(categoryIndex / segmentSize);
+      const bitIndex = categoryIndex % segmentSize;
 
       // build up segments
       while (packedSegments.length <= segmentIndex) { packedSegments.push(0); }
@@ -715,38 +834,27 @@ const SubmissionHashing = {
   },
 
   /**
-   * Collect ordered, semantic values from controls inside `fieldset.hashable`.
-   * Each value already contains its key (as a prefix), separated from the value 
-   * by the first dash
+   * Collect selected semantic submission values from `fieldset.hashable` controls.
    * @param {HTMLFormElement} form - the active Gravity Form element
    * @returns {string[]}
    */
   collectHashableValues(form) {
     /** @type {Set<string>} */
-    const uniqueHashableValues = new Set(); // use a Set to dedupe values before ordering
-    const actionPackTokenSet = new Set(SubmissionHashing.resolvedActionPackTokenOrder); // quick lookup of known tokens
+    const uniqueHashableValues = new Set();
 
-    if (SubmissionHashing.resolvedActionPackTokenOrder.length === 0) return [];
-
-    // collect values that are inside fieldset.hashable DOM and match known tokens
     new FormData(form).forEach((value, name) => {
       const hashableControl = form.querySelector(
         `fieldset.hashable [name="${CSS.escape(name)}"]`
       );
       const cleanTxt = String(value).trim();
 
-      // only include values that also match known Action Pack tokens
-      if (hashableControl && actionPackTokenSet.has(cleanTxt)) {
-        uniqueHashableValues.add(cleanTxt);
-      }
+      if (hashableControl && cleanTxt) uniqueHashableValues.add(cleanTxt);
     });
 
-    // keep known, unique values in the order dictated by actionPackTokenOrder
-    const hashableValues = SubmissionHashing.resolvedActionPackTokenOrder.filter((token) => 
-      uniqueHashableValues.has(token)
-    );
+    const hashableValues = Array.from(uniqueHashableValues);
 
     console.debug(`Collected hashable form values:`, hashableValues);
+    console.debug(`Resolved Action Pack categories:`, SubmissionHashing.resolveMatchedCategories(hashableValues));
     if (hashableValues.length === 0) {
       console.warn("No hashable fieldset values found (unlikely edge case)");
       return [];
@@ -780,7 +888,7 @@ const SubmissionHashing = {
       // ignore any non-ActionPack gravity form instances
       if (!data.form || !data.form.matches(gravityForm)) return data;
 
-      await SubmissionHashing.ensureActionPackTokenOrder();
+      await SubmissionHashing.loadCategoryRegistry();
 
       // set the encoded payload to the hidden .hashMarker input
       const hashMarkerField = /** @type {HTMLInputElement | null} */ (
@@ -790,13 +898,27 @@ const SubmissionHashing = {
         console.error(".hashMarker not found, unable to store Action Pack payload");
         return data;
       }
+
+      const orderedCategories = SubmissionHashing.getActionPackCategoryOrder();
+      if (orderedCategories.length === 0) {
+        console.warn("Action Pack category order is empty so payload encoding was skipped");
+        hashMarkerField.value = "";
+        return data;
+      }
       
       // select the `.hashable`-marked values from current form content
       const hashableValues = SubmissionHashing.collectHashableValues(data.form);
       console.debug(`Serialized hashable form values:`, hashableValues);
+      const matchedCategories = SubmissionHashing.resolveMatchedCategories(hashableValues);
+      console.debug(`Serialized Action Pack categories:`, matchedCategories);
+      if (matchedCategories.length === 0) {
+        console.warn("No Action Pack categories resolved so payload encoding was skipped");
+        hashMarkerField.value = "";
+        return data;
+      }
 
-      // pack the hashable values into compact bit segments 
-      const bits = SubmissionHashing.packActionPackBits(hashableValues);
+      // pack the matched categories into compact bit segments 
+      const bits = SubmissionHashing.packActionPackBits(matchedCategories);
       // encode as base36 for a shorter string
       const base36Segs = Array.from({ length: bits.length }, (_, index) => bits[index] ?? 0)
         .map((segment) => segment.toString(36))
@@ -837,7 +959,7 @@ if (!isGeoFeaturesActivated) {
     
     GeolocationFlow.restore();
 
-    const geoInput = /** @type {GFormElement | null} */ (
+    const geoInput = /** @type {HTMLElement | null} */ (
       formRoot.querySelector(GeolocationFlow.gravityGeoInput)
     );
 

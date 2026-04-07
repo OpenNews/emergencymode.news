@@ -28,7 +28,7 @@ emergencymode.news/
 │   │   ├── includes/
 │   │   ├── assets/
 │   │   │   ├── css/
-│   │   │   ├── data/                       # <st>.csvs used in #risks
+│   │   │   ├── data/                       # CSVs used in Geolocation & hash encoding/decoding
 │   │   │   ├── html-templates/             # Preserved HTML-field for Gravity Forms
 │   │   │   └── js/                         # major client-side enhancements
 │   │   └── languages/
@@ -53,11 +53,12 @@ Responsibilities:
 
 - Enqueues the Action Pack CSS and JS bundles
 - Exposes `window.emfnData.dataUrl` so the browser can fetch runtime CSV data from `assets/data/<st>.csv`
+- Exposes the `ap2.` payload prefix used for Action Pack share URLs
 - Binds to Google Places v2 autocomplete feature within Gravity Forms to resolve user's geolocation
 - Hits FCC's Area API to resolve `countyFIPS` from Places v2's lat/lng coords
 - Fetches the matching `<st>.csv` and renders likely hazards from FEMA National Risk Index scores
 - Persists resolved location data in `sessionStorage` so multi-page Gravity Forms flows can keep using it, in addition to in-memory client-side variables
-- Computes a reversible client-side Action Pack payload for subsequent custom Action Pack resource generation, as well as providing sharing and save-your-search abilities
+- Computes a compact client-side Action Pack payload from matched Categories for subsequent share URLs
 - Decodes `actionPack` request payloads on the server and maps them to Newspack Query Loop category filters
 
 ### Current Gravity Forms Action Pack flow
@@ -68,25 +69,28 @@ Encoding behavior notes:
 
 1. On a real submit action, it collects the current form values for controls inside `fieldset.hashable`
     * not every Form entry is `.hashable` -- many are just use-tracking for understanding overall grant reach and impact
-1. Loads token order from `assets/data/_tallCategories.csv` and stores selected survey tokens in a compact bitmask schema driven by first appearance order in that CSV's `entry_id` column
+1. Fetches `plugins/emfn-action-pack-plugin/assets/data/_tallCategories.csv` in the browser at submit time
+1. Uses the CSV columns `answerID`, `category`, and `manualRank` to map selected values to unique Category names
+1. Sorts those Categories by highest `manualRank` first and uses that category order to build the compact bitmask
 1. Encodes that bitmask as one or more versioned base36 segments prefixed with `ap2.`
 1. Writes the encoded payload into `.hashMarker input` before Gravity Forms continues submission
-    * If `.hashMarker input` is missing, the payload cannot be stored with the submission and we lose ability to reconstruct Action Pack inputs later
-1. PHP decodes the same `ap2.` payload format using the CSV-backed token registry and resolves matching WordPress Categories for the `.emfn-action-pack` Query Loop block
+    * If `.hashMarker input` is missing, the payload cannot be stored with the submission
+1. PHP decodes the same `ap2.` payload format back into Category names and resolves matching WordPress Categories for the `.emfn-action-pack` Query Loop block
 
 **Sample client-side JS encoding in dev tools**
 ```js
-Collected hashable form values: ["mode-before", "disasterType-flood", "disasterType-wildfires"]
-Serialized hashable form values: ["mode-before", "disasterType-flood", "disasterType-wildfires"]
-// hidden .hashMarker input receives: ap2.sx
+Collected hashable form values: ["mode-before", "distribPlatforms-sms", "disasterType-flooding"]
+Resolved Action Pack categories: ["Flooding", "Before", "Text messages"]
+Serialized Action Pack categories: ["Flooding", "Before", "Text messages"]
+// hidden .hashMarker input receives: ap2...
 ``` 
 
 **Server-side decode notes**
 
 1. Reads `$_GET['actionPack']` on landing-page requests
-1. Decodes `ap2.` base36 bitmask segments back into semantic survey tokens using `_tallCategories.csv`
-1. Maps those tokens to one or more category names from the same CSV
+1. Decodes `ap2.` base36 bitmask segments back into Category names using category order derived from `_tallCategories.csv`
 1. Resolves category names to WordPress term IDs and applies them to Query Loop blocks with the `emfn-action-pack` class
+1. Emits a footer `console.debug()` with the decoded Category names when `actionPack` is present
 
 ### Risk data flow
 
@@ -180,7 +184,7 @@ This plugin exists in the repo but is still a scaffold. Details TK.
 
 The plugin JavaScript uses JSDoc typing backed by `plugins/shared/emfn-types.d.ts`.
 
-`window.emfnData` now only localizes runtime values that are environment-specific, such as `dataUrl` and the `ap2.` payload prefix. Token order is loaded from `_tallCategories.csv` on both the client and server.
+`window.emfnData` now localizes only environment-specific runtime values needed by the browser, currently `dataUrl` and the `ap2.` payload prefix.
 
 `jsconfig.json` scopes editor support to plugin JS and shared `.d.ts` files so the repo gets lightweight type assistance without a full TypeScript build.
 

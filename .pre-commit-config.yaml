@@ -1,0 +1,17 @@
+repos:
+  - repo: local
+    hooks:
+      - id: strip-notebook-outputs
+        name: Strip notebook outputs
+        entry: scripts/strip-notebook-outputs.sh
+        language: system
+        pass_filenames: true
+        always_run: false
+        files: ^notebooks/.*\.ipynb$
+      - id: check-notebooks-clean
+        name: Check notebooks are clean
+        entry: scripts/check-notebooks-clean.sh
+        language: system
+        pass_filenames: true
+        always_run: false
+        files: ^notebooks/.*\.ipynb$

@@ -6,7 +6,9 @@
   "scripts": {
     "format": "prettier --write '**/*.{html,css,js,json,yml,yaml,md}'",
     "format:check": "prettier --check '**/*.{html,css,js,json,yml,yaml,md}'",
-    "lint": "prettier --check '**/*.{html,css,js,json,yml,yaml,md}'"
+    "notebooks:strip": "scripts/strip-notebook-outputs.sh",
+    "notebooks:check-clean": "scripts/check-notebooks-clean.sh",
+    "lint": "npm run format:check && npm run notebooks:check-clean"
   },
   "devDependencies": {
     "prettier": "^3.2.5"

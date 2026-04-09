@@ -345,7 +345,7 @@ class EMFN_Action_Pack_Plugin {
         // only apply Action Pack constraints to blocks that have the correct class 
         // and a valid payload in the request
         if ( empty( $block->parsed_block['attrs']['className'] ) ) {
-            $this->queue_action_pack_debug_entry( 'cant find correct className', $query );
+            $this->queue_action_pack_debug_entry( 'can\'t find correct className', $query );
             return $query;
         }
 

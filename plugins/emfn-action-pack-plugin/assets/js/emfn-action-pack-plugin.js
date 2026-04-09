@@ -960,8 +960,8 @@ const SubmissionHashing = {
       const packedCategories = SubmissionHashing.getCanonicalPackedCategories(matchedCategories);
       emfnDebug(`Encoded Action Pack categories:`, packedCategories);
 
-      // pack the matched categories into compact bit segments 
-      const bits = SubmissionHashing.packActionPackBits(matchedCategories);
+      // pack the canonicalized categories into compact bit segments
+      const bits = SubmissionHashing.packActionPackBits(packedCategories);
       // encode as base36 for a shorter string
       const base36Segs = Array.from({ length: bits.length }, (_, index) => bits[index] ?? 0)
         .map((segment) => segment.toString(36))

@@ -80,13 +80,6 @@ class EMFN_Action_Pack_Plugin {
     private $is_action_pack_page_request = null;
 
     /**
-     * Cached list of Newspack block names to target.
-     *
-     * @var array<int, string>|null
-     */
-    private $newspack_block_names = null;
-
-    /**
      * Return (and lazily create) the singleton instance.
      *
      * @return self
@@ -194,31 +187,6 @@ class EMFN_Action_Pack_Plugin {
         $this->is_action_pack_page_request = false !== strpos( $post_content, 'emfn-action-pack' );
 
         return $this->is_action_pack_page_request;
-    }
-
-    /**
-     * Return the cached list of Newspack block names to target.
-     *
-     * @return array<int, string>
-     */
-    private function get_newspack_block_names() {
-        if ( is_array( $this->newspack_block_names ) ) {
-            return $this->newspack_block_names;
-        }
-
-        $this->newspack_block_names = array_values(
-            array_unique(
-                array_filter(
-                    array(
-                        'newspack-blocks/homepage-articles',
-                        apply_filters( 'newspack_blocks_block_name', 'newspack-blocks/homepage-articles' ),
-                    ),
-                    'is_string'
-                )
-            )
-        );
-
-        return $this->newspack_block_names;
     }
 
     /**
@@ -442,7 +410,7 @@ class EMFN_Action_Pack_Plugin {
         // only apply Action Pack constraints to blocks that have the correct class
         // and a valid payload in the request
         if ( empty( $block->parsed_block['attrs']['className'] ) ) {
-            $this->queue_action_pack_debug_entry( 'can\'t find correct className', $query );
+            $this->queue_action_pack_debug_entry( 'cant find correct className', $query );
             return $query;
         }
 
@@ -486,7 +454,15 @@ class EMFN_Action_Pack_Plugin {
             return $parsed_block;
         }
 
-        $newspack_block_names = $this->get_newspack_block_names();
+        $newspack_block_names = array_unique(
+            array_filter(
+                array(
+                    'newspack-blocks/homepage-articles',
+                    apply_filters( 'newspack_blocks_block_name', 'newspack-blocks/homepage-articles' ),
+                ),
+                'is_string'
+            )
+        );
 
         if ( ! in_array( $parsed_block['blockName'], $newspack_block_names, true ) ) {
             return $parsed_block;

@@ -2,6 +2,10 @@
 
 Code storage for custom WordPress plugins, front-end assets, and supporting data-analysis notebooks for the Emergency Mode / EMFN Newspack site.
 
+| badge | status |
+| --- | --- |
+| CodeQL | [![CodeQL](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql) |
+
 ## Overview
 
 This repository currently centers on two custom plugins:
@@ -199,6 +203,18 @@ Node-side repo tooling is intentionally small:
 ## Deployment
 
 Deployment to Newspack staging and production is handled manually by Newspack Support.
+
+GitHub Releases are automated from this repo.
+
+On every push to `main`, `.github/workflows/release.yml` runs repo linting, computes the next patch release tag using the same release pattern used in `OpenNews/opennews-actions`, syncs the repo's plugin version headers and readme stable tags to that release version, builds plugin ZIP assets, and publishes a GitHub Release.
+
+The automated sync updates:
+
+- `package.json` version
+- `plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php` plugin header and `EMFN_ACTION_PACK_PLUGIN_VERSION`
+- `plugins/emfn-action-pack-plugin/readme.txt` stable tag
+- `plugins/emfn-rich-search-plugin/emfn-rich-search-plugin.php` plugin header and `EMFN_RICH_SEARCH_PLUGIN_VERSION`
+- `plugins/emfn-rich-search-plugin/readme.txt` stable tag
 
 For plugin deployment:
 

@@ -2,14 +2,13 @@
 /**
  * Plugin Name:       EMFN Action Pack Plugin
  * Plugin URI:        https://github.com/OpenNews/emergencymode.news/tree/main/plugins/emfn-action-pack-plugin/
- * Description:       Custom plugin that drives the Action Pack portion of EMFN's Newspack site.
- * Version:           1.0.0
+ * Description:       Custom plugin that drives the Action Pack portion of EMFN's site.
  * Requires at least: 6.3
  * Requires PHP:      8.0
  * Author:            Emergency Mode / EMFN
  * Author URI:        https://emergencymode.news
- * License:           GPL-2.0-or-later
- * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * License:           MIT
+ * License URI:       https://opensource.org/licenses/MIT
  * Text Domain:       emfn-action-pack-plugin
  * Domain Path:       /languages
  *

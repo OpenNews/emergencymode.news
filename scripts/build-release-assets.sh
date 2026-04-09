@@ -32,4 +32,4 @@ build_plugin_zip() {
 }
 
 build_plugin_zip "emfn-action-pack-plugin" "emfn-action-pack-plugin-$version.zip"
-build_plugin_zip "emfn-rich-search-plugin" "emfn-rich-search-plugin-$version.zip"
+# build_plugin_zip "emfn-rich-search-plugin" "emfn-rich-search-plugin-$version.zip"

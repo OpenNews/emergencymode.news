@@ -57,10 +57,9 @@ PY
 }
 
 update_php_plugin_version "plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php" "EMFN_ACTION_PACK_PLUGIN_VERSION"
-update_php_plugin_version "plugins/emfn-rich-search-plugin/emfn-rich-search-plugin.php" "EMFN_RICH_SEARCH_PLUGIN_VERSION"
-
 update_readme_stable_tag "plugins/emfn-action-pack-plugin/readme.txt"
-update_readme_stable_tag "plugins/emfn-rich-search-plugin/readme.txt"
-
 update_readme_changelog "plugins/emfn-action-pack-plugin/readme.txt"
-update_readme_changelog "plugins/emfn-rich-search-plugin/readme.txt"
+
+# update_php_plugin_version "plugins/emfn-rich-search-plugin/emfn-rich-search-plugin.php" "EMFN_RICH_SEARCH_PLUGIN_VERSION"
+# update_readme_stable_tag "plugins/emfn-rich-search-plugin/readme.txt"
+# update_readme_changelog "plugins/emfn-rich-search-plugin/readme.txt"

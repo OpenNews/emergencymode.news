@@ -1,12 +1,12 @@
 === EMFN Action Pack Plugin ===
-Contributors:       tiffehr, areimer
-Tags:               newspack, emergency-mode-for-news
+Contributors:       tiffehr
+Tags:               newspack, emergency-mode-for-news, nclocal, opennews
 Requires at least:  6.3
 Tested up to:       6.9
 Stable tag:         1.0.0
 Requires PHP:       8.0
-License: GNU General Public License v3 or later
-License URI: http://www.gnu.org/licenses/gpl-3.0.html
+License:            MIT
+License URI:        https://opensource.org/licenses/MIT
 
 Power the Action Pack enhancement of Gravity Forms for EMFN
 
@@ -26,5 +26,4 @@ Gravity Forms for emergencymode.news:
 
 == Changelog ==
 
-= 1.0.0 =
-* initial plugin creation
+* Please see GitHub: https://github.com/OpenNews/emergencymode.news/releases

@@ -15,7 +15,7 @@
  * @typedef {import("../../../shared/emfn-types").GFormSubmissionStartedData} GFormSubmissionStartedData
 */
 
-const version = "0.8.0"; // debugging versioning
+const version = "0.8.01"; // debugging versioning
 const riskThreshold = 50; // threshold for suggested risks 
 const emfnWindow = /** @type {EmfnWindow} */ (window);
 
@@ -806,6 +806,18 @@ const SubmissionHashing = {
   },
 
   /**
+   * Reorder selected categories into the canonical bit order used for payload encoding
+   * @param {string[]} categoryNames - selected category names
+   * @returns {string[]}
+   */
+  getCanonicalPackedCategories(categoryNames) {
+    const selectedCategoryNames = new Set(categoryNames);
+    return SubmissionHashing.getActionPackCategoryOrder().filter((categoryName) => {
+      return selectedCategoryNames.has(categoryName);
+    });
+  },
+
+  /**
    * Schedule submission binding exactly once across all startup states
    * @returns {void}
    */
@@ -932,12 +944,14 @@ const SubmissionHashing = {
       const hashableValues = SubmissionHashing.collectHashableValues(data.form);
       emfnDebug(`.hashable form values:`, hashableValues);
       const matchedCategories = SubmissionHashing.resolveMatchedCategories(hashableValues);
-      emfnDebug(`Derived Action Pack categories:`, matchedCategories);
       if (matchedCategories.length === 0) {
         emfnDebug("No Action Pack categories resolved so payload encoding was skipped");
         hashMarkerField.value = "";
         return data;
       }
+
+      const packedCategories = SubmissionHashing.getCanonicalPackedCategories(matchedCategories);
+      emfnDebug(`Encoded Action Pack categories:`, packedCategories);
 
       // pack the matched categories into compact bit segments 
       const bits = SubmissionHashing.packActionPackBits(matchedCategories);

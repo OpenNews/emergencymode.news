@@ -1,9 +1,6 @@
 // @ts-check
+// EMFN Rich Search Plugin - connect custom search to Content Loop logic
 "use strict";
-
-// EMFN Rich Search Plugin - deconstruct hash to drive search
-// - break hash and set Categories from CSV and/or AI-model inference
-// - alter direct-sibling Content-Loop component hash-derived rules
 
 /**
  * ********** TYPES **********
@@ -17,10 +14,9 @@ const version = "0.0.01"; // debugging versioning
 const emfnWindow = window;
 console.debug(`emfnWindow:`, emfnWindow);
 
-
 /* ********* INITIALIZATION **********
 * TK
 */
-if (1 === 1) {
+// if (1 === 1) {
   console.debug("EMFN Rich Search Plugin active", version);
-}
+// }

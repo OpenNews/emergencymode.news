@@ -69,14 +69,5 @@ class EMFN_Rich_Search_Plugin {
             EMFN_RICH_SEARCH_PLUGIN_VERSION,
             true
         );
-
-        // Expose the data directory URL to JS so it can fetch per-state NRI CSVs.
-        wp_localize_script(
-            'emfn-rich-search-plugin',
-            'emfnData',
-            array(
-                'dataUrl' => EMFN_RICH_SEARCH_PLUGIN_URL . 'assets/data',
-            )
-        );
     }
 }

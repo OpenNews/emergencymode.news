@@ -3,6 +3,8 @@ export interface EmfnData {
   dataUrl: string | null;
   /* Prefix for compact Action Pack payloads */
   actionPackPayloadPrefix?: string;
+  /* Enable verbose debug logging */
+  verboseDebug?: boolean;
 }
 
 /* Partial Gravity Forms runtime shape used by the plugin */

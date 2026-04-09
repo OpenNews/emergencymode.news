@@ -44,7 +44,8 @@ const fipsFieldSelection = /** @type {string} */ (`.countyFIPS input`);
  * (Gravity Forms replaces the form element across page-breaks)
  * @returns {HTMLFormElement | null}
  */
-const getGravityForm = () => (document.querySelector(gravityForm));
+const getGravityForm = () =>
+  /** @type {HTMLFormElement | null} */ (document.querySelector(gravityForm));
 
 // in-memory location state for the current quiz session
 const locData = /** @type {LocationData} */ ({

@@ -57,7 +57,8 @@ const locData = /** @type {LocationData} */ ({
 
 // optional verbose debugging via querystring, e.g. ?emfnDebug=true
 const emfnDebug = (/** @type {any[]} */ ...args) => {
-  if (/emfnDebug=true/.test(window.location.search)) console.debug(...args);
+  const debugParam = new URLSearchParams(window.location.search).get("emfnDebug");
+  if ((debugParam || "").trim().toLowerCase() === "true") console.debug(...args);
 };
 
 const GeolocationFlow = {

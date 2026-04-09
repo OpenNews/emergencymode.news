@@ -73,6 +73,20 @@ class EMFN_Action_Pack_Plugin {
     private $action_pack_debug_entries = array();
 
     /**
+     * Cached flag for whether the current request targets the Action Pack page.
+     *
+     * @var bool|null
+     */
+    private $is_action_pack_page_request = null;
+
+    /**
+     * Cached list of Newspack block names to target.
+     *
+     * @var array<int, string>|null
+     */
+    private $newspack_block_names = null;
+
+    /**
      * Return (and lazily create) the singleton instance.
      *
      * @return self
@@ -115,10 +129,14 @@ class EMFN_Action_Pack_Plugin {
     }
 
     /**
-     * Enqueue front-end CSS and JS, as well as localizing the Action Pack 
+     * Enqueue front-end CSS and JS, as well as localizing the Action Pack
      * data URL and payload prefix for use in client-side JS
      */
     public function enqueue_assets() {
+        if ( ! $this->is_action_pack_page_request() ) {
+            return;
+        }
+
         wp_enqueue_style(
             'emfn-action-pack-plugin',
             EMFN_ACTION_PACK_PLUGIN_URL . 'assets/css/emfn-action-pack-plugin.css',
@@ -142,6 +160,65 @@ class EMFN_Action_Pack_Plugin {
                 'actionPackPayloadPrefix' => self::ACTION_PACK_PAYLOAD_PREFIX,
             )
         );
+    }
+
+    /**
+     * Return whether this frontend request targets the Action Pack page.
+     *
+     * @return bool
+     */
+    private function is_action_pack_page_request() {
+        if ( is_bool( $this->is_action_pack_page_request ) ) {
+            return $this->is_action_pack_page_request;
+        }
+
+        $payload = $this->get_action_pack_payload_from_request();
+        if ( null === $payload || 0 !== strpos( $payload, self::ACTION_PACK_PAYLOAD_PREFIX ) ) {
+            $this->is_action_pack_page_request = false;
+            return $this->is_action_pack_page_request;
+        }
+
+        if ( is_admin() || ! is_page() ) {
+            $this->is_action_pack_page_request = false;
+            return $this->is_action_pack_page_request;
+        }
+
+        $post = get_queried_object();
+        if ( ! ( $post instanceof WP_Post ) ) {
+            $this->is_action_pack_page_request = false;
+            return $this->is_action_pack_page_request;
+        }
+
+        $post_content = isset( $post->post_content ) ? (string) $post->post_content : '';
+
+        $this->is_action_pack_page_request = false !== strpos( $post_content, 'emfn-action-pack' );
+
+        return $this->is_action_pack_page_request;
+    }
+
+    /**
+     * Return the cached list of Newspack block names to target.
+     *
+     * @return array<int, string>
+     */
+    private function get_newspack_block_names() {
+        if ( is_array( $this->newspack_block_names ) ) {
+            return $this->newspack_block_names;
+        }
+
+        $this->newspack_block_names = array_values(
+            array_unique(
+                array_filter(
+                    array(
+                        'newspack-blocks/homepage-articles',
+                        apply_filters( 'newspack_blocks_block_name', 'newspack-blocks/homepage-articles' ),
+                    ),
+                    'is_string'
+                )
+            )
+        );
+
+        return $this->newspack_block_names;
     }
 
     /**
@@ -200,6 +277,10 @@ class EMFN_Action_Pack_Plugin {
      * @return void
      */
     public function render_action_pack_debug_script() {
+        if ( ! $this->is_action_pack_page_request() ) {
+            return;
+        }
+
         if ( ! $this->is_action_pack_debug_enabled() ) {
             return;
         }
@@ -259,6 +340,10 @@ class EMFN_Action_Pack_Plugin {
      * @return array<int, string>|null
      */
     public function get_action_pack_values_from_request() {
+        if ( ! $this->is_action_pack_page_request() ) {
+            return null;
+        }
+
         // return cached values if we've already decoded them for this request
         if ( is_array( $this->action_pack_values ) ) {
             return $this->action_pack_values;
@@ -282,6 +367,10 @@ class EMFN_Action_Pack_Plugin {
      * @return array<int, string>
      */
     public function get_action_pack_category_names_from_request() {
+        if ( ! $this->is_action_pack_page_request() ) {
+            return array();
+        }
+
         // return cached names if we've already resolved them for this request
         if ( is_array( $this->action_pack_category_names ) ) {
             return $this->action_pack_category_names;
@@ -306,6 +395,10 @@ class EMFN_Action_Pack_Plugin {
      * @return array<int, int>
      */
     public function get_action_pack_category_ids_from_request() {
+        if ( ! $this->is_action_pack_page_request() ) {
+            return array();
+        }
+
         // return cached IDs if we've already resolved them for this request
         if ( is_array( $this->action_pack_category_ids ) ) {
             return $this->action_pack_category_ids;
@@ -342,7 +435,11 @@ class EMFN_Action_Pack_Plugin {
     public function filter_action_pack_query_loop_vars( $query, $block, $page ) {
         unset( $page );
 
-        // only apply Action Pack constraints to blocks that have the correct class 
+        if ( ! $this->is_action_pack_page_request() ) {
+            return $query;
+        }
+
+        // only apply Action Pack constraints to blocks that have the correct class
         // and a valid payload in the request
         if ( empty( $block->parsed_block['attrs']['className'] ) ) {
             $this->queue_action_pack_debug_entry( 'can\'t find correct className', $query );
@@ -381,19 +478,15 @@ class EMFN_Action_Pack_Plugin {
     public function filter_action_pack_newspack_block_data( $parsed_block, $source_block, $parent_block ) {
         unset( $source_block, $parent_block );
 
+        if ( ! $this->is_action_pack_page_request() ) {
+            return $parsed_block;
+        }
+
         if ( empty( $parsed_block['blockName'] ) ) {
             return $parsed_block;
         }
 
-        $newspack_block_names = array_unique(
-            array_filter(
-                array(
-                    'newspack-blocks/homepage-articles',
-                    apply_filters( 'newspack_blocks_block_name', 'newspack-blocks/homepage-articles' ),
-                ),
-                'is_string'
-            )
-        );
+        $newspack_block_names = $this->get_newspack_block_names();
 
         if ( ! in_array( $parsed_block['blockName'], $newspack_block_names, true ) ) {
             return $parsed_block;

@@ -13,19 +13,19 @@
  * @typedef {import("../../../shared/emfn-types").PlaceLike} PlaceLike
  * @typedef {import("../../../shared/emfn-types").GmpSelectEvent} GmpSelectEvent
  * @typedef {import("../../../shared/emfn-types").GFormSubmissionStartedData} GFormSubmissionStartedData
- */
+*/
 
-const version = "0.7.01"; // debugging versioning
+const version = "0.8.0"; // debugging versioning
 const riskThreshold = 50; // threshold for suggested risks 
 const emfnWindow = /** @type {EmfnWindow} */ (window);
 
 /** @type {EmfnData} - path exposed by plugin */
 const { 
   dataUrl, 
-  actionPackPayloadPrefix = "ap2.",
+  actionPackPayloadPrefix = "ap2."
 } = emfnWindow.emfnData || {
   dataUrl: null,
-  actionPackPayloadPrefix: "ap2.",
+  actionPackPayloadPrefix: "ap2."
 };
 
 // prevent duplicate initialization and listener registration
@@ -44,9 +44,7 @@ const fipsFieldSelection = /** @type {string} */ (`.countyFIPS input`);
  * (Gravity Forms replaces the form element across page-breaks)
  * @returns {HTMLFormElement | null}
  */
-const getGravityForm = () => {
-  return /** @type {HTMLFormElement | null} */ (document.querySelector(gravityForm));
-}
+const getGravityForm = () => (document.querySelector(gravityForm));
 
 // in-memory location state for the current quiz session
 const locData = /** @type {LocationData} */ ({
@@ -57,17 +55,33 @@ const locData = /** @type {LocationData} */ ({
   fips: null,
 });
 
+// optional verbose debugging via querystring, e.g. ?emfnDebug=true
+const emfnDebug = (/** @type {any[]} */ ...args) => {
+  if (/emfnDebug=true/.test(window.location.search)) console.debug(...args);
+};
+
 const GeolocationFlow = {
   /** @type {string} */
   gravityGeoInput: `.location[data-js='geolocation-enabled']`,
+  /** @type {string} */
+  storageKey: "emfn_locData",
 
   /**
-   * Clear persisted and in-memory location state before handling a new place selection
+   * Return whether a county/state selection is currently stored in memory or sessionStorage
+   * @returns {boolean}
+   */
+  hasStoredLocation() {
+    if (locData.st || locData.fips) return true;
+    return Boolean(sessionStorage.getItem(GeolocationFlow.storageKey)) ?? false;
+  },
+
+  /**
+   * Clear location "state" before handling a new place selection
    * @returns {void}
    */
-  clearPersistedLocation() {
+  clearSavedLocation() {
     try {
-      sessionStorage.removeItem("emfn_locData");
+      sessionStorage.removeItem(GeolocationFlow.storageKey);
     } catch (err) {
       console.warn("Unable to clear location data from sessionStorage:", err);
     }
@@ -89,10 +103,17 @@ const GeolocationFlow = {
       return;
     }
 
+    // don't accidentally submit old data
+    const fipsField = /** @type {HTMLInputElement | null} */ (
+      formRoot.querySelector(fipsFieldSelection)
+    );
+    if (fipsField) {
+      fipsField.value = "";
+    }
+
     const risks = /** @type {HTMLDivElement | null} */ (
       formRoot.querySelector("#risks")
     );
-
     if (risks) {
       delete risks.dataset.emfnRendered;
       Array.from(risks.children).forEach((child) => {
@@ -103,12 +124,12 @@ const GeolocationFlow = {
   },
 
   /**
-   * Persist resolved location data so later Gravity Forms "pages" can use it
+   * store locData on sessionStorage as a backup
    * @returns {void}
    */
   persist() {
     try {
-      sessionStorage.setItem("emfn_locData", JSON.stringify({ ...locData }));
+      sessionStorage.setItem(GeolocationFlow.storageKey, JSON.stringify({ ...locData }));
     } catch (err) {
       console.error("Unable to save location data to sessionStorage:", err);
     }
@@ -120,7 +141,7 @@ const GeolocationFlow = {
    */
   restore() {
     try {
-      const storedLocData = sessionStorage.getItem("emfn_locData");
+      const storedLocData = sessionStorage.getItem(GeolocationFlow.storageKey);
       if (!storedLocData) return false;
 
       /** @type {Partial<LocationData> | null} */
@@ -212,7 +233,6 @@ const GeolocationFlow = {
       return;
     }
 
-    /** @type {Object.<string, string>} */
     const addr = (place.addressComponents ?? []).reduce(
       /** @param {Object.<string, string>} acc */
       (acc, { types = [], longText, shortText }) => {
@@ -231,8 +251,10 @@ const GeolocationFlow = {
     locData.country = addr.country ?? null;
     locData.fips = await GeolocationFlow.getFipsFromFCC(place.location);
 
-    /** @type {HTMLInputElement | null} */
-    const fipsField = formRoot.querySelector(fipsFieldSelection);
+    // set the resolved FIPS code into the hidden form field for submission
+    const fipsField = /** @type {HTMLInputElement | null} */ (
+      formRoot.querySelector(fipsFieldSelection)
+    );
     if (fipsField && locData.fips) {
       fipsField.value = locData.fips;
     } else {
@@ -260,7 +282,7 @@ const GeolocationFlow = {
 
     autocompleteEl.addEventListener("gmp-select", async (event) => {
       try {
-        GeolocationFlow.clearPersistedLocation();
+        GeolocationFlow.clearSavedLocation();
         await GeolocationFlow.handlePlaceSelection(event);
       } catch (err) {
         console.error("Error handling place selection:", err);
@@ -587,17 +609,29 @@ const RiskRenderer = {
 };
 
 const SubmissionHashing = {
+  /**
+   * Custom types for the Action Pack tallCategories.csv "registry"
+   * @typedef {Object} HashedCategory
+   * @property {string} category
+   * @property {number} manual_rank
+   * @property {number} [manualRank]
+   * @typedef {Object} HashSet
+   * @property {Object.<string, HashedCategory[]>} registry
+   * @property {Map<string, number>} categoryRanks
+   * @property {string[]} categoryOrder
+   */
+
   /** @type {string[]} */
   actionPackCategoryOrder: [],
 
-  /** @type {Object.<string, Array<{ category: string, manual_rank?: number, manualRank?: number }>>} */
+  /** @type {Object.<string, HashedCategory[]>} */
   actionPackCategoryRegistry: {},
 
   /**
    * Load Action Pack category mapping and rank order from `_tallCategories.csv`
    * @returns {Promise<void>}
    */
-  async loadCategoryRegistry() {
+  async getCategoriesFromLatestCSV() {
     if (!dataUrl) {
       console.error("_tallCategories.csv failed");
       return;
@@ -658,16 +692,14 @@ const SubmissionHashing = {
           );
           return acc;
         },
-        {
-          /** @type {Object.<string, Array<{ category: string, manual_rank: number }>>} */
+        /** @type {HashSet} */ ({
           registry: {},
-          /** @type {Map<string, number>} */
           categoryRanks: new Map(),
-          /** @type {string[]} */
           categoryOrder: [],
-        }
+        })
       );
 
+      // safety: sort each answer's categories by manual rank descending
       Object.values(registry).forEach((entries) => {
         entries.sort((left, right) => {
           const leftRank = Number(left.manual_rank ?? 0);
@@ -677,14 +709,13 @@ const SubmissionHashing = {
         });
       });
 
+      // re-sort the order by manual rank descending with first-seen tiebreaker
       SubmissionHashing.actionPackCategoryRegistry = registry;
       SubmissionHashing.actionPackCategoryOrder = categoryOrder.sort((left, right) => {
         const leftRank = categoryRanks.get(left) ?? 0;
         const rightRank = categoryRanks.get(right) ?? 0;
-        if (leftRank === rightRank) return 0;
-        return rightRank - leftRank;
+        return  (leftRank === rightRank) ? 0 : (rightRank - leftRank);
       });
-      console.debug("Loaded Action Pack category registry from CSV:", csvUrl);
     } catch (err) {
       console.warn("Unable to load Action Pack categories from CSV", err);
     }
@@ -728,7 +759,7 @@ const SubmissionHashing = {
       return rightRank - leftRank;
     });
 
-    console.debug(`Resolved Action Pack category order:`, SubmissionHashing.actionPackCategoryOrder);
+    emfnDebug(`Resolved Action Pack category order:`, SubmissionHashing.actionPackCategoryOrder);
     if (SubmissionHashing.actionPackCategoryOrder.length === 0) {
       console.warn("Action Pack category order could not be derived from the localized registry.");
     }
@@ -779,9 +810,7 @@ const SubmissionHashing = {
    * @returns {void}
    */
   initializeSubmissionHandling() {
-    if (hasInitializedSubmissionBinding) {
-      return;
-    }
+    if (hasInitializedSubmissionBinding) return;
 
     hasInitializedSubmissionBinding = true;
 
@@ -790,13 +819,9 @@ const SubmissionHashing = {
       return;
     }
 
-    document.addEventListener(
-      "gform/theme/scripts_loaded",
-      () => {
-        SubmissionHashing.controlFormSubmission();
-      },
-      { once: true }
-    );
+    document.addEventListener("gform/theme/scripts_loaded", () => {
+      SubmissionHashing.controlFormSubmission();
+    }, { once: true });
   },
 
   /**
@@ -852,9 +877,6 @@ const SubmissionHashing = {
     });
 
     const hashableValues = Array.from(uniqueHashableValues);
-
-    console.debug(`Collected hashable form values:`, hashableValues);
-    console.debug(`Resolved Action Pack categories:`, SubmissionHashing.resolveMatchedCategories(hashableValues));
     if (hashableValues.length === 0) {
       console.warn("No hashable fieldset values found (unlikely edge case)");
       return [];
@@ -869,14 +891,14 @@ const SubmissionHashing = {
    */
   controlFormSubmission() {
     if (hasBoundSubmissionFilter) {
-      console.debug("Submission filter already bound; skipping duplicate binding");
+      console.warn("Submission filter already bound; skipping duplicate binding");
       return;
     }
     
     // block form submission until hash is set to hidden form field
     const gformsReady = emfnWindow.gform?.utils;
     if (!gformsReady?.addAsyncFilter) {
-      console.warn("Gravity Forms utils not available; Action Pack payload encoding disabled.");
+      console.error("Gravity Forms utils not available; Action Pack payload encoding disabled.");
       return;
     }
 
@@ -888,7 +910,7 @@ const SubmissionHashing = {
       // ignore any non-ActionPack gravity form instances
       if (!data.form || !data.form.matches(gravityForm)) return data;
 
-      await SubmissionHashing.loadCategoryRegistry();
+      await SubmissionHashing.getCategoriesFromLatestCSV();
 
       // set the encoded payload to the hidden .hashMarker input
       const hashMarkerField = /** @type {HTMLInputElement | null} */ (
@@ -901,18 +923,18 @@ const SubmissionHashing = {
 
       const orderedCategories = SubmissionHashing.getActionPackCategoryOrder();
       if (orderedCategories.length === 0) {
-        console.warn("Action Pack category order is empty so payload encoding was skipped");
+        emfnDebug("Action Pack category order is empty so payload encoding was skipped");
         hashMarkerField.value = "";
         return data;
       }
-      
+
       // select the `.hashable`-marked values from current form content
       const hashableValues = SubmissionHashing.collectHashableValues(data.form);
-      console.debug(`Serialized hashable form values:`, hashableValues);
+      emfnDebug(`.hashable form values:`, hashableValues);
       const matchedCategories = SubmissionHashing.resolveMatchedCategories(hashableValues);
-      console.debug(`Serialized Action Pack categories:`, matchedCategories);
+      emfnDebug(`Derived Action Pack categories:`, matchedCategories);
       if (matchedCategories.length === 0) {
-        console.warn("No Action Pack categories resolved so payload encoding was skipped");
+        emfnDebug("No Action Pack categories resolved so payload encoding was skipped");
         hashMarkerField.value = "";
         return data;
       }
@@ -942,38 +964,45 @@ const SubmissionHashing = {
 * - both have guards to prevent duplicate bindings in case of multiple form renders 
 *   or script load events
 */
-console.info("EMFN Action Pack Plugin active", version);
 
-SubmissionHashing.initializeSubmissionHandling();
+/** only run any of this if there's a section.assessment DOM node
+ * @type {HTMLElement | null}
+ */
+const assessmentSection = document.querySelector("section.assessment");
+if (assessmentSection) {
+  console.info("EMFN Action Pack Plugin active", version);
 
-if (!isGeoFeaturesActivated) {
-  isGeoFeaturesActivated = true;
+  SubmissionHashing.initializeSubmissionHandling();
 
-  // this must be a document-level binding
-  document.addEventListener("gform/post_render", () => {
-    const formRoot = getGravityForm();
-    if (!formRoot) {
-      console.error(`${gravityForm} not found on gform/post_render`);
-      return;
-    }
-    
-    GeolocationFlow.restore();
+  if (!isGeoFeaturesActivated) {
+    isGeoFeaturesActivated = true;
 
-    const geoInput = /** @type {HTMLElement | null} */ (
-      formRoot.querySelector(GeolocationFlow.gravityGeoInput)
-    );
+    // this must be a document-level binding
+    document.addEventListener("gform/post_render", () => {
+      const formRoot = getGravityForm();
+      if (!formRoot) {
+        console.error(`${gravityForm} not found on gform/post_render`);
+        return;
+      }
 
-    if (geoInput && !hasResolvedGeolocation) {
-      GeolocationFlow.bindPlaceSelection(geoInput);
-    }
+      GeolocationFlow.restore();
 
-    const riskSection = /** @type {HTMLDivElement | null} */ (
-      formRoot.querySelector("#risks") ?? null
-    );
-    if (riskSection && Boolean(locData.fips) && riskSection.dataset.emfnRendered !== "1") {
-      void RiskRenderer.mapLocationToRisks().catch((error) => {
-        console.error("Error mapping location to risks:", error);
-      });
-    }
-  });
+      const geoInput = /** @type {HTMLElement | null} */ (
+        formRoot.querySelector(GeolocationFlow.gravityGeoInput)
+      );
+
+      if (geoInput) {
+        GeolocationFlow.bindPlaceSelection(geoInput);
+      }
+
+      const riskSection = /** @type {HTMLDivElement | null} */ (
+        formRoot.querySelector("#risks") ?? null
+      );
+      if (riskSection && Boolean(locData.fips) && riskSection.dataset.emfnRendered !== "1") {
+        void RiskRenderer.mapLocationToRisks().catch((error) => {
+          console.error("Error mapping location to risks:", error);
+        });
+      }
+    });
+  }
 }

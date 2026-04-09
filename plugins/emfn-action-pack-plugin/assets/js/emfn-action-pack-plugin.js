@@ -72,7 +72,13 @@ const GeolocationFlow = {
    */
   hasStoredLocation() {
     if (locData.st || locData.fips) return true;
-    return Boolean(sessionStorage.getItem(GeolocationFlow.storageKey)) ?? false;
+
+    try {
+      return Boolean(sessionStorage.getItem(GeolocationFlow.storageKey));
+    } catch (err) {
+      console.warn("Unable to read location data from sessionStorage:", err);
+      return false;
+    }
   },
 
   /**

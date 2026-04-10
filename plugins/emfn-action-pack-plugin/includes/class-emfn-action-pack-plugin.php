@@ -80,6 +80,13 @@ class EMFN_Action_Pack_Plugin {
     private $is_action_pack_page_request = null;
 
     /**
+     * Cached resolved Newspack block names for filtering.
+     *
+     * @var array<int, string>|null
+     */
+    private $newspack_block_names = null;
+
+    /**
      * Return (and lazily create) the singleton instance.
      *
      * @return self
@@ -414,7 +421,7 @@ class EMFN_Action_Pack_Plugin {
         // only apply Action Pack constraints to blocks that have the correct class
         // and a valid payload in the request
         if ( empty( $block->parsed_block['attrs']['className'] ) ) {
-            $this->queue_action_pack_debug_entry( 'cant find correct className', $query );
+            $this->queue_action_pack_debug_entry( 'can\'t find correct className', $query );
             return $query;
         }
 
@@ -458,17 +465,19 @@ class EMFN_Action_Pack_Plugin {
             return $parsed_block;
         }
 
-        $newspack_block_names = array_unique(
-            array_filter(
-                array(
-                    'newspack-blocks/homepage-articles',
-                    apply_filters( 'newspack_blocks_block_name', 'newspack-blocks/homepage-articles' ),
-                ),
-                'is_string'
-            )
-        );
+        if ( null === $this->newspack_block_names ) {
+            $this->newspack_block_names = array_unique(
+                array_filter(
+                    array(
+                        'newspack-blocks/homepage-articles',
+                        apply_filters( 'newspack_blocks_block_name', 'newspack-blocks/homepage-articles' ),
+                    ),
+                    'is_string'
+                )
+            );
+        }
 
-        if ( ! in_array( $parsed_block['blockName'], $newspack_block_names, true ) ) {
+        if ( ! in_array( $parsed_block['blockName'], $this->newspack_block_names, true ) ) {
             return $parsed_block;
         }
 

@@ -4,7 +4,11 @@ Version control for custom WordPress plugin(s), front-end assets and supporting 
 
 | badge | status |
 | --- | --- |
+| Release versioning on `main` | [![Release](https://github.com/OpenNews/emergencymode.news/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/OpenNews/emergencymode.news/actions/workflows/release.yml) |
 | CodeQL | [![CodeQL](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql) |
+| Dependabot | [![Dependabot Updates](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates) |
+| Copilot auto-Review | [![Copilot code review](https://github.com/OpenNews/emergencymode.news/actions/workflows/copilot-pull-request-reviewer/copilot-pull-request-reviewer/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/copilot-pull-request-reviewer/copilot-pull-request-reviewer) |
+
 
 ## Overview
 

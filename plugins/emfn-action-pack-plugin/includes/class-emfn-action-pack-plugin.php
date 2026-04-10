@@ -165,12 +165,6 @@ class EMFN_Action_Pack_Plugin {
             return $this->is_action_pack_page_request;
         }
 
-        $payload = $this->get_action_pack_payload_from_request();
-        if ( null === $payload || 0 !== strpos( $payload, self::ACTION_PACK_PAYLOAD_PREFIX ) ) {
-            $this->is_action_pack_page_request = false;
-            return $this->is_action_pack_page_request;
-        }
-
         if ( is_admin() || ! is_page() ) {
             $this->is_action_pack_page_request = false;
             return $this->is_action_pack_page_request;
@@ -183,8 +177,18 @@ class EMFN_Action_Pack_Plugin {
         }
 
         $post_content = isset( $post->post_content ) ? (string) $post->post_content : '';
+        $post_slug    = isset( $post->post_name ) ? (string) $post->post_name : '';
 
-        $this->is_action_pack_page_request = false !== strpos( $post_content, 'emfn-action-pack' );
+        // Check for CSS classes in content (for results page)
+        $has_action_pack_classes = false !== strpos( $post_content, 'emfn-action-pack' ) || false !== strpos( $post_content, 'emfn-forms' );
+
+        // Check for Gravity Forms (for assessment form page)
+        $has_gravity_forms = false !== strpos( $post_content, 'gravityform' ) || false !== strpos( $post_content, 'wp:gravityforms/form' );
+
+        // Check if this is the action page by slug
+        $is_action_page = 'action' === $post_slug;
+
+        $this->is_action_pack_page_request = $has_action_pack_classes || $has_gravity_forms || $is_action_page;
 
         return $this->is_action_pack_page_request;
     }

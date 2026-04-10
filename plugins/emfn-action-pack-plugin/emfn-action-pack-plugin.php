@@ -3,6 +3,7 @@
  * Plugin Name:       EMFN Action Pack Plugin
  * Plugin URI:        https://github.com/OpenNews/emergencymode.news/tree/main/plugins/emfn-action-pack-plugin/
  * Description:       Custom plugin that drives the Action Pack portion of EMFN's site.
+ * Version:           1.0.0
  * Requires at least: 6.3
  * Requires PHP:      8.0
  * Author:            Emergency Mode / EMFN

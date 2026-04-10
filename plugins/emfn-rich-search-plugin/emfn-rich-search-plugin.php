@@ -3,6 +3,7 @@
  * Plugin Name:       EMFN Rich Search Plugin (draft!)
  * Plugin URI:        https://github.com/OpenNews/emergencymode.news
  * Description:       Custom plugin to support rich search for EMFN
+ * Version:           1.0.0
  * Requires at least: 6.3
  * Requires PHP:      8.0
  * Author:            Emergency Mode / EMFN

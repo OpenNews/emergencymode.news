@@ -211,10 +211,11 @@ On every push to `main`, `.github/workflows/release.yml` runs repo linting, comp
 The automated sync updates:
 
 - `package.json` version
+- `pyproject.toml` version
 - `plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php` plugin header and `EMFN_ACTION_PACK_PLUGIN_VERSION`
-- `plugins/emfn-action-pack-plugin/readme.txt` stable tag
+- `plugins/emfn-action-pack-plugin/readme.txt` stable tag and changelog
 - `plugins/emfn-rich-search-plugin/emfn-rich-search-plugin.php` plugin header and `EMFN_RICH_SEARCH_PLUGIN_VERSION`
-- `plugins/emfn-rich-search-plugin/readme.txt` stable tag
+- `plugins/emfn-rich-search-plugin/readme.txt` stable tag and changelog
 
 For plugin deployment:
 

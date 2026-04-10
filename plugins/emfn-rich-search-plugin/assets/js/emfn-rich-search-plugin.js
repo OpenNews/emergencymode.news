@@ -15,8 +15,8 @@ const emfnWindow = window;
 console.debug(`emfnWindow:`, emfnWindow);
 
 /* ********* INITIALIZATION **********
-* TK
-*/
+ * TK
+ */
 // if (1 === 1) {
-  console.debug("EMFN Rich Search Plugin active", version);
+console.debug("EMFN Rich Search Plugin active", version);
 // }

@@ -53,7 +53,7 @@
 .emfn-forms_wrapper .emfn-forms #risks li {
   display: flex;
   align-items: flex-start; /* Align icon with the top of the text */
-  gap: 16px;               /* Consistent spacing between icon and text column */
+  gap: 16px; /* Consistent spacing between icon and text column */
   overflow: hidden;
   height: auto;
   opacity: 1;

@@ -1,15 +1,15 @@
 <?php
 /**
- * Plugin Name:       EMFN Rich Search Plugin
+ * Plugin Name:       EMFN Rich Search Plugin (draft!)
  * Plugin URI:        https://github.com/OpenNews/emergencymode.news
- * Description:       Custom plugin to support rich search for EMFN.
+ * Description:       Custom plugin to support rich search for EMFN
  * Version:           1.0.0
  * Requires at least: 6.3
  * Requires PHP:      8.0
  * Author:            Emergency Mode / EMFN
  * Author URI:        https://emergencymode.news
- * License:           GPL-2.0-or-later
- * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * License:           MIT
+ * License URI:       https://opensource.org/licenses/MIT
  * Text Domain:       emfn-rich-search-plugin
  * Domain Path:       /languages
  *

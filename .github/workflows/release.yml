@@ -1,0 +1,110 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if latest commit is version sync
+        id: check_skip
+        run: |
+          LATEST_MSG=$(git log -1 --pretty=%s)
+          if [[ "$LATEST_MSG" =~ ^chore\(release\):\ sync\ versions ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Latest commit is already a version sync, skipping release"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node
+        if: steps.check_skip.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        if: steps.check_skip.outputs.skip != 'true'
+        run: npm install
+
+      - name: Run lint
+        if: steps.check_skip.outputs.skip != 'true'
+        run: npm run lint
+
+      - name: Get next version
+        if: steps.check_skip.outputs.skip != 'true'
+        id: version
+        run: |
+          LATEST=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | head -n1)
+          if [[ -z "$LATEST" ]]; then
+            TAG="v1.0.0"
+          else
+            MAJOR=$(echo "$LATEST" | sed 's/v\([0-9]*\).*/\1/')
+            MINOR=$(echo "$LATEST" | sed 's/v[0-9]*\.\([0-9]*\).*/\1/')
+            PATCH=$(echo "$LATEST" | sed 's/v[0-9]*\.[0-9]*\.\([0-9]*\)/\1/')
+            TAG="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+          fi
+
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Sync version files
+        if: steps.check_skip.outputs.skip != 'true'
+        run: ./scripts/sync-release-version.sh "${{ steps.version.outputs.version }}"
+
+      - name: Commit synced versions
+        if: steps.check_skip.outputs.skip != 'true'
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json \
+            pyproject.toml \
+            plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php \
+            plugins/emfn-action-pack-plugin/readme.txt \
+            plugins/emfn-rich-search-plugin/emfn-rich-search-plugin.php \
+            plugins/emfn-rich-search-plugin/readme.txt
+          git commit -m "chore(release): sync versions to ${{ steps.version.outputs.tag }}"
+          git push
+
+      - name: Build release assets
+        if: steps.check_skip.outputs.skip != 'true'
+        run: ./scripts/build-release-assets.sh "${{ steps.version.outputs.version }}" dist
+
+      - name: Create GitHub Release
+        if: steps.check_skip.outputs.skip != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          make_latest: true
+          files: |
+            dist/*.zip
+
+      - name: Update floating latest and major tags
+        if: steps.check_skip.outputs.skip != 'true'
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          MAJOR=$(echo "$TAG" | sed 's/v\([0-9]*\).*/\1/')
+          git tag -f latest
+          git push origin latest --force
+          git tag -f "v${MAJOR}"
+          git push origin "v${MAJOR}" --force

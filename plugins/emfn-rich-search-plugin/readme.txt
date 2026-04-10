@@ -1,18 +1,18 @@
 === EMFN Rich Search Plugin ===
-Contributors:       emfn
-Tags:               newspack, emergencymode
+Contributors:       tiffehr
+Tags:               newspack, emergency-mode-for-news, nclocal, opennews
 Requires at least:  6.3
-Tested up to:       6.7
+Tested up to:       6.9
 Stable tag:         1.0.0
 Requires PHP:       8.0
-License:            GPL-2.0-or-later
-License URI:        https://www.gnu.org/licenses/gpl-2.0.html
+License:            MIT
+License URI:        https://opensource.org/licenses/MIT
 
 Rich search plugin for emergencymode.news.
 
 == Description ==
 
-Custom logic EMFN needs.
+Custom logic EMFN higher-context Resources search.
 
 == Installation ==
 
@@ -21,5 +21,4 @@ Custom logic EMFN needs.
 
 == Changelog ==
 
-= 1.0.0 =
-* Initial scaffold.
+* Please see GitHub: https://github.com/OpenNews/emergencymode.news/releases

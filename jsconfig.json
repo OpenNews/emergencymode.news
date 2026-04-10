@@ -6,13 +6,6 @@
     "checkJs": false,
     "lib": ["DOM", "ES2022"]
   },
-  "include": [
-    "plugins/**/*.js",
-    "plugins/**/*.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    ".venv",
-    "tmp"
-  ]
+  "include": ["plugins/**/*.js", "plugins/**/*.d.ts"],
+  "exclude": ["node_modules", ".venv", "tmp"]
 }

@@ -4,16 +4,16 @@ description = "Disaster risk projection data analysis for Emergency Mode News"
 version = "0.0.2"
 requires-python = ">=3.13"
 dependencies = [
-    "jupyterlab",
-    "pandas",
-    "requests",
-    "numpy",
-    "ipykernel",
-    "tqdm",
+    "jupyterlab==4.5.6",
+    "pandas==3.0.1",
+    "requests==2.33.0",
+    "numpy==2.4.3",
+    "ipykernel==7.2.0",
+    "tqdm==4.67.3",
 ]
 
 [dependency-groups]
 dev = [
-    "pre-commit",
-    "pytest",
+    "pre-commit==4.5.1",
+    "pytest==9.0.3",
 ]

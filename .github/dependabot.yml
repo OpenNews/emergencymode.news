@@ -15,11 +15,12 @@ updates:
           - "patch"
 
   # Maintain Python dependencies
+  # Notebooks are rarely used; dependencies pinned to reduce churn
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 5
     groups:
       python-dependencies:
         patterns:

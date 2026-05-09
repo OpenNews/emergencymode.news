@@ -1,601 +1,209 @@
 answerID,category,manualRank
+distribPlatforms-web,Digital,4
+distribPlatforms-print,Print,4
+distribPlatforms-social,Social media,4
+distribPlatforms-email,Newsletter,4
+distribPlatforms-audio,Radio/ podcast,4
+distribPlatforms-video,TV/ video,4
+distribPlatforms-sms,SMS/ text alerts,4
 mode-before,Before,1
 mode-during,During,1
 mode-after,After,1
 disasterType-drought,Drought,5
 disasterType-extreme-heat,Extreme heat,5
 disasterType-flooding,Flooding,5
-disasterType-hurricane,Hurricanes/Tropical storm,5
+disasterType-hurricane,Hurricanes/ tropical storms,5
 disasterType-severe-storms,Severe storms,5
 disasterType-tornadoes,Tornadoes,5
 disasterType-wildfires,Wildfires,5
 disasterType-winter-storms,Winter storms,5
-size-1,Power & connectivity,2
-size-1,Equipment & workspace,2
-size-1,Audience engagement,2
-size-1,Community partnerships,2
-size-1,Mutual aid/ peer learning,2
-size-1,Solo operator,2
-size-1,Small newsroom,2
-size-1,Fully remote,2
-size-1,Co-located newsroom,2
-size-1,Multilingual or non-English audience,2
-size-1,Rural,2
-size-1,Urban,2
-size-1,Hybrid,2
-size-5,Power & connectivity,2
-size-5,Equipment & workspace,2
-size-5,Staff safety,2
-size-5,Staff communication,2
-size-5,Staff capacity,2
-size-5,Staff wellbeing,2
-size-5,Audience engagement,2
-size-5,Community partnerships,2
-size-5,Mutual aid/ peer learning,2
-size-5,Small newsroom,2
-size-5,Medium newsroom,2
-size-5,Co-located newsroom,2
-size-5,Hybrid,2
-size-5,Multilingual or non-English audience,2
-size-5,Rural,2
-size-5,Urban,2
-size-10,Power & connectivity,2
-size-10,Equipment & workspace,2
-size-10,Distribution channel disruption,2
-size-10,Staff safety,2
-size-10,Staff communication,2
-size-10,Staff capacity,2
-size-10,Staff wellbeing,2
-size-10,Leadership & decision-making,2
-size-10,Fact-checking & misinformation,2
-size-10,Small newsroom,2
-size-10,Large newsroom,2
-size-10,Medium newsroom,2
-size-10,Hybrid,2
-size-10,Fully remote,2
-size-10,Co-located newsroom,2
-size-10,Volunteer-based,2
-size-10,Multilingual or non-English audience,2
-size-10,Rural,2
-size-10,Urban,2
-size-25,Power & connectivity,2
-size-25,Equipment & workspace,2
-size-25,Distribution channel disruption,2
-size-25,Staff safety,2
-size-25,Staff communication,2
-size-25,Staff capacity,2
-size-25,Staff wellbeing,2
-size-25,Leadership & decision-making,2
-size-25,Multilingual & cultural access,2
-size-25,Fact-checking & misinformation,2
-size-25,Medium newsroom,2
-size-25,Large newsroom,2
-size-25,Hybrid,2
-size-25,Fully remote,2
-size-25,Volunteer-based,2
-size-25,Co-located newsroom,2
-size-25,Multilingual or non-English audience,2
-size-25,Urban,2
-size-25,Rural,2
-size-26,Power & connectivity,2
-size-26,Distribution channel disruption,2
-size-26,Staff communication,2
-size-26,Staff capacity,2
-size-26,Audience engagement,2
-size-26,Multilingual & cultural access,2
-size-26,Fact-checking & misinformation,2
-size-26,Large newsroom,2
-size-26,Hybrid,2
-size-26,Fully remote,2
-size-26,Co-located newsroom,2
-size-26,Volunteer-based,2
-size-26,Multilingual or non-English audience,2
-size-26,Rural,2
-size-26,Urban,2
-distribPlatforms-web,Power & connectivity,3
+size-1,Staff capacity,5
+size-1,Staff wellbeing,5
+size-1,Solo operator,5
+size-5,Staff capacity,4
+size-5,Staff wellbeing,4
+size-5,Staff communication,4
+size-5,Staff safety,4
+size-5,Solo operator,4
+size-5,Small newsroom,4
+size-10,Staff capacity,3
+size-10,Staff wellbeing,3
+size-10,Staff communication,3
+size-10,Staff safety,3
+size-10,Small newsroom,3
+size-10,Medium newsroom,3
+size-25,Staff capacity,3
+size-25,Staff wellbeing,3
+size-25,Staff communication,3
+size-25,Staff safety,3
+size-25,Small newsroom,3
+size-25,Medium newsroom,3
+size-26,Staff capacity,3
+size-26,Staff wellbeing,3
+size-26,Staff communication,3
+size-26,Staff safety,3
+size-26,Medium newsroom,3
+size-26,Large newsroom,3
 distribPlatforms-web,Distribution channel disruption,3
-distribPlatforms-web,Staff communication,3
-distribPlatforms-web,Staff capacity,3
 distribPlatforms-web,Audience engagement,3
-distribPlatforms-web,Multilingual & cultural access,3
 distribPlatforms-web,Fact-checking & misinformation,3
+distribPlatforms-web,Power & connectivity,3
 distribPlatforms-web,Digital,3
-distribPlatforms-print,Power & connectivity,3
 distribPlatforms-print,Distribution channel disruption,3
-distribPlatforms-print,Staff communication,3
-distribPlatforms-print,Staff capacity,3
-distribPlatforms-print,Multilingual & cultural access,3
-distribPlatforms-print,Audience engagement,3
-distribPlatforms-print,Field reporting,3
+distribPlatforms-print,Equipment & workspace,3
 distribPlatforms-print,Print,3
-distribPlatforms-social,Power & connectivity,3
-distribPlatforms-social,Staff communication,3
-distribPlatforms-social,Staff wellbeing,3
-distribPlatforms-social,Fact-checking & misinformation,3
-distribPlatforms-social,Mutual aid/ peer learning,3
-distribPlatforms-social,Field reporting,3
-distribPlatforms-social,Community partnerships,3
+distribPlatforms-social,Distribution channel disruption,3
 distribPlatforms-social,Audience engagement,3
+distribPlatforms-social,Fact-checking & misinformation,3
+distribPlatforms-social,Power & connectivity,3
 distribPlatforms-social,Social media,3
-distribPlatforms-email,Power & connectivity,3
 distribPlatforms-email,Distribution channel disruption,3
-distribPlatforms-email,Staff safety,3
-distribPlatforms-email,Staff capacity,3
+distribPlatforms-email,Audience engagement,3
 distribPlatforms-email,Fact-checking & misinformation,3
+distribPlatforms-email,Power & connectivity,3
 distribPlatforms-email,Newsletter,3
-distribPlatforms-audio,Power & connectivity,3
 distribPlatforms-audio,Distribution channel disruption,3
-distribPlatforms-audio,Staff communication,3
-distribPlatforms-audio,Staff capacity,3
-distribPlatforms-audio,Community partnerships,3
+distribPlatforms-audio,Audience engagement,3
 distribPlatforms-audio,Fact-checking & misinformation,3
-distribPlatforms-audio,Field reporting,3
-distribPlatforms-audio,Mutual aid/ peer learning,3
+distribPlatforms-audio,Power & connectivity,3
 distribPlatforms-audio,Radio/ podcast,3
-distribPlatforms-video,Power & connectivity,3
-distribPlatforms-video,Equipment & workspace,3
 distribPlatforms-video,Distribution channel disruption,3
-distribPlatforms-video,Staff communication,3
-distribPlatforms-video,Staff capacity,3
-distribPlatforms-video,Multilingual & cultural access,3
+distribPlatforms-video,Audience engagement,3
 distribPlatforms-video,Fact-checking & misinformation,3
-distribPlatforms-video,Field reporting,3
-distribPlatforms-video,TV/Video,3
-distribPlatforms-sms,Power & connectivity,3
+distribPlatforms-video,Power & connectivity,3
+distribPlatforms-video,TV/ video,3
 distribPlatforms-sms,Distribution channel disruption,3
-distribPlatforms-sms,Staff communication,3
-distribPlatforms-sms,Staff capacity,3
 distribPlatforms-sms,Audience engagement,3
-distribPlatforms-sms,Multilingual & cultural access,3
-distribPlatforms-sms,Mutual aid/ peer learning,3
+distribPlatforms-sms,Fact-checking & misinformation,3
+distribPlatforms-sms,Power & connectivity,3
 distribPlatforms-sms,SMS/ text alerts,3
-designee-true,Leadership & decision-making,3
-designee-true,Staff capacity,3
-designee-true,Staff communication,3
-designee-true,Field reporting,3
-designee-true,Medium newsroom,3
-designee-true,Small newsroom,3
-designee-true,Large newsroom,3
-designee-true,Hybrid,3
-designee-true,Fully remote,3
-designee-true,Co-located newsroom,3
-designee-true,Volunteer-based,3
-designee-true,Multilingual or non-English audience,3
-designee-true,Rural,3
-designee-true,Urban,3
+designee-true,Leadership & decision-making,1
+designee-true,Staff capacity,1
+designee-true,Staff communication,1
+designee-true,Field reporting,1
 designee-false,Leadership & decision-making,4
 designee-false,Staff capacity,4
 designee-false,Staff communication,4
-designee-false,Field reporting,4
-designee-false,Medium newsroom,4
-designee-false,Small newsroom,4
-designee-false,Large newsroom,4
-designee-false,Hybrid,4
-designee-false,Fully remote,4
-designee-false,Co-located newsroom,4
-designee-false,Volunteer-based,4
-designee-false,Multilingual or non-English audience,4
-designee-false,Rural,4
-designee-false,Urban,4
-offlineResiliency-3,Power & connectivity,5
-offlineResiliency-3,Distribution channel disruption,5
-offlineResiliency-3,Solo operator,5
-offlineResiliency-3,Small newsroom,5
-offlineResiliency-3,Medium newsroom,5
-offlineResiliency-3,Large newsroom,5
-offlineResiliency-3,Hybrid,5
-offlineResiliency-3,Fully remote,5
-offlineResiliency-3,Co-located newsroom,5
-offlineResiliency-3,Volunteer-based,5
-offlineResiliency-3,Multilingual or non-English audience,5
-offlineResiliency-3,Rural,5
-offlineResiliency-3,Urban,5
-offlineResiliency-3,Print,5
-offlineResiliency-3,Digital,5
-offlineResiliency-3,TV/Video,5
-offlineResiliency-3,Social media,5
-offlineResiliency-3,Email/ newsletter,5
-offlineResiliency-3,Newsletter,5
-offlineResiliency-3,SMS/ text alerts,5
-offlineResiliency-3,Radio/ podcast,5
-offlineResiliency-2,Power & connectivity,5
-offlineResiliency-2,Distribution channel disruption,5
-offlineResiliency-2,Solo operator,5
-offlineResiliency-2,Small newsroom,5
-offlineResiliency-2,Medium newsroom,5
-offlineResiliency-2,Large newsroom,5
-offlineResiliency-2,Hybrid,5
-offlineResiliency-2,Fully remote,5
-offlineResiliency-2,Co-located newsroom,5
-offlineResiliency-2,Volunteer-based,5
-offlineResiliency-2,Multilingual or non-English audience,5
-offlineResiliency-2,Rural,5
-offlineResiliency-2,Urban,5
-offlineResiliency-2,Print,5
-offlineResiliency-2,Digital,5
-offlineResiliency-2,TV/Video,5
-offlineResiliency-2,Social media,5
-offlineResiliency-2,Email/ newsletter,5
-offlineResiliency-2,Newsletter,5
-offlineResiliency-2,SMS/ text alerts,5
-offlineResiliency-2,Radio/ podcast,5
-offlineResiliency-1,Power & connectivity,5
-offlineResiliency-1,Distribution channel disruption,5
-offlineResiliency-1,Solo operator,5
-offlineResiliency-1,Small newsroom,5
-offlineResiliency-1,Medium newsroom,5
-offlineResiliency-1,Large newsroom,5
-offlineResiliency-1,Hybrid,5
-offlineResiliency-1,Fully remote,5
-offlineResiliency-1,Co-located newsroom,5
-offlineResiliency-1,Volunteer-based,5
-offlineResiliency-1,Multilingual or non-English audience,5
-offlineResiliency-1,Rural,5
-offlineResiliency-1,Urban,5
-offlineResiliency-1,Print,5
-offlineResiliency-1,Digital,5
-offlineResiliency-1,TV/Video,5
-offlineResiliency-1,Social media,5
-offlineResiliency-1,Email/ newsletter,5
-offlineResiliency-1,Newsletter,5
-offlineResiliency-1,SMS/ text alerts,5
-offlineResiliency-1,Radio/ podcast,5
+emsContact-true,Field reporting,1
+emsContact-true,Fact-checking & misinformation,1
+emsContact-true,Community partnerships,1
+emsContact-false,Field reporting,4
+emsContact-false,Fact-checking & misinformation,4
+emsContact-false,Community partnerships,4
+offlineResiliency-3,Power & connectivity,2
+offlineResiliency-3,Distribution channel disruption,2
+offlineResiliency-3,Rural,2
+offlineResiliency-3,Urban,2
+offlineResiliency-3,Print,2
+offlineResiliency-3,Digital,2
+offlineResiliency-3,TV/ video,2
+offlineResiliency-3,Social media,2
+offlineResiliency-3,Newsletter,2
+offlineResiliency-3,SMS/ text alerts,2
+offlineResiliency-3,Radio/ podcast,2
+offlineResiliency-2,Power & connectivity,3
+offlineResiliency-2,Distribution channel disruption,3
+offlineResiliency-2,Rural,3
+offlineResiliency-2,Urban,3
+offlineResiliency-2,Print,3
+offlineResiliency-2,Digital,3
+offlineResiliency-2,TV/ video,3
+offlineResiliency-2,Social media,3
+offlineResiliency-2,Newsletter,3
+offlineResiliency-2,SMS/ text alerts,3
+offlineResiliency-2,Radio/ podcast,3
+offlineResiliency-1,Power & connectivity,4
+offlineResiliency-1,Distribution channel disruption,4
+offlineResiliency-1,Rural,4
+offlineResiliency-1,Urban,4
+offlineResiliency-1,Print,4
+offlineResiliency-1,Digital,4
+offlineResiliency-1,TV/ video,4
+offlineResiliency-1,Social media,4
+offlineResiliency-1,Newsletter,4
+offlineResiliency-1,SMS/ text alerts,4
+offlineResiliency-1,Radio/ podcast,4
 offlineResiliency-0,Power & connectivity,5
 offlineResiliency-0,Distribution channel disruption,5
-offlineResiliency-0,Solo operator,5
-offlineResiliency-0,Small newsroom,5
-offlineResiliency-0,Medium newsroom,5
-offlineResiliency-0,Large newsroom,5
-offlineResiliency-0,Hybrid,5
-offlineResiliency-0,Fully remote,5
-offlineResiliency-0,Co-located newsroom,5
-offlineResiliency-0,Volunteer-based,5
-offlineResiliency-0,Multilingual or non-English audience,5
 offlineResiliency-0,Rural,5
 offlineResiliency-0,Urban,5
 offlineResiliency-0,Print,5
 offlineResiliency-0,Digital,5
-offlineResiliency-0,TV/Video,5
+offlineResiliency-0,TV/ video,5
 offlineResiliency-0,Social media,5
-offlineResiliency-0,Email/ newsletter,5
 offlineResiliency-0,Newsletter,5
 offlineResiliency-0,SMS/ text alerts,5
 offlineResiliency-0,Radio/ podcast,5
+safetyGuidelines-true,Field reporting,2
+safetyGuidelines-true,Staff safety,2
+safetyGuidelines-false,Field reporting,5
+safetyGuidelines-false,Staff safety,5
 activeReporting-true,Field reporting,5
 activeReporting-true,Staff wellbeing,5
 activeReporting-true,Staff capacity,5
 activeReporting-true,Staff communication,5
 activeReporting-true,Staff safety,5
-activeReporting-true,Solo operator,5
-activeReporting-true,Small newsroom,5
-activeReporting-true,Medium newsroom,5
-activeReporting-true,Large newsroom,5
-activeReporting-true,Hybrid,5
-activeReporting-true,Fully remote,5
-activeReporting-true,Urban,5
-activeReporting-true,Co-located newsroom,5
-activeReporting-true,Volunteer-based,5
-activeReporting-true,Multilingual or non-English audience,5
-activeReporting-true,Rural,5
-activeReporting-false,Field reporting,4
-activeReporting-false,Staff wellbeing,4
-activeReporting-false,Staff capacity,4
-activeReporting-false,Staff communication,4
-activeReporting-false,Staff safety,4
-activeReporting-false,Solo operator,4
-activeReporting-false,Small newsroom,4
-activeReporting-false,Medium newsroom,4
-activeReporting-false,Large newsroom,4
-activeReporting-false,Hybrid,4
-activeReporting-false,Fully remote,4
-activeReporting-false,Urban,4
-activeReporting-false,Co-located newsroom,4
-activeReporting-false,Volunteer-based,4
-activeReporting-false,Multilingual or non-English audience,4
-activeReporting-false,Rural,4
+activeReporting-false,Field reporting,3
+activeReporting-false,Staff wellbeing,3
+activeReporting-false,Staff capacity,3
+activeReporting-false,Staff communication,3
+activeReporting-false,Staff safety,3
 pubSituation-4,Distribution channel disruption,1
-pubSituation-4,Solo operator,1
-pubSituation-4,Small newsroom,1
-pubSituation-4,Medium newsroom,1
-pubSituation-4,Large newsroom,1
-pubSituation-4,Hybrid,1
-pubSituation-4,Fully remote,1
-pubSituation-4,Urban,1
-pubSituation-4,Co-located newsroom,1
-pubSituation-4,Volunteer-based,1
-pubSituation-4,Multilingual or non-English audience,1
-pubSituation-4,Rural,1
-pubSituation-4,Print,1
-pubSituation-4,TV/Video,1
-pubSituation-4,Digital,1
-pubSituation-4,Social media,1
-pubSituation-4,Newsletter,1
-pubSituation-4,SMS/ text alerts,1
-pubSituation-4,Radio/ podcast,1
-pubSituation-4,Email/ newsletter,1
 pubSituation-3,Distribution channel disruption,2
-pubSituation-3,Solo operator,2
-pubSituation-3,Small newsroom,2
-pubSituation-3,Medium newsroom,2
-pubSituation-3,Large newsroom,2
-pubSituation-3,Hybrid,2
-pubSituation-3,Fully remote,2
-pubSituation-3,Urban,2
-pubSituation-3,Co-located newsroom,2
-pubSituation-3,Volunteer-based,2
-pubSituation-3,Multilingual or non-English audience,2
-pubSituation-3,Rural,2
-pubSituation-3,Print,2
-pubSituation-3,TV/Video,2
-pubSituation-3,Digital,2
-pubSituation-3,Social media,2
-pubSituation-3,Newsletter,2
 pubSituation-3,SMS/ text alerts,2
-pubSituation-3,Radio/ podcast,2
-pubSituation-3,Email/ newsletter,2
+pubSituation-3,Social media,2
 pubSituation-2,Distribution channel disruption,3
-pubSituation-2,Solo operator,3
-pubSituation-2,Small newsroom,3
-pubSituation-2,Medium newsroom,3
-pubSituation-2,Large newsroom,3
-pubSituation-2,Hybrid,3
-pubSituation-2,Fully remote,3
-pubSituation-2,Urban,3
-pubSituation-2,Co-located newsroom,3
-pubSituation-2,Volunteer-based,3
-pubSituation-2,Multilingual or non-English audience,3
-pubSituation-2,Rural,3
-pubSituation-2,Print,3
-pubSituation-2,TV/Video,3
-pubSituation-2,Digital,3
+pubSituation-2,Equipment & workspace,3
 pubSituation-2,Social media,3
-pubSituation-2,Newsletter,3
 pubSituation-2,SMS/ text alerts,3
-pubSituation-2,Radio/ podcast,3
-pubSituation-2,Email/ newsletter,3
 pubSituation-1,Power & connectivity,4
 pubSituation-1,Distribution channel disruption,4
-pubSituation-1,Solo operator,4
-pubSituation-1,Small newsroom,4
-pubSituation-1,Medium newsroom,4
-pubSituation-1,Large newsroom,4
-pubSituation-1,Hybrid,4
-pubSituation-1,Fully remote,4
-pubSituation-1,Urban,4
-pubSituation-1,Co-located newsroom,4
-pubSituation-1,Volunteer-based,4
-pubSituation-1,Multilingual or non-English audience,4
-pubSituation-1,Rural,4
-pubSituation-1,Print,4
-pubSituation-1,TV/Video,4
-pubSituation-1,Digital,4
+pubSituation-1,Equipment & workspace,4
+pubSituation-1,Community partnerships,4
 pubSituation-1,Social media,4
-pubSituation-1,Newsletter,4
 pubSituation-1,SMS/ text alerts,4
-pubSituation-1,Radio/ podcast,4
-pubSituation-1,Email/ newsletter,4
 pubSituation-0,Power & connectivity,5
 pubSituation-0,Distribution channel disruption,5
-pubSituation-0,Solo operator,5
-pubSituation-0,Small newsroom,5
-pubSituation-0,Medium newsroom,5
-pubSituation-0,Large newsroom,5
-pubSituation-0,Hybrid,5
-pubSituation-0,Fully remote,5
-pubSituation-0,Urban,5
-pubSituation-0,Co-located newsroom,5
-pubSituation-0,Volunteer-based,5
-pubSituation-0,Multilingual or non-English audience,5
-pubSituation-0,Rural,5
-pubSituation-0,Print,5
-pubSituation-0,TV/Video,5
-pubSituation-0,Digital,5
+pubSituation-0,Equipment & workspace,5
+pubSituation-0,Community partnerships,5
 pubSituation-0,Social media,5
-pubSituation-0,Newsletter,5
 pubSituation-0,SMS/ text alerts,5
-pubSituation-0,Radio/ podcast,5
-pubSituation-0,Email/ newsletter,5
-contactPlan-true,Field reporting,3
-contactPlan-true,Staff communication,3
-contactPlan-true,Solo operator,3
-contactPlan-true,Small newsroom,3
-contactPlan-true,Medium newsroom,3
-contactPlan-true,Large newsroom,3
-contactPlan-true,Hybrid,3
-contactPlan-true,Fully remote,3
-contactPlan-true,Urban,3
-contactPlan-true,Co-located newsroom,3
-contactPlan-true,Volunteer-based,3
-contactPlan-true,Multilingual or non-English audience,3
-contactPlan-true,Rural,3
+contactPlan-true,Field reporting,2
+contactPlan-true,Staff communication,2
 contactPlan-false,Field reporting,5
 contactPlan-false,Staff communication,5
-contactPlan-false,Solo operator,5
-contactPlan-false,Small newsroom,5
-contactPlan-false,Medium newsroom,5
-contactPlan-false,Large newsroom,5
-contactPlan-false,Hybrid,5
-contactPlan-false,Fully remote,5
-contactPlan-false,Urban,5
-contactPlan-false,Co-located newsroom,5
+contactPlan-false,Co-located team,5
 contactPlan-false,Volunteer-based,5
-contactPlan-false,Multilingual or non-English audience,5
-contactPlan-false,Rural,5
-audienceDemand-3,Multilingual & cultural access,2
-audienceDemand-3,Fact-checking & misinformation,2
-audienceDemand-3,Audience engagement,2
 audienceDemand-3,Community partnerships,2
-audienceDemand-3,Medium newsroom,2
-audienceDemand-3,Large newsroom,2
-audienceDemand-3,Hybrid,2
-audienceDemand-3,Co-located newsroom,2
-audienceDemand-3,Fully remote,2
-audienceDemand-3,Volunteer-based,2
-audienceDemand-3,Multilingual or non-English audience,2
-audienceDemand-3,Rural,2
-audienceDemand-3,Urban,2
-audienceDemand-2,Multilingual & cultural access,3
-audienceDemand-2,Fact-checking & misinformation,3
-audienceDemand-2,Audience engagement,3
+audienceDemand-3,Audience engagement,2
 audienceDemand-2,Community partnerships,3
-audienceDemand-2,Medium newsroom,3
-audienceDemand-2,Large newsroom,3
-audienceDemand-2,Hybrid,3
-audienceDemand-2,Co-located newsroom,3
-audienceDemand-2,Fully remote,3
-audienceDemand-2,Volunteer-based,3
-audienceDemand-2,Multilingual or non-English audience,3
-audienceDemand-2,Rural,3
-audienceDemand-2,Urban,3
-audienceDemand-1,Multilingual & cultural access,4
-audienceDemand-1,Fact-checking & misinformation,4
-audienceDemand-1,Audience engagement,4
+audienceDemand-2,Audience engagement,3
 audienceDemand-1,Community partnerships,4
-audienceDemand-1,Medium newsroom,4
-audienceDemand-1,Large newsroom,4
-audienceDemand-1,Hybrid,4
-audienceDemand-1,Co-located newsroom,4
-audienceDemand-1,Fully remote,4
-audienceDemand-1,Volunteer-based,4
-audienceDemand-1,Multilingual or non-English audience,4
-audienceDemand-1,Rural,4
-audienceDemand-1,Urban,4
-audienceDemand-0,Multilingual & cultural access,5
-audienceDemand-0,Fact-checking & misinformation,5
-audienceDemand-0,Audience engagement,5
+audienceDemand-1,Audience engagement,4
 audienceDemand-0,Community partnerships,5
-audienceDemand-0,Medium newsroom,5
-audienceDemand-0,Large newsroom,5
-audienceDemand-0,Hybrid,5
-audienceDemand-0,Co-located newsroom,5
-audienceDemand-0,Fully remote,5
-audienceDemand-0,Volunteer-based,5
-audienceDemand-0,Multilingual or non-English audience,5
-audienceDemand-0,Rural,5
-audienceDemand-0,Urban,5
-disInfo-3,Distribution channel disruption,2
+audienceDemand-0,Audience engagement,5
 disInfo-3,Fact-checking & misinformation,2
-disInfo-3,Medium newsroom,2
-disInfo-3,Large newsroom,2
-disInfo-3,Hybrid,2
-disInfo-3,Fully remote,2
-disInfo-3,Co-located newsroom,2
-disInfo-3,Volunteer-based,2
-disInfo-3,Rural,2
-disInfo-3,Multilingual or non-English audience,2
-disInfo-3,Urban,2
-disInfo-2,Distribution channel disruption,3
 disInfo-2,Fact-checking & misinformation,3
-disInfo-2,Medium newsroom,3
-disInfo-2,Large newsroom,3
-disInfo-2,Hybrid,3
-disInfo-2,Fully remote,3
-disInfo-2,Co-located newsroom,3
-disInfo-2,Volunteer-based,3
-disInfo-2,Rural,3
-disInfo-2,Multilingual or non-English audience,3
-disInfo-2,Urban,3
-disInfo-1,Distribution channel disruption,4
 disInfo-1,Fact-checking & misinformation,4
-disInfo-1,Medium newsroom,4
-disInfo-1,Large newsroom,4
-disInfo-1,Hybrid,4
-disInfo-1,Fully remote,4
-disInfo-1,Co-located newsroom,4
-disInfo-1,Volunteer-based,4
-disInfo-1,Rural,4
-disInfo-1,Multilingual or non-English audience,4
-disInfo-1,Urban,4
-disInfo-0,Distribution channel disruption,5
 disInfo-0,Fact-checking & misinformation,5
-disInfo-0,Medium newsroom,5
-disInfo-0,Large newsroom,5
-disInfo-0,Hybrid,5
-disInfo-0,Fully remote,5
-disInfo-0,Co-located newsroom,5
-disInfo-0,Volunteer-based,5
-disInfo-0,Rural,5
-disInfo-0,Multilingual or non-English audience,5
-disInfo-0,Urban,5
-disInfo-0,Solo operator,5
-disInfo-0,Small newsroom,5
 mentalHealth-access,Staff safety,2
 mentalHealth-access,Staff wellbeing,2
 mentalHealth-access,Leadership & decision-making,2
-mentalHealth-access,Medium newsroom,2
-mentalHealth-access,Large newsroom,2
-mentalHealth-access,Hybrid,2
-mentalHealth-access,Fully remote,2
-mentalHealth-access,Co-located newsroom,2
-mentalHealth-access,Multilingual or non-English audience,2
-mentalHealth-access,Rural,2
-mentalHealth-access,Urban,2
 mentalHealth-timeoff,Staff safety,3
 mentalHealth-timeoff,Staff wellbeing,3
 mentalHealth-timeoff,Leadership & decision-making,3
-mentalHealth-timeoff,Medium newsroom,3
-mentalHealth-timeoff,Large newsroom,3
-mentalHealth-timeoff,Hybrid,3
-mentalHealth-timeoff,Fully remote,3
-mentalHealth-timeoff,Co-located newsroom,3
-mentalHealth-timeoff,Multilingual or non-English audience,3
-mentalHealth-timeoff,Rural,3
-mentalHealth-timeoff,Urban,3
 mentalHealth-checkins,Staff safety,2
 mentalHealth-checkins,Staff wellbeing,2
 mentalHealth-checkins,Leadership & decision-making,2
-mentalHealth-checkins,Medium newsroom,2
-mentalHealth-checkins,Large newsroom,2
-mentalHealth-checkins,Hybrid,2
-mentalHealth-checkins,Fully remote,2
-mentalHealth-checkins,Co-located newsroom,2
-mentalHealth-checkins,Multilingual or non-English audience,2
-mentalHealth-checkins,Rural,2
-mentalHealth-checkins,Urban,2
 mentalHealth-training,Staff safety,4
 mentalHealth-training,Staff wellbeing,4
 mentalHealth-training,Leadership & decision-making,4
-mentalHealth-training,Medium newsroom,4
-mentalHealth-training,Large newsroom,4
-mentalHealth-training,Hybrid,4
-mentalHealth-training,Fully remote,4
-mentalHealth-training,Co-located newsroom,4
-mentalHealth-training,Multilingual or non-English audience,4
-mentalHealth-training,Rural,4
-mentalHealth-training,Urban,4
 mentalHealth-breaks,Staff safety,4
 mentalHealth-breaks,Staff wellbeing,4
 mentalHealth-breaks,Leadership & decision-making,4
-mentalHealth-breaks,Medium newsroom,4
-mentalHealth-breaks,Large newsroom,4
-mentalHealth-breaks,Hybrid,4
-mentalHealth-breaks,Fully remote,4
-mentalHealth-breaks,Co-located newsroom,4
-mentalHealth-breaks,Multilingual or non-English audience,4
-mentalHealth-breaks,Rural,4
-mentalHealth-breaks,Urban,4
 mentalHealth-peer,Staff safety,3
 mentalHealth-peer,Staff wellbeing,3
 mentalHealth-peer,Leadership & decision-making,3
-mentalHealth-peer,Medium newsroom,3
-mentalHealth-peer,Large newsroom,3
-mentalHealth-peer,Hybrid,3
-mentalHealth-peer,Fully remote,3
-mentalHealth-peer,Co-located newsroom,3
-mentalHealth-peer,Multilingual or non-English audience,3
-mentalHealth-peer,Rural,3
-mentalHealth-peer,Urban,3
 mentalHealth-none,Staff safety,5
 mentalHealth-none,Staff wellbeing,5
 mentalHealth-none,Leadership & decision-making,5
-mentalHealth-none,Solo operator,5
-mentalHealth-none,Small newsroom,5
-mentalHealth-none,Medium newsroom,5
-mentalHealth-none,Large newsroom,5
-mentalHealth-none,Hybrid,5
-mentalHealth-none,Fully remote,5
-mentalHealth-none,Co-located newsroom,5
-mentalHealth-none,Volunteer-based,5
-mentalHealth-none,Multilingual or non-English audience,5
-mentalHealth-none,Rural,5
-mentalHealth-none,Urban,5

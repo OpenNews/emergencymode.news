@@ -455,16 +455,13 @@ const RiskRenderer = {
       .sort(([, a], [, b]) => b - a);
 
     // Filter for scores >= threshold
-    const highRiskHazards = allHazardScores
-      .filter(([, score]) => score >= riskThreshold);
+    const highRiskHazards = allHazardScores.filter(([, score]) => score >= riskThreshold);
 
     // If none meet threshold, take top 3
-    const likelyHazardScores = highRiskHazards.length > 0 
-      ? highRiskHazards 
-      : allHazardScores.slice(0, 3);
+    const likelyHazardScores =
+      highRiskHazards.length > 0 ? highRiskHazards : allHazardScores.slice(0, 3);
 
-    return likelyHazardScores
-      .map(([label, score]) => `${label} (${Math.round(score)}%)`);
+    return likelyHazardScores.map(([label, score]) => `${label} (${Math.round(score)}%)`);
   },
 
   /**
@@ -538,9 +535,7 @@ const RiskRenderer = {
       return;
     }
 
-    riskType.textContent = [`FEMA's top risks:`, likelyHazards.join(", ")].join(
-      " "
-    );
+    riskType.textContent = [`FEMA's top risks:`, likelyHazards.join(", ")].join(" ");
   },
 
   /**

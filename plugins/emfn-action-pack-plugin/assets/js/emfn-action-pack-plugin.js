@@ -15,8 +15,8 @@
  * @typedef {import("../../../shared/emfn-types").GFormSubmissionStartedData} GFormSubmissionStartedData
  */
 
-const version = "0.8.01"; // debugging versioning
-const riskThreshold = 50; // threshold for suggested risks
+const version = "0.8.03"; // debugging versioning
+const riskThreshold = 85; // threshold for suggested risks
 const emfnWindow = /** @type {EmfnWindow} */ (window);
 
 /** @type {EmfnData} - path exposed by plugin */
@@ -432,7 +432,7 @@ const RiskRenderer = {
     if (riskType)
       riskType.textContent = [
         "Unable to determine specific risks for your location.",
-        "Please try a broader location (e.g. just city or state).",
+        "Please pick another location in your county or province.",
       ].join(" ");
   },
 
@@ -443,17 +443,27 @@ const RiskRenderer = {
    */
   deriveLikelyHazards(nriData) {
     /** @type {[string, number][]} */
-    const likelyHazardScores = Object.entries(nriData)
-      .filter(([key, val]) => key.endsWith("_risk_score") && parseFloat(val) >= riskThreshold)
+    // Get all valid hazard scores with their labels, sorted by score descending
+    const allHazardScores = Object.entries(nriData)
+      .filter(([key, _val]) => key.endsWith("_risk_score"))
       .map(([key, val]) => [
         RiskRenderer.hazardLabels[key.replace("_risk_score", "").toLowerCase()] ?? null,
-        parseFloat(val),
+        parseFloat(String(val)),
       ])
-      .filter(entry => entry[0] !== null)
-      .map(entry => /** @type {[string, number]} */ ([/** @type {string} */ (entry[0]), entry[1]]));
+      .filter(entry => entry[0] !== null && !isNaN(/** @type {number} */ (entry[1])))
+      .map(entry => /** @type {[string, number]} */ ([/** @type {string} */ (entry[0]), entry[1]]))
+      .sort(([, a], [, b]) => b - a);
+
+    // Filter for scores >= threshold
+    const highRiskHazards = allHazardScores
+      .filter(([, score]) => score >= riskThreshold);
+
+    // If none meet threshold, take top 3
+    const likelyHazardScores = highRiskHazards.length > 0 
+      ? highRiskHazards 
+      : allHazardScores.slice(0, 3);
 
     return likelyHazardScores
-      .sort(([, a], [, b]) => b - a)
       .map(([label, score]) => `${label} (${Math.round(score)}%)`);
   },
 
@@ -528,7 +538,7 @@ const RiskRenderer = {
       return;
     }
 
-    riskType.textContent = [`FEMA's >=${riskThreshold}% risks:`, likelyHazards.join(", ")].join(
+    riskType.textContent = [`FEMA's top risks:`, likelyHazards.join(", ")].join(
       " "
     );
   },

@@ -47,6 +47,11 @@ body.archive .site-breadcrumb {
 	text-transform: capitalize; 
 }
 
+/* restyle border on blockquotes */
+.h-stk .entry-content [id] {
+	border-color: #B7B4AF;
+}
+
 /* convert all horizontal rules to rounded-corner style */
 hr,
 .entry .entry-content>.wp-block-separator, .entry .entry-content>hr,
@@ -67,11 +72,27 @@ figure.emfn-table.wp-block-table thead {
 figure.emfn-table.wp-block-table thead th {
 	border: none;
 }
-figure.emfn-table.wp-block-table tbody td {
+figure.emfn-table.wp-block-table tbody tr:not(:last-of-type) {
 	border: 1px solid #B7B4AF;
+	border-width: 1px 0px;
+}
+figure.emfn-table.wp-block-table tbody td {
+	border-width: 0px;
 }
 figure.emfn-table.wp-block-table.is-style-stripes tbody tr:nth-child(odd) {
     background-color: #efece7;
+}
+
+/* apply our styles to Details blocks*/
+.wp-block-details {
+	border-width: 0px;
+	border-bottom: 1px solid #B7B4AF;
+	display: block;
+	width: 100%;
+	margin-bottom: 32px !important;
+}
+.wp-block-details:last-of-type {
+	border-bottom-width: 0px;
 }
 
 /*knock out magins on .above-footer widget content*/
@@ -117,6 +138,7 @@ body.home .header-search-contain {
 }
 
 /*hide >4 categories on Post pages (9 = 4, because hidden commas) */
+/* Newspack's 'only show Yoast primary category' flag SHOULD drive this, but if it is turned off this is a catch-all */
 .cat-links > :nth-child(n+9) {
     display: none;
 }
@@ -341,6 +363,42 @@ body.parent-pageid-284 .entry-header {
 .tags-links a:hover {
 	border-color: #999;
 }
+
+/** 
+ * Category pill colors 
+ * used tetradic colors off https://www.colorhexa.com/e7bbb4
+ */
+/* all Resource pills & Timing category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href]
+ {
+	 --cat-color: #F1F1F1;
+	background-color: var(--cat-color);
+	border: 1px solid color-mix(in srgb, var(--cat-color), black 15%);
+	 color: color-mix(in srgb, var(--cat-color), black 66%);
+}
+
+/* Disaster category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/disasters/"]
+{
+	--cat-color: #e7bbb4;
+}
+
+/* Operational Challenge category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/challenge/"]
+{
+	--cat-color: #b4e7bb;
+}
+/* Type category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/type/"]
+{
+	--cat-color: #b4e0e7;
+}
+/* Newsroom Condition category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/newsroom-condition/"]
+{
+	--cat-color: #e7b4e0;
+}
+
 
 /** ********** JETPACK AI SEARCH ********** 
  * styles overrides for Jetpack AI search box and results

@@ -48,6 +48,28 @@ The Action Pack roundtrip notebook validates a separate CSV contract in `_tallCa
 - `category`
 - `manualRank`
 
+## Dependency Management
+
+All notebooks share setup utilities via `shared_setup.py`, which both notebooks import to verify their execution environment:
+
+1. **Cell 2**: `uv sync` — ensures the environment is in sync with `uv.lock`
+2. **Cell 3**: Calls `check_dependencies()` from `shared_setup.py` to verify environment health
+
+**Shared Setup Utilities (`shared_setup.py`):**
+
+The `shared_setup.py` module provides a single source of truth for environment checking across both `US_disaster_risk_analysis.ipynb` and `CA-MX_disaster_risk_analysis.ipynb`. It:
+
+- Verifies that `uv sync --frozen` succeeds (environment is in sync with lock file)
+- Tests critical package imports (`pandas`, `requests`, `jupyterlab`, `ipykernel`, `tqdm`)
+- Reports installed versions and displays clear status
+- Auto-detects your VS Code theme (dark/light mode) for UI feedback
+
+**When Cell 3 reports an issue:**
+
+The output will show exactly what's wrong and provide the next steps. If the environment is out of sync, you'll see instructions to run `uv sync` from the repo root. If packages are missing, the output recommends the same.
+
+**Python dependencies are manually maintained** (not auto-updated) since notebooks are rarely used. Dependabot automation focuses on the plugin code (JavaScript/npm) instead.
+
 ## Hazard Codes
 
 The current US notebook and plugin use these 18 NRI hazard families:

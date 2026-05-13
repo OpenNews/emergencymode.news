@@ -15,7 +15,7 @@ updates:
           - "patch"
 
   # Python dependencies (notebooks) are manually maintained since they're rarely used
-  # Pinned in pyproject.toml to reduce churn; update only when actively working on notebooks
+  # Constrained in pyproject.toml with compatible-release ranges to reduce churn; update only when actively working on notebooks
 
   # Maintain GitHub Actions
   - package-ecosystem: "github-actions"

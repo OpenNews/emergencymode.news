@@ -62,7 +62,6 @@ The `shared_setup.py` module provides a single source of truth for environment c
 - Verifies that `uv sync --frozen` succeeds (environment is in sync with lock file)
 - Tests critical package imports (`pandas`, `requests`, `jupyterlab`, `ipykernel`, `tqdm`)
 - Reports installed versions and displays clear status
-- Auto-detects your VS Code theme (dark/light mode) for UI feedback
 
 **When Cell 3 reports an issue:**
 

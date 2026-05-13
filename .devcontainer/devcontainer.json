@@ -1,6 +1,7 @@
 {
   "name": "Emergency Mode Disaster Risk",
   "image": "mcr.microsoft.com/devcontainers/python:3.13",
+  "updateRemoteUserUID": false,
   "customizations": {
     "vscode": {
       "extensions": [

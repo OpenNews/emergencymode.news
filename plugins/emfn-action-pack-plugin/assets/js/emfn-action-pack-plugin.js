@@ -13,19 +13,16 @@
  * @typedef {import("../../../shared/emfn-types").PlaceLike} PlaceLike
  * @typedef {import("../../../shared/emfn-types").GmpSelectEvent} GmpSelectEvent
  * @typedef {import("../../../shared/emfn-types").GFormSubmissionStartedData} GFormSubmissionStartedData
-*/
+ */
 
-const version = "0.8.01"; // debugging versioning
-const riskThreshold = 50; // threshold for suggested risks 
+const version = "0.8.03"; // debugging versioning
+const riskThreshold = 85; // threshold for suggested risks
 const emfnWindow = /** @type {EmfnWindow} */ (window);
 
 /** @type {EmfnData} - path exposed by plugin */
-const { 
-  dataUrl, 
-  actionPackPayloadPrefix = "ap2."
-} = emfnWindow.emfnData || {
+const { dataUrl, actionPackPayloadPrefix = "ap2." } = emfnWindow.emfnData || {
   dataUrl: null,
-  actionPackPayloadPrefix: "ap2."
+  actionPackPayloadPrefix: "ap2.",
 };
 
 // prevent duplicate initialization and listener registration
@@ -119,12 +116,10 @@ const GeolocationFlow = {
       fipsField.value = "";
     }
 
-    const risks = /** @type {HTMLDivElement | null} */ (
-      formRoot.querySelector("#risks")
-    );
+    const risks = /** @type {HTMLDivElement | null} */ (formRoot.querySelector("#risks"));
     if (risks) {
       delete risks.dataset.emfnRendered;
-      Array.from(risks.children).forEach((child) => {
+      Array.from(risks.children).forEach(child => {
         if (["risk-template"].includes(child.id)) return;
         child.remove();
       });
@@ -228,12 +223,7 @@ const GeolocationFlow = {
     }
 
     await place.fetchFields({
-      fields: [
-        "addressComponents",
-        "displayName",
-        "formattedAddress",
-        "location"
-      ]
+      fields: ["addressComponents", "displayName", "formattedAddress", "location"],
     });
 
     if (!place || !place.location || !place.addressComponents) {
@@ -244,7 +234,7 @@ const GeolocationFlow = {
     const addr = (place.addressComponents ?? []).reduce(
       /** @param {Object.<string, string>} acc */
       (acc, { types = [], longText, shortText }) => {
-        types.forEach((type) => {
+        types.forEach(type => {
           acc[type] = longText;
           acc[`${type}_short`] = shortText;
         });
@@ -288,7 +278,7 @@ const GeolocationFlow = {
     );
     if (!autocompleteEl || autocompleteEl.dataset.placeBound === "1") return;
 
-    autocompleteEl.addEventListener("gmp-select", async (event) => {
+    autocompleteEl.addEventListener("gmp-select", async event => {
       try {
         GeolocationFlow.clearSavedLocation();
         await GeolocationFlow.handlePlaceSelection(event);
@@ -360,8 +350,8 @@ const RiskRenderer = {
 
     const [hed, ...lines] = csvData.trim().split("\n");
     const heds = hed.split(",");
-    const fipsIndex = heds.findIndex((h) => h.trim() === "county_fips");
-    const matchedLine = lines.find((line) => line.split(",")[fipsIndex]?.trim() === countyFIPS);
+    const fipsIndex = heds.findIndex(h => h.trim() === "county_fips");
+    const matchedLine = lines.find(line => line.split(",")[fipsIndex]?.trim() === countyFIPS);
 
     /** @type {NriCountyRow|null} */
     const countyMatch = matchedLine
@@ -381,11 +371,10 @@ const RiskRenderer = {
    * @returns {Promise<NriCountyRow|null>}
    */
   async getCountyRiskData(st, countyFIPS) {
-    const hasCachedCountyData = (
-      RiskRenderer.lastFetchedCountyState === st
-      && RiskRenderer.lastFetchedCountyFips === countyFIPS
-      && RiskRenderer.lastFetchedNriData !== null
-    );
+    const hasCachedCountyData =
+      RiskRenderer.lastFetchedCountyState === st &&
+      RiskRenderer.lastFetchedCountyFips === countyFIPS &&
+      RiskRenderer.lastFetchedNriData !== null;
 
     if (hasCachedCountyData) {
       return RiskRenderer.lastFetchedNriData;
@@ -419,7 +408,7 @@ const RiskRenderer = {
    * @returns {void}
    */
   clearRenderedRisks(risks) {
-    Array.from(risks.children).forEach((child) => {
+    Array.from(risks.children).forEach(child => {
       if (["risk-template"].includes(child.id)) return;
       child.remove();
     });
@@ -440,10 +429,11 @@ const RiskRenderer = {
     const { riskItem, riskRegion, riskType } = fallbackElements;
     if (riskItem) riskItem.textContent = locData.county ?? "Unable to resolve location";
     if (riskRegion) riskRegion.textContent = locData.state ?? "Location unavailable";
-    if (riskType) riskType.textContent = [
-      "Unable to determine specific risks for your location.",
-      "Please try a broader location (e.g. just city or state)."
-    ].join(" ");
+    if (riskType)
+      riskType.textContent = [
+        "Unable to determine specific risks for your location.",
+        "Please pick another location in your county or province.",
+      ].join(" ");
   },
 
   /**
@@ -453,15 +443,25 @@ const RiskRenderer = {
    */
   deriveLikelyHazards(nriData) {
     /** @type {[string, number][]} */
-    const likelyHazardScores = Object.entries(nriData)
-      .filter(([key, val]) => key.endsWith("_risk_score") && parseFloat(val) >= riskThreshold)
-      .map(([key, val]) => [RiskRenderer.hazardLabels[key.replace("_risk_score", "").toLowerCase()] ?? null, parseFloat(val)])
-      .filter((entry) => entry[0] !== null)
-      .map((entry) => /** @type {[string, number]} */ ([/** @type {string} */ (entry[0]), entry[1]]));
+    // Get all valid hazard scores with their labels, sorted by score descending
+    const allHazardScores = Object.entries(nriData)
+      .filter(([key, _val]) => key.endsWith("_risk_score"))
+      .map(([key, val]) => [
+        RiskRenderer.hazardLabels[key.replace("_risk_score", "").toLowerCase()] ?? null,
+        parseFloat(String(val)),
+      ])
+      .filter(entry => entry[0] !== null && !isNaN(/** @type {number} */ (entry[1])))
+      .map(entry => /** @type {[string, number]} */ ([/** @type {string} */ (entry[0]), entry[1]]))
+      .sort(([, a], [, b]) => b - a);
 
-    return likelyHazardScores
-      .sort(([, a], [, b]) => b - a)
-      .map(([label, score]) => `${label} (${Math.round(score)}%)`);
+    // Filter for scores >= threshold
+    const highRiskHazards = allHazardScores.filter(([, score]) => score >= riskThreshold);
+
+    // If none meet threshold, take top 3
+    const likelyHazardScores =
+      highRiskHazards.length > 0 ? highRiskHazards : allHazardScores.slice(0, 3);
+
+    return likelyHazardScores.map(([label, score]) => `${label} (${Math.round(score)}%)`);
   },
 
   /**
@@ -494,10 +494,10 @@ const RiskRenderer = {
    * Clone and insert the visible risk result container
    * @param {HTMLElement} risks - the root risk section DOM element
    * @param {HTMLElement} risksTemplate - the risk template DOM element
-   * @returns {{ 
-   *   riskItem: Element | null, 
-   *   riskRegion: Element | null, 
-    *   riskType: Element 
+   * @returns {{
+   *   riskItem: Element | null,
+   *   riskRegion: Element | null,
+   *   riskType: Element
    * } | null} - the key DOM elements to populate with risk data
    */
   createRiskElements(risks, risksTemplate) {
@@ -535,10 +535,7 @@ const RiskRenderer = {
       return;
     }
 
-    riskType.textContent = [
-      `FEMA's >=${riskThreshold}% risks:`,
-      likelyHazards.join(", ")
-    ].join(" ");
+    riskType.textContent = [`FEMA's top risks:`, likelyHazards.join(", ")].join(" ");
   },
 
   /**
@@ -563,9 +560,7 @@ const RiskRenderer = {
       return;
     }
 
-    const risks = /** @type {HTMLDivElement | null} */ (
-      formRoot.querySelector("#risks")
-    );
+    const risks = /** @type {HTMLDivElement | null} */ (formRoot.querySelector("#risks"));
     const risksTemplate = /** @type {HTMLDivElement | null} */ (
       formRoot.querySelector("#risk-template")
     );
@@ -654,20 +649,21 @@ const SubmissionHashing = {
       if (!csvText.trim()) throw new Error("Empty CSV response");
 
       const lines = csvText.trim().split(/\r?\n/);
-      const header = (lines[0] ?? "").split(",").map((value) => value.trim().toLowerCase());
+      const header = (lines[0] ?? "").split(",").map(value => value.trim().toLowerCase());
 
       // validate required columns and get their indices
       const answerIdIndex = header.indexOf("answerID".toLowerCase());
       const categoryIndex = header.indexOf("category");
       const manualRankIndex = header.indexOf("manualRank".toLowerCase());
       if (answerIdIndex === -1 || categoryIndex === -1 || manualRankIndex === -1) {
-        throw new Error(`CSV header missing required columns: [answerID, category, manualRank]. Found: ${header.join(", ")}`);
+        throw new Error(
+          `CSV header missing required columns: [answerID, category, manualRank]. Found: ${header.join(", ")}`
+        );
       }
 
       // build and order the registry of answerID <> Category & manualRank
-      const { registry, categoryRanks, categoryOrder } = lines
-        .slice(1)
-        .reduce((acc, line) => {
+      const { registry, categoryRanks, categoryOrder } = lines.slice(1).reduce(
+        (acc, line) => {
           if (!line.trim()) return acc;
 
           const columns = line.split(",");
@@ -679,7 +675,7 @@ const SubmissionHashing = {
 
           // keep one entry per answer/category pair with the highest rank seen
           const answerEntries = acc.registry[answerId] ?? (acc.registry[answerId] = []);
-          const existingEntry = answerEntries.find((entry) => entry.category === categoryName);
+          const existingEntry = answerEntries.find(entry => entry.category === categoryName);
 
           if (existingEntry) {
             existingEntry.manual_rank = Math.max(existingEntry.manual_rank, manualRank);
@@ -708,7 +704,7 @@ const SubmissionHashing = {
       );
 
       // safety: sort each answer's categories by manual rank descending
-      Object.values(registry).forEach((entries) => {
+      Object.values(registry).forEach(entries => {
         entries.sort((left, right) => {
           const leftRank = Number(left.manual_rank ?? 0);
           const rightRank = Number(right.manual_rank ?? 0);
@@ -722,7 +718,7 @@ const SubmissionHashing = {
       SubmissionHashing.actionPackCategoryOrder = categoryOrder.sort((left, right) => {
         const leftRank = categoryRanks.get(left) ?? 0;
         const rightRank = categoryRanks.get(right) ?? 0;
-        return  (leftRank === rightRank) ? 0 : (rightRank - leftRank);
+        return leftRank === rightRank ? 0 : rightRank - leftRank;
       });
     } catch (err) {
       console.warn("Unable to load Action Pack categories from CSV", err);
@@ -743,8 +739,8 @@ const SubmissionHashing = {
     /** @type {string[]} */
     const categoryOrder = [];
 
-    Object.values(SubmissionHashing.actionPackCategoryRegistry).forEach((categoryEntries) => {
-      categoryEntries.forEach((entry) => {
+    Object.values(SubmissionHashing.actionPackCategoryRegistry).forEach(categoryEntries => {
+      categoryEntries.forEach(entry => {
         const categoryName = String(entry.category ?? "").trim();
         const manualRank = Number(entry.manual_rank ?? entry.manualRank ?? 0);
         if (!categoryName) return;
@@ -786,10 +782,10 @@ const SubmissionHashing = {
     /** @type {string[]} */
     const categoryOrder = [];
 
-    selectedTokens.forEach((token) => {
+    selectedTokens.forEach(token => {
       const categoryEntries = SubmissionHashing.actionPackCategoryRegistry[token] ?? [];
 
-      categoryEntries.forEach((entry) => {
+      categoryEntries.forEach(entry => {
         const categoryName = String(entry.category ?? "").trim();
         const manualRank = Number(entry.manual_rank ?? entry.manualRank ?? 0);
         if (!categoryName) return;
@@ -820,7 +816,7 @@ const SubmissionHashing = {
    */
   getCanonicalPackedCategories(categoryNames) {
     const selectedCategoryNames = new Set(categoryNames);
-    return SubmissionHashing.getActionPackCategoryOrder().filter((categoryName) => {
+    return SubmissionHashing.getActionPackCategoryOrder().filter(categoryName => {
       return selectedCategoryNames.has(categoryName);
     });
   },
@@ -839,9 +835,13 @@ const SubmissionHashing = {
       return;
     }
 
-    document.addEventListener("gform/theme/scripts_loaded", () => {
-      SubmissionHashing.controlFormSubmission();
-    }, { once: true });
+    document.addEventListener(
+      "gform/theme/scripts_loaded",
+      () => {
+        SubmissionHashing.controlFormSubmission();
+      },
+      { once: true }
+    );
   },
 
   /**
@@ -868,7 +868,9 @@ const SubmissionHashing = {
       const bitIndex = categoryIndex % segmentSize;
 
       // build up segments
-      while (packedSegments.length <= segmentIndex) { packedSegments.push(0); }
+      while (packedSegments.length <= segmentIndex) {
+        packedSegments.push(0);
+      }
 
       // turn on the bit for this token inside its segment.
       packedSegments[segmentIndex] |= 1 << bitIndex;
@@ -888,9 +890,7 @@ const SubmissionHashing = {
     const uniqueHashableValues = new Set();
 
     new FormData(form).forEach((value, name) => {
-      const hashableControl = form.querySelector(
-        `fieldset.hashable [name="${CSS.escape(name)}"]`
-      );
+      const hashableControl = form.querySelector(`fieldset.hashable [name="${CSS.escape(name)}"]`);
       const cleanTxt = String(value).trim();
 
       if (hashableControl && cleanTxt) uniqueHashableValues.add(cleanTxt);
@@ -906,7 +906,7 @@ const SubmissionHashing = {
   },
 
   /**
-  * Intercept form submission and writes hashed submission values to .hashMarker input
+   * Intercept form submission and writes hashed submission values to .hashMarker input
    * @returns {void}
    */
   controlFormSubmission() {
@@ -914,7 +914,7 @@ const SubmissionHashing = {
       console.warn("Submission filter already bound; skipping duplicate binding");
       return;
     }
-    
+
     // block form submission until hash is set to hidden form field
     const gformsReady = emfnWindow.gform?.utils;
     if (!gformsReady?.addAsyncFilter) {
@@ -922,7 +922,7 @@ const SubmissionHashing = {
       return;
     }
 
-    gformsReady.addAsyncFilter("gform/submission/pre_submission", async (data) => {
+    gformsReady.addAsyncFilter("gform/submission/pre_submission", async data => {
       // only run on final submit, not form pagination or other submission types
       const submitType = emfnWindow.gform?.submission?.SUBMISSION_TYPE_SUBMIT;
       if (submitType && data.submissionType !== submitType) return data;
@@ -965,9 +965,9 @@ const SubmissionHashing = {
       const bits = SubmissionHashing.packActionPackBits(packedCategories);
       // encode as base36 for a shorter string
       const base36Segs = Array.from({ length: bits.length }, (_, index) => bits[index] ?? 0)
-        .map((segment) => segment.toString(36))
+        .map(segment => segment.toString(36))
         .join(".");
-        
+
       // prepend the payload prefix to identify and namespace the hash in the backend
       hashMarkerField.value = `${actionPackPayloadPrefix}${base36Segs}`;
 
@@ -978,14 +978,14 @@ const SubmissionHashing = {
     hasBoundSubmissionFilter = true;
     return;
   },
-}
+};
 
 /* ********* INITIALIZATION **********
-* - bind to Gravity Forms submission event to create hashes
-* - bind to Places v2 autocomplete selection for geolocation and risk mapping
-* - both have guards to prevent duplicate bindings in case of multiple form renders 
-*   or script load events
-*/
+ * - bind to Gravity Forms submission event to create hashes
+ * - bind to Places v2 autocomplete selection for geolocation and risk mapping
+ * - both have guards to prevent duplicate bindings in case of multiple form renders
+ *   or script load events
+ */
 
 /** only run any of this if there's a section.assessment DOM node
  * @type {HTMLElement | null}
@@ -1021,7 +1021,7 @@ if (assessmentSection) {
         formRoot.querySelector("#risks") ?? null
       );
       if (riskSection && Boolean(locData.fips) && riskSection.dataset.emfnRendered !== "1") {
-        void RiskRenderer.mapLocationToRisks().catch((error) => {
+        void RiskRenderer.mapLocationToRisks().catch(error => {
           console.error("Error mapping location to risks:", error);
         });
       }

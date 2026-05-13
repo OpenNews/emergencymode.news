@@ -3,7 +3,6 @@ set -e
 
 # Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
-export PATH="$HOME/.local/bin:$PATH"
 
 # Create venv and install all project dependencies
 uv sync

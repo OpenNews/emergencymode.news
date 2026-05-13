@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # Maintain npm dependencies
+  # Maintain npm dependencies (WordPress plugins)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -14,19 +14,8 @@ updates:
           - "minor"
           - "patch"
 
-  # Maintain Python dependencies
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
-    groups:
-      python-dependencies:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
+  # Python dependencies (notebooks) are manually maintained since they're rarely used
+  # Constrained in pyproject.toml with compatible-release ranges to reduce churn; update only when actively working on notebooks
 
   # Maintain GitHub Actions
   - package-ecosystem: "github-actions"

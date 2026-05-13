@@ -182,21 +182,64 @@ county_fips,state,county,AVLN_risk_score,CFLD_risk_score,CWAV_risk_score,DRGT_ri
 - `assets/data/_tallCategories.csv`, an export from Google Sheets of every _uniquely_ meaningful Category per quiz response
 - `assets/html-templates/` stores HTML snippets which exist within the Gravity Form "HTML field", which provides the DOM for our `#risks` info
 
-### Data Analysis Notebooks
+## Development & Dependencies
 
-The `notebooks/` directory contains the Python workflows that support the Action Pack plugin's risk data and some effort at hash-related encode/decode tests.
+### Python (Notebooks)
 
-Current notebooks:
+Python dependencies are managed with `uv` and defined in `pyproject.toml` using compatible release constraints (`~=`), allowing patch and minor version updates while keeping major versions stable.
 
-- `US_disaster_risk_analysis.ipynb` downloads FEMA NRI data and generates per-state CSVs for US states plus DC
-- `CA-MX_disaster_risk_analysis.ipynb` is a research notebook for Canada and Mexico data gaps; it does not currently generate runtime output files
-- `action_pack_roundtrip_dev.ipynb` is a dev notebook for testing Action Pack payload encoding and decoding roundtrips
+**Setup:**
+```bash
+# From repo root
+uv sync
+```
 
-Current output location:
+**Within notebooks:**
+- Cell 2 runs `uv sync` to keep the environment in sync with `uv.lock`
+- Cell 3 (using `shared_setup.py`) verifies the environment is healthy; output will recommend next steps if issues are detected
+- Each notebook's output will guide you through any upgrades needed
 
-- `plugins/emfn-action-pack-plugin/assets/data/`
+See [notebooks/README.md](notebooks/README.md) for details on the shared setup utilities.
 
-The notebooks are managed with `uv` and are not deployed to WordPress.
+### JavaScript / npm
+
+Plugin dependencies and dev tools are managed via `npm` with Dependabot automation for regular updates.
+
+```bash
+npm install
+```
+
+### GitHub Actions & Dependabot
+
+Dependency automation is configured in [.github/dependabot.yml](.github/dependabot.yml):
+
+| Ecosystem | Frequency | Notes |
+|-----------|-----------|-------|
+| `npm` | Weekly | Plugin production dependencies + dev tools |
+| `github-actions` | Weekly | Workflow & CI/CD tool updates |
+| `pip` | Disabled | Python deps manually maintained (notebooks are rarely used) |
+
+## Data Analysis Notebooks
+
+The `notebooks/` directory contains Python workflows that generate and validate FEMA National Risk Index county data consumed by the Action Pack plugin.
+
+**Current notebooks:**
+
+- `US_disaster_risk_analysis.ipynb` — Downloads FEMA NRI data and generates per-state CSVs for all 50 US states plus DC
+- `CA-MX_disaster_risk_analysis.ipynb` — Research notebook exploring Canada and Mexico data; does not currently generate runtime output
+- `action_pack_roundtrip_dev.ipynb` — Tests Action Pack payload encoding/decoding roundtrips
+
+**Setup:**
+Each notebook runs `uv sync` on startup to ensure dependencies are in sync, then verifies the environment is healthy.
+
+**Output location:**
+- `plugins/emfn-action-pack-plugin/assets/data/` (51 US state + DC CSVs)
+- `notebooks/cache/` (cached FEMA source downloads)
+
+**Managing dependencies:**
+See the [Dependency updates](#development--dependencies) section above, or refer to [notebooks/README.md](notebooks/README.md) for detailed dependency management instructions.
+
+The notebooks are managed with `uv` and are not deployed to WordPress—they support data generation and validation only.
 
 #### Recommended notebook workflow
 

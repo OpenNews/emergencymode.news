@@ -3,6 +3,7 @@ updates:
   # Maintain npm dependencies (WordPress plugins)
   - package-ecosystem: "npm"
     directory: "/"
+    target-branch: "staging"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
@@ -20,6 +21,7 @@ updates:
   # Maintain GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "staging"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5

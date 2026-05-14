@@ -1,8 +1,13 @@
 #!/bin/bash
 set -e
 
-# Install uv
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# Install uv in user space if needed
+if ! command -v uv >/dev/null 2>&1; then
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
+
+# Ensure user-level binaries are available in this shell
+export PATH="$HOME/.local/bin:$PATH"
 
 # Create venv and install all project dependencies
 uv sync

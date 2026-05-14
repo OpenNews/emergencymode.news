@@ -35,6 +35,15 @@ build/
 # Composer
 vendor/
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
 # ZIP of plugin
 emfn-action-pack-plugin.zip
 emfn-rich-search-plugin.zip

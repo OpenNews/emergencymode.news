@@ -137,7 +137,7 @@ Server-side PHP debug output only appears when `emfnDebug=true` **and** one of t
 **Sample Debug Output**
 ```bash
 <LOG_TIMESTAMP> .hashable form values: (6) ['mode-during', 'disasterType-flooding', 'size-25', 'activeReporting-true', 'pubSituation-0', 'contactPlan-true']
-<LOG_TIMESTAMP> Action Pack categories: (32) ['Flooding (1)', 'Power & connectivity (2)', 'Solo operator (1)', 'Small newsroom (1)', 'Co-located team (1)', 'Rural (3)', ...]
+<LOG_TIMESTAMP> Encoded Action Pack categories: (32) ['Flooding (1)', 'Power & connectivity (2)', 'Solo operator (1)', 'Small newsroom (1)', 'Co-located team (1)', 'Rural (3)', ...]
 
 Navigated to https://emergencymode.newspackstaging.com/start/action-pack/?actionPack=ap2.<hash>&emfnDebug=true
 

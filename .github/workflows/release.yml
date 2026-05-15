@@ -1,4 +1,4 @@
-name: Release
+gpushhname: Release
 
 on:
   push:
@@ -93,10 +93,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          TARGET_SHA="${{ github.sha }}"
           max_attempts=30
           attempt=0
           while [[ $attempt -lt $max_attempts ]]; do
-            STATUS=$(gh api repos/${{ github.repository }}/commits/$(git rev-parse HEAD)/check-runs \
+            STATUS=$(gh api repos/${{ github.repository }}/commits/$TARGET_SHA/check-runs \
               --jq '[.check_runs[] | select(.name | startswith("CodeQL")) | .conclusion] | if length == 0 then "pending" elif any(. == "failure" or . == "cancelled" or . == "timed_out" or . == "action_required" or . == "stale") then "failure" elif all(. == "success") then "success" else "pending" end')
 
             if [[ "$STATUS" == "success" ]]; then

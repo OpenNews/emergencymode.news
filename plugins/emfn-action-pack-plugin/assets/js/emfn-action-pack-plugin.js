@@ -15,7 +15,7 @@
  * @typedef {import("../../../shared/emfn-types").GFormSubmissionStartedData} GFormSubmissionStartedData
  */
 
-const version = "0.8.03"; // debugging versioning
+const version = "0.8.04"; // debugging versioning
 const riskThreshold = 85; // threshold for suggested risks
 const emfnWindow = /** @type {EmfnWindow} */ (window);
 
@@ -618,6 +618,10 @@ const SubmissionHashing = {
    * @property {string} category
    * @property {number} manual_rank
    * @property {number} [manualRank]
+   * @typedef {Object} MatchedCategory
+   * @property {string} category
+   * @property {number} count
+   * @property {number} manualRank
    * @typedef {Object} HashSet
    * @property {Object.<string, HashedCategory[]>} registry
    * @property {Map<string, number>} categoryRanks
@@ -774,11 +778,11 @@ const SubmissionHashing = {
   /**
    * Resolve ranked category matches for selected tokens.
    * @param {string[]} selectedTokens - selected semantic values from the quiz
-   * @returns {string[]}
+   * @returns {MatchedCategory[]}
    */
   resolveMatchedCategories(selectedTokens) {
-    /** @type {Map<string, number>} */
-    const categoryRanks = new Map();
+    /** @type {Map<string, MatchedCategory>} */
+    const matchedCategoriesByName = new Map();
     /** @type {string[]} */
     const categoryOrder = [];
 
@@ -790,35 +794,55 @@ const SubmissionHashing = {
         const manualRank = Number(entry.manual_rank ?? entry.manualRank ?? 0);
         if (!categoryName) return;
 
-        if (!categoryRanks.has(categoryName)) {
+        const existingMatch = matchedCategoriesByName.get(categoryName);
+        if (!existingMatch) {
           categoryOrder.push(categoryName);
-          categoryRanks.set(categoryName, manualRank);
+          matchedCategoriesByName.set(categoryName, {
+            category: categoryName,
+            count: 1,
+            manualRank,
+          });
           return;
         }
 
-        categoryRanks.set(categoryName, Math.max(categoryRanks.get(categoryName) ?? 0, manualRank));
+        existingMatch.count += 1;
+        existingMatch.manualRank = Math.max(existingMatch.manualRank, manualRank);
       });
     });
 
     return categoryOrder.sort((left, right) => {
-      const leftRank = categoryRanks.get(left) ?? 0;
-      const rightRank = categoryRanks.get(right) ?? 0;
+      const leftRank = matchedCategoriesByName.get(left)?.manualRank ?? 0;
+      const rightRank = matchedCategoriesByName.get(right)?.manualRank ?? 0;
 
       if (leftRank === rightRank) return 0;
       return rightRank - leftRank;
+    }).map(categoryName => {
+      return /** @type {MatchedCategory} */ (matchedCategoriesByName.get(categoryName));
     });
   },
 
   /**
    * Reorder selected categories into the canonical bit order used for payload encoding
-   * @param {string[]} categoryNames - selected category names
+   * @param {MatchedCategory[]} matchedCategories - selected categories with duplicate counts
+   * @returns {MatchedCategory[]}
+   */
+  getCanonicalPackedCategories(matchedCategories) {
+    const matchedCategoriesByName = new Map(
+      matchedCategories.map(categoryMatch => [categoryMatch.category, categoryMatch])
+    );
+
+    return SubmissionHashing.getActionPackCategoryOrder()
+      .map(categoryName => matchedCategoriesByName.get(categoryName) ?? null)
+      .filter(categoryMatch => categoryMatch !== null);
+  },
+
+  /**
+   * Format matched categories for debug output with their pre-dedupe counts.
+   * @param {MatchedCategory[]} matchedCategories - selected categories with duplicate counts
    * @returns {string[]}
    */
-  getCanonicalPackedCategories(categoryNames) {
-    const selectedCategoryNames = new Set(categoryNames);
-    return SubmissionHashing.getActionPackCategoryOrder().filter(categoryName => {
-      return selectedCategoryNames.has(categoryName);
-    });
+  formatPackedCategoriesForDebug(matchedCategories) {
+    return matchedCategories.map(({ category, count }) => `${category} (${count})`);
   },
 
   /**
@@ -959,10 +983,15 @@ const SubmissionHashing = {
       }
 
       const packedCategories = SubmissionHashing.getCanonicalPackedCategories(matchedCategories);
-      emfnDebug(`Encoded Action Pack categories:`, packedCategories);
 
       // pack the canonicalized categories into compact bit segments
-      const bits = SubmissionHashing.packActionPackBits(packedCategories);
+      const bits = SubmissionHashing.packActionPackBits(
+        packedCategories.map(categoryMatch => categoryMatch.category)
+      );
+      const packedCategoryLabels = SubmissionHashing.formatPackedCategoriesForDebug(
+        packedCategories
+      );
+      emfnDebug(`Encoded Action Pack categories:`, packedCategoryLabels);
       // encode as base36 for a shorter string
       const base36Segs = Array.from({ length: bits.length }, (_, index) => bits[index] ?? 0)
         .map(segment => segment.toString(36))

@@ -98,7 +98,7 @@ jobs:
           attempt=0
           while [[ $attempt -lt $max_attempts ]]; do
             STATUS=$(gh api repos/${{ github.repository }}/commits/$TARGET_SHA/check-runs \
-              --jq '[.check_runs[] | select(.name | startswith("CodeQL")) | .conclusion] | if length == 0 then "pending" elif any(. == "failure" or . == "cancelled" or . == "timed_out" or . == "action_required" or . == "stale") then "failure" elif all(. == "success") then "success" else "pending" end')
+              --jq '[.check_runs[] | select(.name | startswith("CodeQL")) | {status, conclusion}] as $runs | if ($runs | length) == 0 then "pending" elif any($runs[]; .status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out" or .conclusion == "action_required" or .conclusion == "stale")) then "failure" elif all($runs[]; .status == "completed") then "success" else "pending" end')
 
             if [[ "$STATUS" == "success" ]]; then
               echo "CodeQL passed"

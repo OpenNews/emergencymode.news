@@ -810,15 +810,17 @@ const SubmissionHashing = {
       });
     });
 
-    return categoryOrder.sort((left, right) => {
-      const leftRank = matchedCategoriesByName.get(left)?.manualRank ?? 0;
-      const rightRank = matchedCategoriesByName.get(right)?.manualRank ?? 0;
+    return categoryOrder
+      .sort((left, right) => {
+        const leftRank = matchedCategoriesByName.get(left)?.manualRank ?? 0;
+        const rightRank = matchedCategoriesByName.get(right)?.manualRank ?? 0;
 
-      if (leftRank === rightRank) return 0;
-      return rightRank - leftRank;
-    }).map(categoryName => {
-      return /** @type {MatchedCategory} */ (matchedCategoriesByName.get(categoryName));
-    });
+        if (leftRank === rightRank) return 0;
+        return rightRank - leftRank;
+      })
+      .map(categoryName => {
+        return /** @type {MatchedCategory} */ (matchedCategoriesByName.get(categoryName));
+      });
   },
 
   /**
@@ -988,9 +990,8 @@ const SubmissionHashing = {
       const bits = SubmissionHashing.packActionPackBits(
         packedCategories.map(categoryMatch => categoryMatch.category)
       );
-      const packedCategoryLabels = SubmissionHashing.formatPackedCategoriesForDebug(
-        packedCategories
-      );
+      const packedCategoryLabels =
+        SubmissionHashing.formatPackedCategoriesForDebug(packedCategories);
       emfnDebug(`Encoded Action Pack categories:`, packedCategoryLabels);
       // encode as base36 for a shorter string
       const base36Segs = Array.from({ length: bits.length }, (_, index) => bits[index] ?? 0)

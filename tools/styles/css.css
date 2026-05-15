@@ -1,0 +1,731 @@
+/*
+ * EMFN style overrides 
+ * ⏰ ONLY OCCASIONALLY, _MANUALLY_ BACKED UP TO GITHUB! ⏰ 
+ *
+ * Enqueued after the main theme stylesheet, so these styles will take 
+ * precedence over the default styles provided by the theme. 
+ * But you may still need `!important` to fight long selectors or third-party plugin CSS
+ */
+
+/*custom bkg*/
+body {
+  background-color: rgb(249, 248, 246);
+}
+
+/*custom header*/
+.h-sb header#masthead {
+  backdrop-filter: blur(12px);
+  background-color: rgba(249, 248, 246, 0.75) !important;
+  background-color: oklab(0.978916 0.00032109 0.00292373 / 0.8);
+}
+.h-sb header#masthead .middle-header-contain {
+  background-color: transparent !important;
+}
+
+/* site title*/
+.site-title a {
+  color: #c1503d !important;
+  font-size: 1rem;
+  font-family: "Roboto Slab", serif;
+}
+
+/* wide-site helper*/
+.max-width {
+  max-width: 800px !important;
+}
+
+/* Show Breadcrumbs only on Archive pages*/
+.site-breadcrumb {
+  display: none !important;
+}
+body.archive .site-breadcrumb {
+  display: inherit !important;
+}
+
+/*capitalize By in all normal bylines*/
+.entry-meta .byline:not(.sponsor-byline) > span {
+  text-transform: capitalize;
+}
+
+/* restyle border on blockquotes */
+.h-stk .entry-content [id] {
+  border-color: #b7b4af;
+}
+
+/* convert all horizontal rules to rounded-corner style */
+hr,
+.entry .entry-content > .wp-block-separator,
+.entry .entry-content > hr,
+.rounded-hr {
+  background-color: var(--newspack-theme-color-primary);
+  border-radius: 3px;
+  width: 100px !important;
+  height: 6px !important;
+}
+
+/* apply our styles to tables with .emfn-table */
+figure.emfn-table.wp-block-table > table {
+  max-width: 80% !important;
+}
+figure.emfn-table.wp-block-table thead {
+  border-color: #b7b4af;
+}
+figure.emfn-table.wp-block-table thead th {
+  border: none;
+}
+figure.emfn-table.wp-block-table tbody tr:not(:last-of-type) {
+  border: 1px solid #b7b4af;
+  border-width: 1px 0px;
+}
+figure.emfn-table.wp-block-table tbody td {
+  border-width: 0px;
+}
+figure.emfn-table.wp-block-table.is-style-stripes tbody tr:nth-child(odd) {
+  background-color: #efece7;
+}
+
+/* apply our styles to Details blocks*/
+.wp-block-details {
+  border-width: 0px;
+  border-bottom: 1px solid #b7b4af;
+  display: block;
+  width: 100%;
+  margin-bottom: 32px !important;
+}
+.wp-block-details:last-of-type {
+  border-bottom-width: 0px;
+}
+
+/*knock out magins on .above-footer widget content*/
+.above-footer-widgets .wrapper {
+  margin: auto;
+  max-width: 100vw;
+  width: auto;
+}
+.above-footer-widgets .wrapper .above-footer.widget {
+  margin-bottom: 0px !important;
+}
+
+/*hide breadcrumbs on homepage*/
+body.home .site-breadcrumb {
+  display: none !important;
+}
+
+/* Content - Breadcrumbs */
+@media (min-width: 782px) {
+  .site-breadcrumb {
+    margin: 1.5rem 0 0.25rem;
+  }
+}
+
+.site-breadcrumb .wrapper > span {
+  color: var(--newspack-theme-color-text-main);
+  display: flex;
+  flex-wrap: wrap;
+  font-family: var(--newspack-theme-font-display);
+  font-size: 14px;
+  gap: 0.5em;
+}
+
+.site-breadcrumb .breadcrumb_last {
+  font-weight: bold;
+  border-bottom: 2px solid var(--newspack-theme-color-secondary);
+}
+
+/*hide search bar in header*/
+body.home .header-search-contain {
+  display: none !important;
+}
+
+/*hide >4 categories on Post pages (9 = 4, because hidden commas) */
+/* Newspack's 'only show Yoast primary category' flag SHOULD drive this, but if it is turned off this is a catch-all */
+.cat-links > :nth-child(n + 9) {
+  display: none;
+}
+
+/*left-align logo*/
+.h-sh.h-ll .site-branding {
+  margin-right: auto;
+}
+
+/*right-align primary and tertiary navs */
+.h-sh .site-header .wrapper {
+  justify-content: space-between;
+}
+
+/* drop forced separation of nav locations*/
+.h-sh.h-ll.hide-site-tagline.has-tertiary-menu .nav-wrapper + .nav-wrapper {
+  margin-left: 10px;
+}
+
+/*convert nav3/tertiary to our style of button*/
+.site-header .nav3 li a {
+  background-color: #c1503d !important;
+  color: #fff !important;
+  border-radius: 32px;
+  padding: 6px 24px;
+  text-align: center;
+}
+
+/*restyle footer text*/
+.site-info,
+.site-info a {
+  color: var(--newspack-theme-color-primary);
+  font-weight: 200;
+  font-style: normal;
+  font-size: var(--wp--preset--font-size--small) !important;
+}
+
+/** ********** ACTION PACK ********** 
+ * styles for Action Pack quiz & response page
+ * - .action-item -- link recommendations inline in the quiz
+ * - #fema-risks -- disclaimer about FEMA data inline in the quiz
+ * - .emfn-content-cards -- "rounded box" styles for Content Loop entries
+ * - .category-republishable -- peach background for Republishable category cards
+ * - overrides for the specific . Content Loop on the Action Pack page
+ * note: some styles also come from the Action Pack plugin itself, which is a bit messy but was 
+ * faster than trying to override all the plugin styles with more specific selectors
+ */
+/* action items*/
+.action-item {
+  background-color: oklab(0.98 -0.02 0.01);
+  border-radius: 16px;
+  padding: 20px;
+  color: #009966;
+  list-style: none;
+  margin: 0px;
+}
+.action-item p {
+  margin: 0px;
+}
+.action-item a,
+.action-item a:link,
+.action-item a:visited {
+  color: #00724c;
+}
+.action-item li.template {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.action-item li.template .material-symbols-outlined {
+  flex-shrink: 0;
+  float: none;
+}
+
+/* FEMA risk explanation within question Description */
+#fema-risks {
+  margin: 0px;
+  padding: 0px;
+  font-size: var(--newspack-theme-font-size-xs);
+}
+
+/* Center title only in Action Pack pages*/
+body.parent-pageid-284 .entry-header {
+  text-align: center;
+}
+
+/*Content Loop adjustments*/
+.emfn-content-cards.wpnbha .article-section-title {
+  border-bottom: 1px solid #e3e1dd;
+}
+.archive article.entry .entry-content > * {
+  border-top: 1px solid #e3e1dd;
+  padding-top: 0px;
+  margin-top: 0px;
+}
+.emfn-content-cards.wpnbha article,
+.archive article.entry {
+  padding: 24px 36px 20px 36px;
+  background-color: #fff;
+  border-radius: 24px;
+  border: 1px solid #e2e2e2;
+  box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
+}
+
+/* Republishable Card Peach */
+.emfn-content-cards.wpnbha article.category-republishable {
+  background-color: #fff7ed;
+  border: 1px solid #ffd7a8;
+}
+.emfn-content-cards.wpnbha article.category-republishable .entry-wrapper .entry-meta {
+  border-top-color: #ffd7a8;
+}
+/* Republishable Category link */
+.emfn-content-cards.wpnbha article.category-republishable .cat-links a {
+  color: #9f2d00;
+  border: 1px solid #ffd7a8;
+  background-color: #efece750;
+}
+
+/*all Card Categories*/
+.emfn-content-cards.wpnbha .cat-links a {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  color: var(--newspack-theme-color-text-light);
+  gap: 0em 1em;
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.emfn-content-cards.wpnbha .cat-links a:hover,
+.emfn-content-cards.wpnbha .cat-links a:link:hover {
+  border-color: #999;
+  color: var(--newspack-theme-color-text-medium);
+  background-color: #efece790;
+  text-decoration-color: var(--newspack-theme-color-text-medium);
+}
+.emfn-content-cards.wpnbha .entry-sponsors {
+  width: auto;
+}
+.emfn-content-cards.wpnbha .entry-sponsors.plus-author:not(:last-child) {
+  margin-bottom: 0;
+}
+
+/*Card bylines*/
+.emfn-content-cards.wpnbha .entry-wrapper .entry-meta {
+  color: var(--newspack-theme-color-text-light);
+  border-top: 1px solid #efece7;
+  gap: 0.5em 0.25em;
+  margin-top: 12px;
+  padding-top: 12px;
+}
+.emfn-content-cards.wpnbha .entry-wrapper .entry-meta,
+.emfn-content-cards.wpnbha .entry-sponsors.plus-author {
+  color: var(--newspack-theme-color-text-light);
+  font-size: 13px !important;
+}
+.emfn-content-cards.wpnbha .entry-wrapper .entry-meta .byline,
+.emfn-content-cards.wpnbha .entry-wrapper .entry-meta .entry-date {
+  margin-right: 10px;
+}
+
+/* Article body*/
+.emfn-content-cards.wpnbha .entry-wrapper p {
+  padding: 6px 0px;
+}
+.single:not(.has-large-featured-image) .entry-header {
+  border-bottom-color: #ccc;
+}
+
+/* Content Loop load-more button */
+.emfn-content-cards.wpnbha.has-more-button button {
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #888;
+  box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
+  color: var(--newspack-theme-color-primary);
+  margin-top: 2em;
+  padding: 14px 18px;
+}
+.emfn-content-cards.wpnbha.has-more-button button:hover {
+  background-color: #e8e8e8;
+  border-color: #666;
+}
+
+/** ********** SPONSOR & CATEGORY LABELS ********** 
+ * styles for Action Pack quiz & response page
+ * - hide the "Sponsor/Partner" category label that appears on Posts
+ * - convert default category and tag styles to our button style, for both Card and non-Card contexts
+ */
+/* hide all sponsor labels */
+.cat-links span.flag,
+.archive article .sponsor-label {
+  display: none;
+}
+
+/* alter non-Card Category labels */
+.cat-links a {
+  color: #fff;
+  text-transform: none;
+  border: 1px solid var(--newspack-theme-color-primary-darken-10);
+  background-color: var(--newspack-theme-color-primary);
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  text-decoration: none;
+}
+.cat-links a:hover {
+  background-color: var(--newspack-theme-color-primary-darken-10);
+}
+
+/* alter non-Card Tags */
+.tags-links a {
+  border: 1px solid #ccc;
+  background-color: #fff;
+  padding: 10px 15px;
+  border-radius: 8px;
+  line-height: 1em;
+  text-decoration: none;
+  box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
+}
+.tags-links a:hover {
+  border-color: #999;
+}
+
+/** 
+ * Category pill colors 
+ * used tetradic colors off https://www.colorhexa.com/e7bbb4
+ */
+/* all Resource pills & Timing category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href] {
+  --cat-color: #f1f1f1;
+  background-color: var(--cat-color);
+  border: 1px solid color-mix(in srgb, var(--cat-color), black 15%);
+  color: color-mix(in srgb, var(--cat-color), black 66%);
+}
+
+/* Disaster category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/disasters/"] {
+  --cat-color: #e7bbb4;
+}
+
+/* Operational Challenge category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/challenge/"] {
+  --cat-color: #b4e7bb;
+}
+/* Type category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/type/"] {
+  --cat-color: #b4e0e7;
+}
+/* Newsroom Condition category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/newsroom-condition/"] {
+  --cat-color: #e7b4e0;
+}
+
+/** ********** JETPACK AI SEARCH ********** 
+ * styles overrides for Jetpack AI search box and results
+ * -
+ */
+/*Jetpack AI search*/
+.emfn-ai-search {
+  min-height: 50px;
+  width: 100%;
+}
+.emfn-ai-search .jetpack-ai-chat-question-wrapper,
+.emfn-ai-search .jetpack-ai-chat-question-input {
+  margin: 0px !important;
+}
+.emfn-ai-search input[type="text"],
+.emfn-ai-search button[type="button"] {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
+  color: var(--newspack-theme-color-primary);
+  padding: 14px 18px;
+  border: 1px solid #888;
+  color: #c1503d;
+  height: 50px !important;
+}
+.emfn-ai-search input[type="text"]:focus {
+  background-color: #fff;
+  border-color: #c1503d;
+  box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
+}
+.emfn-ai-search button[type="button"]:hover,
+.emfn-ai-search button[type="button"]:active,
+.emfn-ai-search button[type="button"]:focus {
+  background-color: #e8e8e8;
+  box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
+  border-color: #777;
+  color: #c1503d;
+}
+.emfn-ai-search .jetpack-ai-chat-copy-button {
+  padding: 0px 10px;
+}
+
+/** ********** SYMBOLS FONT ********** 
+ * classes to add to underlying HTML to trigger type changes 
+ * used in a few places, but especially in the big CTA buttons (see below)
+ */
+.material-symbols-outlined,
+.material-symbols-outlined > a {
+  background-color: transparent;
+  font-family: "Material Symbols Outlined", sans-serif;
+  font-weight: 600;
+  font-style: normal;
+  font-size: 50px;
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
+  max-height: 50px;
+  width: auto;
+  overflow: hidden;
+  text-align: center;
+}
+.floated-icon {
+  float: left;
+  padding-right: 10px;
+  max-width: 46px;
+  overflow: hidden;
+}
+.wp-block-columns .wp-block-column .wp-block-heading > span.material-symbols-outlined {
+  margin-top: -5px;
+  float: left;
+  margin-right: 5px;
+}
+
+/** ********** BIG BUTTONS ********** 
+ * larger CTA buttons with symbols, used on the homepage to lead into 
+ * the Gravity Forms quiz
+ */
+.big-buttons {
+  gap: 24px;
+}
+.big-button > a {
+  border-radius: 16px;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  padding: 36px 48px !important;
+  box-shadow:
+    rgb(0, 0, 0) 0px 0px 0px 0px,
+    rgba(0, 0, 0, 0.95) 0px 0px 0px 1px;
+  max-width: 250px;
+  scale: 1;
+  transition-duration: 0.3s;
+  transition-property: var(--broad-transition);
+  transition-timing-function: var(--transition-timing);
+}
+.big-button > a > .material-symbols-outlined {
+  padding-bottom: 16px;
+  width: 50px;
+}
+.big-button > a > small {
+  display: block;
+  padding-top: 16px !important;
+}
+.big-button:hover > a:hover {
+  background-color: #ffffff30 !important;
+  scale: 1.05;
+  transition-duration: 0.3s;
+  transition-property: var(--broad-transition);
+  transition-timing-function: var(--transition-timing);
+}
+/* `during` orange variant */
+.big-button.alert-orange > a {
+  background-color: rgba(218, 70, 45, 0.3) !important;
+  box-shadow:
+    rgb(0, 0, 0) 0px 0px 0px 0px,
+    rgb(0, 0, 0) 0px 0px 0px 0px,
+    rgb(27, 34, 50) 0px 0px 0px 2px,
+    oklab(0.596448 0.159356 0.104125 / 0.2) 0px 0px 0px 4px,
+    rgb(0, 0, 0) 0px 0px 0px 0px;
+}
+.big-button.alert-orange:hover > a:hover {
+  background-color: rgba(218, 70, 45, 0.36) !important;
+}
+
+/** ********** HERO ********** 
+ * homepage hero styles, including the big headline and the "disaster" word animation
+ */
+#emfn-hero-h1 {
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 1.2;
+  text-align: center;
+  margin: 0;
+  text-wrap: balance;
+  overflow-wrap: balance;
+}
+#emfn-disaster-wrap {
+  display: block;
+  position: relative;
+  text-align: center;
+  color: #c1503d;
+}
+.emfn-word {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #c1503d;
+  opacity: 0;
+  transition:
+    opacity 0.45s ease-in-out,
+    transform 0.45s ease-in-out;
+  transform: translateY(6px);
+  pointer-events: none;
+}
+.emfn-word.emfn-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/** ********** YOAST FAQ ********** 
+ * homepage FAQ styles, including the question and answer formatting
+ */
+.schema-faq .schema-faq-section {
+  margin: 50px 0px;
+}
+
+.schema-faq .schema-faq-section .schema-faq-question:before {
+  /* 	content: "Q. ";
+	content: "ⓘ "; */
+  content: "🛈 ";
+  color: var(--newspack-theme-color-primary) !important;
+  font-size: var(--newspack-theme-font-size-md);
+  font-weight: 500;
+  text-align: top;
+  width: 33px;
+  display: inline-block;
+}
+.schema-faq .schema-faq-section .schema-faq-answer {
+  font-size: var(--newspack-theme-font-size-sm);
+}
+
+/** ********** Newspack Tabs ********** 
+ * override styles for newspack tabs in Pages
+ */
+.emfn-tabs.wp-block-newspack-tabs {
+  background-color: transparent;
+}
+.emfn-tabs.wp-block-newspack-tabs .tab-item.is-active {
+  background-color: #fff;
+  border: 1px solid #e8e8e8;
+}
+
+/** ********** FACETWP CARDS ********** 
+ * styles for the cards that appear in the FacetWP search results on the Resources page, 
+ * which are separate from the main Content Loop cards and need some specific overrides to match our styles
+ */
+.fwpl-result {
+  background-color: #fff !important;
+  border-radius: 24px !important;
+  border: 1px solid #e2e2e2 !important;
+  box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px !important;
+  padding: 24px 36px 20px 36px !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Title */
+.fwpl-item.el-ywvhp a {
+  font-size: 1.2em !important;
+  font-weight: 700 !important;
+  color: #1b2232 !important;
+  text-decoration: none !important;
+  font-family: var(--newspack-theme-font-heading) !important;
+}
+
+.fwpl-item.el-ywvhp a:hover {
+  color: var(--newspack-theme-color-primary) !important;
+}
+
+/* Author and date - same size */
+.fwpl-item.el-7y595n,
+.fwpl-item.el-amrzwf {
+  font-size: 13px !important;
+  color: var(--newspack-theme-color-text-light) !important;
+  display: inline !important;
+  margin-right: 0.75rem !important;
+}
+
+/* Excerpt/subtitle */
+.fwpl-item.el-zz14v8 {
+  font-size: var(--newspack-theme-font-size-sm) !important;
+  font-style: italic !important;
+  line-height: 1.6 !important;
+  margin-top: 0.4rem !important;
+}
+
+/* Keep Reading */
+.fwpl-item.el-qpacxb {
+  margin-top: 8px !important;
+  display: block !important;
+}
+
+.fwpl-btn {
+  color: #1b2232 !important;
+  text-decoration: underline !important;
+  font-size: 0.9em !important;
+}
+
+.fwpl-btn:hover {
+  color: var(--newspack-theme-color-primary) !important;
+}
+
+.facetwp-counter {
+  display: none !important;
+}
+
+/* Search bar */
+.facetwp-search {
+  border: 1px solid #ccc !important;
+  border-radius: 8px !important;
+  padding: 10px 16px !important;
+  font-size: var(--newspack-theme-font-size-sm) !important;
+  width: 100% !important;
+  background-color: #fff !important;
+  color: var(--newspack-theme-color-text-main) !important;
+}
+
+.facetwp-search:focus {
+  border-color: #1b2232 !important;
+  outline: none !important;
+}
+
+/* Category pills border top */
+.fwpl-item.el-lvcwxa {
+  border-top: 1px solid #efece7 !important;
+  padding-top: 12px !important;
+  margin-top: 12px !important;
+  font-size: 0 !important;
+}
+
+.fwpl-term {
+  font-size: 14px !important;
+}
+
+/* Default pills */
+.fwpl-term a {
+  background-color: #f1f1f1 !important;
+  border: 1px solid #d9d9d9 !important;
+  color: #515151 !important;
+  display: inline-block !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  margin: 0 4px 6px 0 !important;
+  text-decoration: none !important;
+  font-size: 0.8em !important;
+}
+
+.fwpl-term a:hover {
+  border-color: #999 !important;
+  background-color: #e8e8e8 !important;
+}
+
+/** 
+ * Category pill colors 
+ * used tetradic colors off https://www.colorhexa.com/e7bbb4
+ */
+/* all Resource pills & Timing category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href],
+.fwpl-term a[href] {
+  --cat-color: #f1f1f1;
+  background-color: var(--cat-color) !important;
+  border: 1px solid color-mix(in srgb, var(--cat-color), black 15%) !important;
+  color: color-mix(in srgb, var(--cat-color), black 66%) !important;
+}
+
+/* Disaster category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/disasters/"],
+.fwpl-term a[href*="/resources/disasters/"] {
+  --cat-color: #e7bbb4;
+}
+
+/* Operational Challenge category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/challenge/"],
+.fwpl-term a[href*="/resources/challenge/"] {
+  --cat-color: #b4e7bb;
+}
+/* Type category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/type/"],
+.fwpl-term a[href*="/resources/type/"] {
+  --cat-color: #b4e0e7;
+}
+/* Newsroom Condition category group*/
+.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/newsroom-condition/"],
+.fwpl-term a[href*="/resources/newsroom-condition/"] {
+  --cat-color: #e7b4e0;
+}

@@ -1,6 +1,6 @@
 {
   "name": "emergencymode-news",
-  "version": "1.0.0",
+  "version": "0.0.3",
   "description": "emergencymode.news scripts, Notebooks and WordPress customizations",
   "private": true,
   "scripts": {
@@ -11,6 +11,6 @@
     "lint": "npm run format:check && npm run notebooks:check-clean"
   },
   "devDependencies": {
-    "prettier": "^3.2.5"
+    "prettier": "^3.8.3"
   }
 }

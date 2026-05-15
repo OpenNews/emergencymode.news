@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  checks: read
 
 jobs:
   release:
@@ -68,9 +69,11 @@ jobs:
         run: ./scripts/sync-release-version.sh "${{ steps.version.outputs.version }}"
 
       - name: Commit synced versions
+        id: commit_versions
         if: steps.check_skip.outputs.skip != 'true'
         run: |
           if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -83,7 +86,38 @@ jobs:
             plugins/emfn-rich-search-plugin/emfn-rich-search-plugin.php \
             plugins/emfn-rich-search-plugin/readme.txt
           git commit -m "chore(release): sync versions to ${{ steps.version.outputs.tag }}"
-          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for CodeQL
+        if: steps.check_skip.outputs.skip != 'true' && steps.commit_versions.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          max_attempts=30
+          attempt=0
+          while [[ $attempt -lt $max_attempts ]]; do
+            STATUS=$(gh api repos/${{ github.repository }}/commits/$(git rev-parse HEAD)/check-runs \
+              --jq '[.check_runs[] | select(.name | startswith("CodeQL")) | .conclusion] | if length == 0 then "pending" elif any(. == "failure" or . == "cancelled" or . == "timed_out" or . == "action_required" or . == "stale") then "failure" elif all(. == "success") then "success" else "pending" end')
+
+            if [[ "$STATUS" == "success" ]]; then
+              echo "CodeQL passed"
+              exit 0
+            elif [[ "$STATUS" == "failure" ]]; then
+              echo "CodeQL failed"
+              exit 1
+            fi
+
+            echo "CodeQL still running... (attempt $((attempt + 1))/$max_attempts)"
+            sleep 10
+            attempt=$((attempt + 1))
+          done
+
+          echo "CodeQL check timed out"
+          exit 1
+
+      - name: Push synced versions
+        if: steps.check_skip.outputs.skip != 'true' && steps.commit_versions.outputs.changed == 'true'
+        run: git push
 
       - name: Build release assets
         if: steps.check_skip.outputs.skip != 'true'

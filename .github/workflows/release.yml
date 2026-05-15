@@ -8,11 +8,9 @@ on:
 
 permissions:
   contents: write
-  checks: read
 
 jobs:
   release:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     steps:
@@ -21,33 +19,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check if latest commit is version sync
-        id: check_skip
-        run: |
-          LATEST_MSG=$(git log -1 --pretty=%s)
-          if [[ "$LATEST_MSG" =~ ^chore\(release\):\ sync\ versions ]]; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "Latest commit is already a version sync, skipping release"
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Setup Node
-        if: steps.check_skip.outputs.skip != 'true'
         uses: actions/setup-node@v6
         with:
           node-version: 20
 
       - name: Install dependencies
-        if: steps.check_skip.outputs.skip != 'true'
         run: npm ci
 
       - name: Run lint
-        if: steps.check_skip.outputs.skip != 'true'
         run: npm run lint
 
       - name: Get next version
-        if: steps.check_skip.outputs.skip != 'true'
         id: version
         run: |
           LATEST=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | head -n1)
@@ -65,77 +48,12 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Sync version files
-        if: steps.check_skip.outputs.skip != 'true'
         run: ./scripts/sync-release-version.sh "${{ steps.version.outputs.version }}"
 
-      - name: Commit synced versions
-        id: commit_versions
-        if: steps.check_skip.outputs.skip != 'true'
-        run: |
-          if git diff --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json \
-            pyproject.toml \
-            plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php \
-            plugins/emfn-action-pack-plugin/readme.txt \
-            plugins/emfn-rich-search-plugin/emfn-rich-search-plugin.php \
-            plugins/emfn-rich-search-plugin/readme.txt
-          git commit -m "chore(release): sync versions to ${{ steps.version.outputs.tag }}"
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
-      - name: Push synced versions
-        if: steps.check_skip.outputs.skip != 'true' && steps.commit_versions.outputs.changed == 'true'
-        run: git push
-
-      - name: Wait for CodeQL
-        if: steps.check_skip.outputs.skip != 'true' && steps.commit_versions.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          TARGET_SHA="${{ steps.commit_versions.outputs.sha }}"
-          max_attempts=60
-          attempt=0
-          
-          echo "Waiting for CodeQL to start and complete on commit $TARGET_SHA..."
-          
-          while [[ $attempt -lt $max_attempts ]]; do
-            RESPONSE=$(gh api repos/${{ github.repository }}/commits/$TARGET_SHA/check-runs 2>&1) || {
-              echo "API call failed, retrying..."
-              sleep 10
-              attempt=$((attempt + 1))
-              continue
-            }
-            
-            STATUS=$(echo "$RESPONSE" | jq -r '[.check_runs[] | select(.name | startswith("CodeQL")) | {status, conclusion}] as $runs | if ($runs | length) == 0 then "pending" elif any($runs[]; .status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out" or .conclusion == "action_required" or .conclusion == "stale")) then "failure" elif all($runs[]; .status == "completed") then "success" else "pending" end')
-
-            if [[ "$STATUS" == "success" ]]; then
-              echo "✓ CodeQL passed"
-              exit 0
-            elif [[ "$STATUS" == "failure" ]]; then
-              echo "✗ CodeQL failed"
-              exit 1
-            fi
-
-            echo "CodeQL still running... (attempt $((attempt + 1))/$max_attempts)"
-            sleep 10
-            attempt=$((attempt + 1))
-          done
-
-          echo "⏱ CodeQL check timed out after $((max_attempts * 10)) seconds"
-          exit 1
-
       - name: Build release assets
-        if: steps.check_skip.outputs.skip != 'true'
         run: ./scripts/build-release-assets.sh "${{ steps.version.outputs.version }}" dist
 
       - name: Create GitHub Release
-        if: steps.check_skip.outputs.skip != 'true'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag }}
@@ -145,7 +63,6 @@ jobs:
             dist/*.zip
 
       - name: Update floating latest and major tags
-        if: steps.check_skip.outputs.skip != 'true'
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           MAJOR=$(echo "$TAG" | sed 's/v\([0-9]*\).*/\1/')

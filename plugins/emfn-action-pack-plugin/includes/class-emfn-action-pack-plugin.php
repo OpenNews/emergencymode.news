@@ -110,14 +110,19 @@ class EMFN_Action_Pack_Plugin {
     }
 
     /**
-     * Allow CSV files from this plugin to appear in the Plugin File Editor.
+     * Allow CSV files to appear in the Plugin File Editor.
+     *
+     * Note: The `editable_extensions` filter receives the editor context
+     * ('plugins' or 'themes') as its second argument, not an individual plugin
+     * basename, so this addition applies to all plugins when the Plugin File
+     * Editor is active.
      *
      * @param array<int, string> $extensions Editable file extensions.
-     * @param string             $plugin     Plugin basename relative to the plugins directory.
+     * @param string             $context    Editor context: 'plugins' or 'themes'.
      * @return array<int, string>
      */
-    public function add_plugin_editable_extensions( $extensions, $plugin ) {
-        if ( plugin_basename( EMFN_ACTION_PACK_PLUGIN_DIR . 'emfn-action-pack-plugin.php' ) !== $plugin ) {
+    public function add_plugin_editable_extensions( $extensions, $context ) {
+        if ( 'plugins' !== $context ) {
             return $extensions;
         }
 

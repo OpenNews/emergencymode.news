@@ -25,9 +25,9 @@ The repo also includes Python notebooks that generate and validate FEMA National
 emergencymode.news/
 ├── .devcontainer/                          # Devcontainer config & setup script for local work
 ├── .github/
-│   ├── dependabot.yml                      # Automated dependency updates (npm, pip, GitHub Actions)
+│   ├── dependabot.yml                      # Automated dependency updates (npm, GitHub Actions)
 │   └── workflows/
-│       └── release.yml                     # Automated updates on PR-merge to main
+│       └── release.yml                     # Automated release workflow on push to main
 ├── notebooks/                              # Python notebooks for risk-data generation and research
 │   ├── US_disaster_risk_analysis.ipynb     # Action Pack #risks work
 │   ├── CA-MX_disaster_risk_analysis.ipynb  # draft of possible expansion 
@@ -105,22 +105,27 @@ The plugin returns `true` from `is_action_pack_page_request()` if **any** of the
 
 **Debug Mode (`emfnDebug=true`)**
 
-Add `&emfnDebug=true` to any Action Pack URL to enable detailed logging of payload encoding/decoding:
+Add `&emfnDebug=true` to Action Pack URLs to request debug logging:
 
 ```
 https://emergencymode.newspackstaging.com/start/action/?mode=mode-during&emfnDebug=true
 https://emergencymode.newspackstaging.com/start/action-pack/?actionPack=ap2.xyz123&emfnDebug=true
 ```
 
+Server-side PHP debug output only appears when `emfnDebug=true` **and** one of the following is true:
+- Current user can `manage_options`
+- WordPress environment is not `production`
+- `WP_DEBUG` is enabled
+
 **What Gets Logged:**
 - **Client-side JS (browser console):** Form values, category mappings, encoded payloads
-- **Server-side PHP (footer `<script>`):** Decoded categories, resolved term IDs, applied block filters
+- **Server-side PHP (footer `<script>`):** Payload presence signal, decoded categories, resolved term IDs, applied block filters
 
 **Where to Look:**
 - Open browser DevTools Console (F12)
 - Enable "Persist logs" to preserve output across page navigation
 - PHP debug entries appear as `console.debug()` calls in footer scripts
-- Look for "EMFN Action Pack PHP debug v1" marker followed by decode data
+- Look for `EMFN:` prefixes on PHP debug labels
 
 **When to Use:**
 - Form not redirecting with proper `actionPack` parameter
@@ -132,15 +137,15 @@ https://emergencymode.newspackstaging.com/start/action-pack/?actionPack=ap2.xyz1
 **Sample Debug Output**
 ```bash
 <LOG_TIMESTAMP> .hashable form values: (6) ['mode-during', 'disasterType-flooding', 'size-25', 'activeReporting-true', 'pubSituation-0', 'contactPlan-true']
-<LOG_TIMESTAMP> Action Pack categories: (32) ['Flooding', 'Power & connectivity', 'Solo operator', 'Small newsroom', 'Fully remote', 'Co-located newsroom', 'Multilingual or non-English audience', 'Rural', 'Urban', ...]
+<LOG_TIMESTAMP> Encoded Action Pack categories: (32) ['Flooding (1)', 'Power & connectivity (2)', 'Solo operator (1)', 'Small newsroom (1)', 'Co-located team (1)', 'Rural (3)', ...]
 
 Navigated to https://emergencymode.newspackstaging.com/start/action-pack/?actionPack=ap2.<hash>&emfnDebug=true
 
-<LOG_TIMESTAMP> EMFN Action Pack PHP debug v1
-<LOG_TIMESTAMP> decode_action_pack_bitmask_payload: (32) ['Flooding', 'Power & connectivity', 'Solo operator', 'Small newsroom', 'Fully remote', 'Co-located newsroom', 'Multilingual or non-English audience', 'Rural', 'Urban', ...]
-<LOG_TIMESTAMP> newspack block categories applied {
-  categories: (23) [3, 107, 121, 122, 73, 74, 110, 111, ...]
-  className: "emfn-action-pack emfn-content-cards is-style-default"
+<LOG_TIMESTAMP> EMFN: Block categories applied {
+  categoryIDs: (23) [3, 153, 121, 122, 72, 151, ...],
+  categoryNames: ['Flooding', 'Power & connectivity', 'Solo operator', 'Small newsroom', 'Co-located team', 'Rural', ...],
+  className: "emfn-action-pack emfn-content-cards is-style-default",
+}
 ```
 
 ### Action Pack Flow
@@ -161,7 +166,7 @@ The Action Pack operates in two phases, with payload encoding/decoding coordinat
 - Resolves Category names → WordPress term IDs
 - Filters Newspack Content Loop blocks with `.emfn-action-pack` class to matched categories
 - URL is shareable; returns user to same personalized Action Pack configuration
-- Debug mode (`&emfnDebug=true`) logs decoded categories and IDs to browser console
+- Debug mode (`&emfnDebug=true`) logs decode details when PHP debug gating conditions are met
 
 ### Risk data flow
 
@@ -299,7 +304,7 @@ Node-side repo tooling is intentionally small:
 This repo uses Dependabot (`.github/dependabot.yml`) for automated dependency management:
 
 - **npm dependencies:** Weekly updates with grouped minor/patch PRs
-- **Python/pip dependencies:** Weekly updates with grouped minor/patch PRs
+- **Python/pip dependencies:** Not configured in Dependabot; notebook deps are maintained manually
 - **GitHub Actions:** Weekly updates for workflow dependencies
 
 Dependabot PRs can be auto-merged after CI passes, enabling frequent maintenance with minimal manual intervention.
@@ -407,7 +412,7 @@ Testing will enable safe auto-merge of Dependabot PRs and provide confidence in 
 - **Causes:** CSV category order mismatch, invalid base36 encoding
 - **Solutions:**
   - Confirm WordPress not in safe mode or plugin not disabled
-  - Enable debug mode (`&emfnDebug=true`) to see decoded categories
+  - Enable debug mode (`&emfnDebug=true`) and ensure PHP debug gating conditions are met
   - Verify `_tallCategories.csv` is identical on client and server
   - Check payload format starts with `ap2.` prefix
   - Confirm category order hasn't changed between encoding and decoding

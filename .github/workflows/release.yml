@@ -87,24 +87,38 @@ jobs:
             plugins/emfn-rich-search-plugin/readme.txt
           git commit -m "chore(release): sync versions to ${{ steps.version.outputs.tag }}"
           echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Push synced versions
+        if: steps.check_skip.outputs.skip != 'true' && steps.commit_versions.outputs.changed == 'true'
+        run: git push
 
       - name: Wait for CodeQL
         if: steps.check_skip.outputs.skip != 'true' && steps.commit_versions.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TARGET_SHA="${{ github.sha }}"
-          max_attempts=30
+          TARGET_SHA="${{ steps.commit_versions.outputs.sha }}"
+          max_attempts=60
           attempt=0
+          
+          echo "Waiting for CodeQL to start and complete on commit $TARGET_SHA..."
+          
           while [[ $attempt -lt $max_attempts ]]; do
-            STATUS=$(gh api repos/${{ github.repository }}/commits/$TARGET_SHA/check-runs \
-              --jq '[.check_runs[] | select(.name | startswith("CodeQL")) | {status, conclusion}] as $runs | if ($runs | length) == 0 then "pending" elif any($runs[]; .status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out" or .conclusion == "action_required" or .conclusion == "stale")) then "failure" elif all($runs[]; .status == "completed") then "success" else "pending" end')
+            RESPONSE=$(gh api repos/${{ github.repository }}/commits/$TARGET_SHA/check-runs 2>&1) || {
+              echo "API call failed, retrying..."
+              sleep 10
+              attempt=$((attempt + 1))
+              continue
+            }
+            
+            STATUS=$(echo "$RESPONSE" | jq -r '[.check_runs[] | select(.name | startswith("CodeQL")) | {status, conclusion}] as $runs | if ($runs | length) == 0 then "pending" elif any($runs[]; .status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out" or .conclusion == "action_required" or .conclusion == "stale")) then "failure" elif all($runs[]; .status == "completed") then "success" else "pending" end')
 
             if [[ "$STATUS" == "success" ]]; then
-              echo "CodeQL passed"
+              echo "✓ CodeQL passed"
               exit 0
             elif [[ "$STATUS" == "failure" ]]; then
-              echo "CodeQL failed"
+              echo "✗ CodeQL failed"
               exit 1
             fi
 
@@ -113,12 +127,8 @@ jobs:
             attempt=$((attempt + 1))
           done
 
-          echo "CodeQL check timed out"
+          echo "⏱ CodeQL check timed out after $((max_attempts * 10)) seconds"
           exit 1
-
-      - name: Push synced versions
-        if: steps.check_skip.outputs.skip != 'true' && steps.commit_versions.outputs.changed == 'true'
-        run: git push
 
       - name: Build release assets
         if: steps.check_skip.outputs.skip != 'true'

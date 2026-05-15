@@ -213,8 +213,13 @@ class EMFN_Action_Pack_Plugin {
      * @return void
      */
     private function queue_action_pack_debug_entry( $label, $value ) {
+        $normalized_label = trim( (string) $label );
+        if ( 0 !== strpos( $normalized_label, 'EMFN:' ) ) {
+            $normalized_label = 'EMFN: ' . $normalized_label;
+        }
+
         $this->action_pack_debug_entries[] = array(
-            'label' => $label,
+            'label' => $normalized_label,
             'value' => $value,
         );
     }
@@ -222,12 +227,15 @@ class EMFN_Action_Pack_Plugin {
     /**
      * Ensure PHP-side Action Pack debug entries are populated for this request.
      *
-     * @param string $payload Raw Action Pack payload from the request.
      * @return void
      */
-    private function prime_action_pack_debug_entries( $payload ) {
+    private function prime_action_pack_debug_entries() {
         if ( empty( $this->action_pack_debug_entries ) ) {
-            $this->queue_action_pack_debug_entry( 'PHP raw payload:', $payload );
+            $category_names = $this->get_action_pack_category_names_from_request();
+            $this->queue_action_pack_debug_entry( 'Action Pack payload detected', array(
+                'payloadPresent' => true,
+                'categoryNames'  => $category_names
+            ) );
         }
 
         $this->get_action_pack_category_names_from_request();
@@ -252,7 +260,17 @@ class EMFN_Action_Pack_Plugin {
             $debug_flag = wp_unslash( $_GET['emfnDebug'] );
         }
 
-        return is_string( $debug_flag ) && 'true' === strtolower( trim( wp_unslash( $debug_flag ) ) );
+        if ( ! is_string( $debug_flag ) || 'true' !== strtolower( trim( wp_unslash( $debug_flag ) ) ) ) {
+            return false;
+        }
+
+        $is_privileged_user = is_user_logged_in() && current_user_can( 'manage_options' );
+
+        $environment_type  = function_exists( 'wp_get_environment_type' ) ? wp_get_environment_type() : 'production';
+        $is_non_production = 'production' !== $environment_type;
+        $is_wp_debug       = defined( 'WP_DEBUG' ) && WP_DEBUG;
+
+        return $is_privileged_user || $is_non_production || $is_wp_debug;
     }
 
     /**
@@ -274,20 +292,16 @@ class EMFN_Action_Pack_Plugin {
             return;
         }
 
-        $this->prime_action_pack_debug_entries( $payload );
+        $this->prime_action_pack_debug_entries();
 
         if ( empty( $this->action_pack_debug_entries ) ) {
             return;
         }
 
-        $debug_version = 'EMFN Action Pack PHP debug v1';
-
         echo "<script>\n";
 
-        printf(
-            "console.debug(%s);\n",
-            wp_json_encode( $debug_version )
-        );
+        /** next line helps with debugging */
+        // printf("console.debug(EMFN Action Pack PHP debug v1);\n");
 
         foreach ( $this->action_pack_debug_entries as $entry ) {
             printf(
@@ -306,7 +320,7 @@ class EMFN_Action_Pack_Plugin {
      * @return string|null
      */
     public function get_action_pack_payload_from_request() {
-        // stop if no payload is present in the request or if it has an unexpected format
+        // stop if no payload is present in the request
         $payload = filter_input( INPUT_GET, 'actionPack', FILTER_UNSAFE_RAW );
         if ( ! is_string( $payload ) ) {
             return null;
@@ -367,7 +381,7 @@ class EMFN_Action_Pack_Plugin {
             return $this->action_pack_category_names;
         }
 
-        // filter out any invalid or duplicate names and cache the result for this request
+        // cache the result for this request
         $this->action_pack_category_names = $values;
 
         return $this->action_pack_category_names;
@@ -493,13 +507,18 @@ class EMFN_Action_Pack_Plugin {
 
         $class_name = (string) $parsed_block['attrs']['className'];
         if ( false === strpos( $class_name, 'emfn-action-pack' ) ) {
-            $this->queue_action_pack_debug_entry( 'newspack block skipped', $class_name );
             return $parsed_block;
         }
 
         $category_ids = $this->get_action_pack_category_ids_from_request();
         if ( empty( $category_ids ) ) {
-            $this->queue_action_pack_debug_entry( 'newspack block has no valid Action Pack categories', $class_name );
+            $this->queue_action_pack_debug_entry(
+                'Block has no valid Action Pack categories',
+                array(
+                    'className'     => $class_name,
+                    'categoryNames' => $this->get_action_pack_category_names_from_request(),
+                )
+            );
             return $parsed_block;
         }
 
@@ -509,12 +528,13 @@ class EMFN_Action_Pack_Plugin {
 
         $parsed_block['attrs']['categories'] = $category_ids;
 
+        $category_names = $this->get_action_pack_category_names_from_request();
         $this->queue_action_pack_debug_entry(
-            'newspack block categories applied',
+            'Block categories applied',
             array(
-                'className'   => $class_name,
-                'categories'  => $category_ids,
-                'blockName'   => $parsed_block['blockName'],
+                'className'      => $class_name,
+                'categoryNames'  => $category_names,
+                'categoryIDs'    => $category_ids
             )
         );
 
@@ -682,8 +702,6 @@ class EMFN_Action_Pack_Plugin {
                 $resolved_categories[] = $category_order[ $category_index ];
             }
         }
-
-        $this->queue_action_pack_debug_entry( 'decode_action_pack_bitmask_payload:', array_values( $resolved_categories ) );
 
         // return null when nothing valid was decoded so callers can bail cleanly
         return ! empty( $resolved_categories ) ? $resolved_categories : null;

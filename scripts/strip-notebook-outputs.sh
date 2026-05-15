@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+tmp_file=""
+
 # Cleanup temporary files on exit or error
-trap 'rm -f "$tmp_file"' EXIT
+trap 'rm -f "${tmp_file:-}"' EXIT
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "Error: 'jq' is required but not installed. Please install jq (e.g., 'brew install jq' on macOS or 'sudo apt-get install jq' on Debian/Ubuntu)." >&2
@@ -31,4 +33,5 @@ for notebook in "${notebooks[@]}"; do
   ' "$notebook" > "$tmp_file"
 
   mv "$tmp_file" "$notebook"
+  tmp_file=""
 done

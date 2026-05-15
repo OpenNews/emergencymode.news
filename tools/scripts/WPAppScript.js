@@ -9,7 +9,7 @@ const DEFAULT_FIELDS = ["id", "slug", "description", "status", "count", "link"];
 
 /**
  * Main function to fetch WordPress REST API data
- * 
+ *
  * @param {string} endpoint - The endpoint to fetch from: 'categories', 'tags', 'pages', or 'posts'
  * @param {Object} options - Optional configuration object
  * @param {string|number} options.filter - Filter by id, slug, or name
@@ -24,20 +24,20 @@ function fetchWPData(endpoint, options = {}) {
   if (!ALLOWED_ENDPOINTS.includes(endpoint)) {
     throw new Error(`Invalid endpoint. Must be one of: ${ALLOWED_ENDPOINTS.join(", ")}`);
   }
-  
+
   // Set defaults
   const fields = options.fields || DEFAULT_FIELDS;
   const perPage = Math.min(options.perPage || 100, 100);
   const flattenForSheets = options.flattenForSheets || false;
-  
+
   // Build URL
   let url = `${WP_BASE_URL}/${endpoint}`;
   const params = [`per_page=${perPage}`];
-  
+
   // Handle filtering
   if (options.filter !== undefined && options.filter !== null && options.filter !== "") {
     const filterType = options.filterType || detectFilterType(options.filter);
-    
+
     if (filterType === "id") {
       // Fetch specific item by ID
       url = `${url}/${options.filter}`;
@@ -47,30 +47,29 @@ function fetchWPData(endpoint, options = {}) {
       params.push(`search=${encodeURIComponent(options.filter)}`);
     }
   }
-  
+
   // Add params to URL
   if (params.length > 0 && !url.includes(options.filter + "")) {
     url += "?" + params.join("&");
   }
-  
+
   try {
     // Fetch data
     const response = UrlFetchApp.fetch(url);
     const data = JSON.parse(response.getContentText());
-    
+
     // Normalize to array
     const items = Array.isArray(data) ? data : [data];
-    
+
     // Extract specified fields
     const filtered = items.map(item => extractFields(item, fields));
-    
+
     // Return in requested format
     if (flattenForSheets) {
       return flattenForSheetsOutput(filtered, fields);
     }
-    
+
     return filtered;
-    
   } catch (error) {
     Logger.log(`Error fetching from ${url}: ${error.message}`);
     throw new Error(`Failed to fetch ${endpoint}: ${error.message}`);
@@ -95,7 +94,7 @@ function detectFilterType(value) {
  */
 function extractFields(item, fields) {
   const result = {};
-  
+
   fields.forEach(field => {
     // Handle nested fields with dot notation
     if (field.includes(".")) {
@@ -109,7 +108,7 @@ function extractFields(item, fields) {
       result[field] = item[field] !== undefined ? item[field] : null;
     }
   });
-  
+
   return result;
 }
 
@@ -120,10 +119,10 @@ function flattenForSheetsOutput(data, fields) {
   if (!data || data.length === 0) {
     return [fields, []]; // Return headers and empty row
   }
-  
+
   // Header row
   const output = [fields];
-  
+
   // Data rows
   data.forEach(item => {
     const row = fields.map(field => {
@@ -136,7 +135,7 @@ function flattenForSheetsOutput(data, fields) {
     });
     output.push(row);
   });
-  
+
   return output;
 }
 
@@ -150,11 +149,11 @@ function flattenForSheetsOutput(data, fields) {
  */
 function getCategories(filter = null, returnFields = null) {
   const options = {
-    flattenForSheets: true
+    flattenForSheets: true,
   };
   if (filter) options.filter = filter;
   if (returnFields) options.fields = returnFields.split(",").map(f => f.trim());
-  
+
   return fetchWPData("categories", options);
 }
 
@@ -164,11 +163,11 @@ function getCategories(filter = null, returnFields = null) {
  */
 function getTags(filter = null, returnFields = null) {
   const options = {
-    flattenForSheets: true
+    flattenForSheets: true,
   };
   if (filter) options.filter = filter;
   if (returnFields) options.fields = returnFields.split(",").map(f => f.trim());
-  
+
   return fetchWPData("tags", options);
 }
 
@@ -178,11 +177,11 @@ function getTags(filter = null, returnFields = null) {
  */
 function getPages(filter = null, returnFields = null) {
   const options = {
-    flattenForSheets: true
+    flattenForSheets: true,
   };
   if (filter) options.filter = filter;
   if (returnFields) options.fields = returnFields.split(",").map(f => f.trim());
-  
+
   return fetchWPData("pages", options);
 }
 
@@ -192,11 +191,11 @@ function getPages(filter = null, returnFields = null) {
  */
 function getPosts(filter = null, returnFields = null) {
   const options = {
-    flattenForSheets: true
+    flattenForSheets: true,
   };
   if (filter) options.filter = filter;
   if (returnFields) options.fields = returnFields.split(",").map(f => f.trim());
-  
+
   return fetchWPData("posts", options);
 }
 
@@ -206,10 +205,10 @@ function getPosts(filter = null, returnFields = null) {
  */
 function getWPData(endpoint, filter = null, returnFields = null) {
   const options = {
-    flattenForSheets: true
+    flattenForSheets: true,
   };
   if (filter) options.filter = filter;
   if (returnFields) options.fields = returnFields.split(",").map(f => f.trim());
-  
+
   return fetchWPData(endpoint, options);
 }

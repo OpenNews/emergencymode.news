@@ -222,10 +222,9 @@ class EMFN_Action_Pack_Plugin {
     /**
      * Ensure PHP-side Action Pack debug entries are populated for this request.
      *
-     * @param string $payload Raw Action Pack payload from the request.
      * @return void
      */
-    private function prime_action_pack_debug_entries( $payload ) {
+    private function prime_action_pack_debug_entries() {
         if ( empty( $this->action_pack_debug_entries ) ) {
             $category_names = $this->get_action_pack_category_names_from_request();
             $this->queue_action_pack_debug_entry( 'Action Pack payload detected', array(
@@ -288,7 +287,7 @@ class EMFN_Action_Pack_Plugin {
             return;
         }
 
-        $this->prime_action_pack_debug_entries( $payload );
+        $this->prime_action_pack_debug_entries();
 
         if ( empty( $this->action_pack_debug_entries ) ) {
             return;

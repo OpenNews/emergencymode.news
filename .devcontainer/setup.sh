@@ -1,18 +1,29 @@
 #!/bin/bash
 set -e
 
+# Keep this install deterministic: when bumping UV_VERSION,
+# update the per-architecture UV_SHA256 values from the matching
+# .sha256 assets in the same GitHub release tag.
+UV_VERSION="0.5.10"
+
 # Install GitHub CLI if needed
 if ! command -v gh >/dev/null 2>&1; then
   sudo apt-get update
   sudo apt-get install -y gh
 fi
 
-# Install uv in user space if needed
+# Install uv in user space if missing or version does not match UV_VERSION
+INSTALL_PINNED_UV=0
 if ! command -v uv >/dev/null 2>&1; then
-  # Keep this install deterministic: when bumping UV_VERSION,
-  # update the per-architecture UV_SHA256 values from the matching
-  # .sha256 assets in the same GitHub release tag.
-  UV_VERSION="0.5.10"
+  INSTALL_PINNED_UV=1
+else
+  INSTALLED_UV_VERSION="$(uv --version 2>/dev/null | awk '{print $2}')"
+  if [[ "${INSTALLED_UV_VERSION}" != "${UV_VERSION}" ]]; then
+    INSTALL_PINNED_UV=1
+  fi
+fi
+
+if [[ "${INSTALL_PINNED_UV}" -eq 1 ]]; then
 
   case "$(uname -m)" in
     x86_64)

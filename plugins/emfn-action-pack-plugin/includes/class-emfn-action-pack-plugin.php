@@ -227,7 +227,11 @@ class EMFN_Action_Pack_Plugin {
      */
     private function prime_action_pack_debug_entries( $payload ) {
         if ( empty( $this->action_pack_debug_entries ) ) {
-            $this->queue_action_pack_debug_entry( 'Action Pack payload detected', array( 'payloadPresent' => true ) );
+            $category_names = $this->get_action_pack_category_names_from_request();
+            $this->queue_action_pack_debug_entry( 'Action Pack payload detected', array(
+                'payloadPresent' => true,
+                'categoryNames'  => $category_names
+            ) );
         }
 
         $this->get_action_pack_category_names_from_request();
@@ -500,13 +504,19 @@ class EMFN_Action_Pack_Plugin {
         $class_name = (string) $parsed_block['attrs']['className'];
         if ( false === strpos( $class_name, 'emfn-action-pack' ) ) {
             /** next line helps with debugging */
-            # $this->queue_action_pack_debug_entry( 'newspack block skipped', $class_name );
+            # $this->queue_action_pack_debug_entry( 'Block skipped', $class_name );
             return $parsed_block;
         }
 
         $category_ids = $this->get_action_pack_category_ids_from_request();
         if ( empty( $category_ids ) ) {
-            $this->queue_action_pack_debug_entry( 'newspack block has no valid Action Pack categories', $class_name );
+            $this->queue_action_pack_debug_entry(
+                'Block has no valid Action Pack categories',
+                array(
+                    'className'     => $class_name,
+                    'categoryNames' => $this->get_action_pack_category_names_from_request(),
+                )
+            );
             return $parsed_block;
         }
 
@@ -516,12 +526,13 @@ class EMFN_Action_Pack_Plugin {
 
         $parsed_block['attrs']['categories'] = $category_ids;
 
+        $category_names = $this->get_action_pack_category_names_from_request();
         $this->queue_action_pack_debug_entry(
-            'newspack block categories applied',
+            'Block categories applied',
             array(
-                'className'   => $class_name,
-                'categoryNames' => $this->get_action_pack_category_names_from_request(),
-                'categoryIDs'  => $category_ids
+                'className'      => $class_name,
+                'categoryNames'  => $category_names,
+                'categoryIDs'    => $category_ids
             )
         );
 

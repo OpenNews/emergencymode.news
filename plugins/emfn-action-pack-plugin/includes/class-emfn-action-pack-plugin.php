@@ -503,8 +503,6 @@ class EMFN_Action_Pack_Plugin {
 
         $class_name = (string) $parsed_block['attrs']['className'];
         if ( false === strpos( $class_name, 'emfn-action-pack' ) ) {
-            /** next line helps with debugging */
-            # $this->queue_action_pack_debug_entry( 'Block skipped', $class_name );
             return $parsed_block;
         }
 

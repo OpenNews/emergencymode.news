@@ -141,7 +141,7 @@ Server-side PHP debug output only appears when `emfnDebug=true` **and** one of t
 
 Navigated to https://emergencymode.newspackstaging.com/start/action-pack/?actionPack=ap2.<hash>&emfnDebug=true
 
-<LOG_TIMESTAMP> EMFN: newspack block categories applied {
+<LOG_TIMESTAMP> EMFN: Block categories applied {
   categoryIDs: (23) [3, 153, 121, 122, 72, 151, ...],
   categoryNames: ['Flooding', 'Power & connectivity', 'Solo operator', 'Small newsroom', 'Co-located team', 'Rural', ...],
   className: "emfn-action-pack emfn-content-cards is-style-default",

@@ -105,19 +105,24 @@ class EMFN_Action_Pack_Plugin {
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
         add_filter( 'query_loop_block_query_vars', array( $this, 'filter_action_pack_query_loop_vars' ), 10, 3 );
         add_filter( 'render_block_data', array( $this, 'filter_action_pack_newspack_block_data' ), 10, 3 );
-        add_filter( 'editable_extensions', array( $this, 'add_plugin_editable_extensions' ), 10, 2 );
+        add_filter( 'editable_extensions', array( $this, 'allow_csv_in_plugin_editor' ), 10, 2 );
         add_action( 'wp_footer', array( $this, 'render_action_pack_debug_script' ), 99 );
     }
 
     /**
-     * Allow CSV files from this plugin to appear in the Plugin File Editor.
+     * Allow CSV files to appear in the Plugin File Editor.
+     *
+     * Note: The `editable_extensions` filter receives the editor context
+     * ('plugins' or 'themes') as its second argument, not an individual plugin
+     * basename, so this addition applies to all plugins when the Plugin File
+     * Editor is active.
      *
      * @param array<int, string> $extensions Editable file extensions.
-     * @param string             $plugin     Plugin basename relative to the plugins directory.
+     * @param string             $context    Editor context: 'plugins' or 'themes'.
      * @return array<int, string>
      */
-    public function add_plugin_editable_extensions( $extensions, $plugin ) {
-        if ( plugin_basename( EMFN_ACTION_PACK_PLUGIN_DIR . 'emfn-action-pack-plugin.php' ) !== $plugin ) {
+    public function allow_csv_in_plugin_editor( $extensions, $context ) {
+        if ( 'plugins' !== $context ) {
             return $extensions;
         }
 

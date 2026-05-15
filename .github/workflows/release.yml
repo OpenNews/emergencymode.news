@@ -101,9 +101,9 @@ jobs:
           TARGET_SHA="${{ steps.commit_versions.outputs.sha }}"
           max_attempts=60
           attempt=0
-          
+
           echo "Waiting for CodeQL to start and complete on commit $TARGET_SHA..."
-          
+
           while [[ $attempt -lt $max_attempts ]]; do
             RESPONSE=$(gh api repos/${{ github.repository }}/commits/$TARGET_SHA/check-runs 2>&1) || {
               echo "API call failed, retrying..."

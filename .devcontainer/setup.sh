@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+# Install GitHub CLI if needed
+if ! command -v gh >/dev/null 2>&1; then
+  sudo apt-get update
+  sudo apt-get install -y gh
+fi
+
 # Install uv in user space if needed
 if ! command -v uv >/dev/null 2>&1; then
   curl -LsSf https://astral.sh/uv/install.sh | sh

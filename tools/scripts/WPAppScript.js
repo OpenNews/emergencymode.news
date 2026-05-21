@@ -3,9 +3,9 @@
  * Fetches data from WordPress REST API endpoints with flexible filtering and field selection
  */
 
-const WP_BASE_URL = "https://emergencymode.newspackstaging.com/wp-json/wp/v2";
-const ALLOWED_ENDPOINTS = ["categories", "tags", "pages", "posts"];
-const DEFAULT_FIELDS = ["id", "slug", "description", "status", "count", "link"];
+var WP_BASE_URL = "https://emergencymode.newspackstaging.com/wp-json/wp/v2"; // FAKE URL, must be configured 
+var ALLOWED_ENDPOINTS = ["categories", "tags", "pages", "posts"];
+var DEFAULT_FIELDS = ["id", "name", "slug", "description", "parent", "status", "count", "link"];
 
 /**
  * Main function to fetch WordPress REST API data
@@ -19,33 +19,40 @@ const DEFAULT_FIELDS = ["id", "slug", "description", "status", "count", "link"];
  * @param {boolean} options.flattenForSheets - Return 2D array for direct Sheets output (default: false)
  * @returns {Array} Array of objects or 2D array if flattenForSheets is true
  */
-function fetchWPData(endpoint, options = {}) {
+function fetchWPData(endpoint, options) {
+  options = options || {};
+  
   // Validate endpoint
   if (!ALLOWED_ENDPOINTS.includes(endpoint)) {
-    throw new Error(`Invalid endpoint. Must be one of: ${ALLOWED_ENDPOINTS.join(", ")}`);
+    throw new Error("Invalid endpoint. Must be one of: " + ALLOWED_ENDPOINTS.join(", "));
   }
 
   // Set defaults
-  const fields = options.fields || DEFAULT_FIELDS;
-  const perPage = Math.min(options.perPage || 100, 100);
-  const flattenForSheets = options.flattenForSheets || false;
+  var fields = options.fields || DEFAULT_FIELDS;
+  var perPage = Math.min(options.perPage || 100, 100);
+  var flattenForSheets = options.flattenForSheets || false;
 
   // Build URL
-  let url = `${WP_BASE_URL}/${endpoint}`;
-  const params = [`per_page=${perPage}`];
+  var url = WP_BASE_URL + "/" + endpoint;
+  var params = ["per_page=" + perPage];
 
   // Handle filtering
   if (options.filter !== undefined && options.filter !== null && options.filter !== "") {
-    const filterType = options.filterType || detectFilterType(options.filter);
+    var filterType = options.filterType || detectFilterType(options.filter);
 
     if (filterType === "id") {
       // Fetch specific item by ID
-      url = `${url}/${options.filter}`;
+      url = url + "/" + options.filter;
     } else if (filterType === "slug") {
-      params.push(`slug=${encodeURIComponent(options.filter)}`);
+      params.push("slug=" + encodeURIComponent(options.filter));
     } else if (filterType === "name") {
-      params.push(`search=${encodeURIComponent(options.filter)}`);
+      params.push("search=" + encodeURIComponent(options.filter));
     }
+  }
+  
+  // Handle parent filtering for categories
+  if (endpoint === "categories" && options.parent !== undefined && options.parent !== null) {
+    params.push("parent=" + options.parent);
   }
 
   // Add params to URL
@@ -55,14 +62,16 @@ function fetchWPData(endpoint, options = {}) {
 
   try {
     // Fetch data
-    const response = UrlFetchApp.fetch(url);
-    const data = JSON.parse(response.getContentText());
+    var response = UrlFetchApp.fetch(url);
+    var data = JSON.parse(response.getContentText());
 
     // Normalize to array
-    const items = Array.isArray(data) ? data : [data];
+    var items = Array.isArray(data) ? data : [data];
 
     // Extract specified fields
-    const filtered = items.map(item => extractFields(item, fields));
+    var filtered = items.map(function(item) {
+      return extractFields(item, fields);
+    });
 
     // Return in requested format
     if (flattenForSheets) {
@@ -71,8 +80,8 @@ function fetchWPData(endpoint, options = {}) {
 
     return filtered;
   } catch (error) {
-    Logger.log(`Error fetching from ${url}: ${error.message}`);
-    throw new Error(`Failed to fetch ${endpoint}: ${error.message}`);
+    Logger.log("Error fetching from " + url + ": " + error.message);
+    throw new Error("Failed to fetch " + endpoint + ": " + error.message);
   }
 }
 
@@ -93,15 +102,16 @@ function detectFilterType(value) {
  * Extract specified fields from an object, handling nested properties
  */
 function extractFields(item, fields) {
-  const result = {};
+  var result = {};
 
-  fields.forEach(field => {
+  fields.forEach(function(field) {
     // Handle nested fields with dot notation
     if (field.includes(".")) {
-      const parts = field.split(".");
-      let value = item;
-      for (const part of parts) {
-        value = value?.[part];
+      var parts = field.split(".");
+      var value = item;
+      for (var i = 0; i < parts.length; i++) {
+        var part = parts[i];
+        value = value && value[part] !== undefined ? value[part] : undefined;
       }
       result[field] = value !== undefined ? value : null;
     } else {
@@ -121,12 +131,12 @@ function flattenForSheetsOutput(data, fields) {
   }
 
   // Header row
-  const output = [fields];
+  var output = [fields];
 
   // Data rows
-  data.forEach(item => {
-    const row = fields.map(field => {
-      const value = item[field];
+  data.forEach(function(item) {
+    var row = fields.map(function(field) {
+      var value = item[field];
       // Convert objects/arrays to JSON strings for Sheets
       if (value && typeof value === "object") {
         return JSON.stringify(value);
@@ -145,70 +155,98 @@ function flattenForSheetsOutput(data, fields) {
 
 /**
  * Get WordPress categories
- * Usage in Sheets: =getCategories() or =getCategories(A1) where A1 contains slug/id
+ * Default fields: id, name, slug, description, parent, status, count, link
+ * @param {string} filter - Optional filter by id, slug, or name
+ * @param {string} returnFields - Optional comma-separated field names (e.g. "id,name,count,parent")
+ * @param {boolean} includeHeaders - Set to TRUE to include header row (default: FALSE)
+ * @param {number} parentId - Optional parent category ID to filter by (0 for top-level categories)
+ * @customfunction
  */
-function getCategories(filter = null, returnFields = null) {
-  const options = {
-    flattenForSheets: true,
+function getCategories(filter, returnFields, includeHeaders, parentId) {
+  var options = {
+    flattenForSheets: true
   };
   if (filter) options.filter = filter;
-  if (returnFields) options.fields = returnFields.split(",").map(f => f.trim());
+  if (returnFields) options.fields = returnFields.split(",").map(function(f) { return f.trim(); });
+  if (parentId !== undefined && parentId !== null && parentId !== "") options.parent = parentId;
 
-  return fetchWPData("categories", options);
+  var result = fetchWPData("categories", options);
+  return includeHeaders ? result : result.slice(1);
 }
 
 /**
  * Get WordPress tags
- * Usage in Sheets: =getTags() or =getTags(A1)
+ * Default fields: id, name, slug, description, parent, status, count, link
+ * @param {string} filter - Optional filter by id, slug, or name
+ * @param {string} returnFields - Optional comma-separated field names (e.g. "id,name,count")
+ * @param {boolean} includeHeaders - Set to TRUE to include header row (default: FALSE)
+ * @customfunction
  */
-function getTags(filter = null, returnFields = null) {
-  const options = {
-    flattenForSheets: true,
+function getTags(filter, returnFields, includeHeaders) {
+  var options = {
+    flattenForSheets: true
   };
   if (filter) options.filter = filter;
-  if (returnFields) options.fields = returnFields.split(",").map(f => f.trim());
+  if (returnFields) options.fields = returnFields.split(",").map(function(f) { return f.trim(); });
 
-  return fetchWPData("tags", options);
+  var result = fetchWPData("tags", options);
+  return includeHeaders ? result : result.slice(1);
 }
 
 /**
  * Get WordPress pages
- * Usage in Sheets: =getPages() or =getPages(A1)
+ * Default fields: id, name, slug, description, parent, status, count, link
+ * @param {string} filter - Optional filter by id, slug, or name
+ * @param {string} returnFields - Optional comma-separated field names (e.g. "id,title.rendered,link")
+ * @param {boolean} includeHeaders - Set to TRUE to include header row (default: FALSE)
+ * @customfunction
  */
-function getPages(filter = null, returnFields = null) {
-  const options = {
-    flattenForSheets: true,
+function getPages(filter, returnFields, includeHeaders) {
+  var options = {
+    flattenForSheets: true
   };
   if (filter) options.filter = filter;
-  if (returnFields) options.fields = returnFields.split(",").map(f => f.trim());
+  if (returnFields) options.fields = returnFields.split(",").map(function(f) { return f.trim(); });
 
-  return fetchWPData("pages", options);
+  var result = fetchWPData("pages", options);
+  return includeHeaders ? result : result.slice(1);
 }
 
 /**
  * Get WordPress posts
- * Usage in Sheets: =getPosts() or =getPosts(A1)
+ * Default fields: id, name, slug, description, parent, status, count, link
+ * @param {string} filter - Optional filter by id, slug, or name
+ * @param {string} returnFields - Optional comma-separated field names (e.g. "id,title.rendered,date,categories")
+ * @param {boolean} includeHeaders - Set to TRUE to include header row (default: FALSE)
+ * @customfunction
  */
-function getPosts(filter = null, returnFields = null) {
-  const options = {
-    flattenForSheets: true,
+function getPosts(filter, returnFields, includeHeaders) {
+  var options = {
+    flattenForSheets: true
   };
   if (filter) options.filter = filter;
-  if (returnFields) options.fields = returnFields.split(",").map(f => f.trim());
+  if (returnFields) options.fields = returnFields.split(",").map(function(f) { return f.trim(); });
 
-  return fetchWPData("posts", options);
+  var result = fetchWPData("posts", options);
+  return includeHeaders ? result : result.slice(1);
 }
 
 /**
  * Generic fetch function for custom usage
- * Usage: =getWPData("posts", "", "id,title.rendered,date")
+ * Default fields: id, name, slug, description, parent, status, count, link
+ * @param {string} endpoint - Endpoint: "categories", "tags", "pages", or "posts"
+ * @param {string} filter - Optional filter by id, slug, or name
+ * @param {string} returnFields - Optional comma-separated field names
+ * @param {boolean} includeHeaders - Set to TRUE to include header row (default: FALSE)
+ * @customfunction
  */
-function getWPData(endpoint, filter = null, returnFields = null) {
-  const options = {
-    flattenForSheets: true,
+function getWPData(endpoint, filter, returnFields, includeHeaders) {
+  var options = {
+    flattenForSheets: true
   };
   if (filter) options.filter = filter;
-  if (returnFields) options.fields = returnFields.split(",").map(f => f.trim());
+  if (returnFields) options.fields = returnFields.split(",").map(function(f) { return f.trim(); });
 
-  return fetchWPData(endpoint, options);
+  var result = fetchWPData(endpoint, options);
+  return includeHeaders ? result : result.slice(1);
 }

@@ -50,8 +50,21 @@ jobs:
       - name: Sync version files
         run: ./scripts/sync-release-version.sh "${{ steps.version.outputs.version }}"
 
+      - name: Update plugin readme.txt stable tag
+        run: |
+          sed -i "s/^Stable tag:.*$/Stable tag:         ${{ steps.version.outputs.version }}/" \
+            plugins/emfn-action-pack-plugin/readme.txt
+
       - name: Build release assets
         run: ./scripts/build-release-assets.sh "${{ steps.version.outputs.version }}" dist
+
+      - name: Commit version changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add plugins/emfn-action-pack-plugin/readme.txt
+          git commit -m "Release: update plugin readme.txt stable tag to ${{ steps.version.outputs.version }}" || true
+          git push
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3

@@ -100,7 +100,7 @@ Responsibilities:
 
 ### Page Detection
 
-These event bindings and `/data/` file fetches can be memory-intensive and we want to simplify that for EMFN site visitors possibly experiencing and emergency or amid recovery from a disaster.
+These event bindings and `/data/` file fetches can be memory-intensive and we want to simplify that for EMFN site visitors possibly experiencing an emergency or amid recovery from a disaster.
 
 The plugin uses multiple detection methods to determine when to load its assets, ensuring coverage across both the assessment form and results pages:
 

@@ -52,13 +52,7 @@ class EMFN_Action_Pack_Plugin {
     private $action_pack_category_order = null;
 
     /**
-     * Active Action Pack query flag to control posts_clauses filter scope.
-     *
-     * @var bool
-     */
-    private $is_action_pack_query_active = false;
 
-    /**
      * Buffered debug entries to emit to the browser console in the footer.
      *
      * @var array<int, array{label: string, value: mixed}>
@@ -98,6 +92,7 @@ class EMFN_Action_Pack_Plugin {
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
         add_filter( 'query_loop_block_query_vars', array( $this, 'filter_action_pack_query_loop_vars' ), 10, 3 );
         add_filter( 'render_block_data', array( $this, 'filter_action_pack_newspack_block_data' ), 10, 3 );
+        add_action( 'pre_get_posts', array( $this, 'mark_action_pack_newspack_queries' ) );
         add_filter( 'posts_clauses', array( $this, 'apply_action_pack_category_scoring' ), 10, 2 );
         add_filter( 'editable_extensions', array( $this, 'allow_csv_in_plugin_editor' ), 10, 2 );
         add_action( 'wp_footer', array( $this, 'render_action_pack_debug_script' ), 99 );
@@ -379,7 +374,7 @@ class EMFN_Action_Pack_Plugin {
         }
 
         $query['category__in'] = $term_ids;
-        $this->is_action_pack_query_active = true;
+        $query['emfn_action_pack'] = true;
 
         return $query;
     }
@@ -401,7 +396,7 @@ class EMFN_Action_Pack_Plugin {
     public function apply_action_pack_category_scoring( $clauses, $query ) {
         global $wpdb;
 
-        if ( ! $this->is_action_pack_query_active ) {
+        if ( ! $query->get( 'emfn_action_pack' ) ) {
             return $clauses;
         }
 
@@ -419,21 +414,21 @@ class EMFN_Action_Pack_Plugin {
         }
 
         // Get post counts per category for scarcity calculation
-        $term_counts = wp_count_terms( array(
+        $terms = get_terms( array(
             'taxonomy'   => 'category',
             'include'    => $term_ids,
             'hide_empty' => false,
         ) );
 
         $scarcity_multipliers = array();
-        if ( ! is_wp_error( $term_counts ) && is_array( $term_counts ) && ! empty( $term_counts ) ) {
+        if ( ! is_wp_error( $terms ) && is_array( $terms ) && ! empty( $terms ) ) {
             $counts = array_map( function( $term ) {
                 return isset( $term->count ) ? (int) $term->count : 1;
-            }, $term_counts );
+            }, $terms );
             
             $max_count = ! empty( $counts ) ? max( $counts ) : 1;
             
-            foreach ( $term_counts as $term ) {
+            foreach ( $terms as $term ) {
                 if ( isset( $term->term_id ) && isset( $term->count ) ) {
                     $count = max( 1, (int) $term->count );
                     // Scarcity: fewer posts = higher multiplier (inverse proportion)
@@ -454,9 +449,9 @@ class EMFN_Action_Pack_Plugin {
         // Tier-based scoring (tier-1 = best, tier-2 = good, tier-3 = acceptable, etc.)
         // Posts without tier tags get score of 1 (lowest priority)
         $tier_sql = "CASE 
-            WHEN ap_tier_tt.slug = 'tier-1' THEN 1000
-            WHEN ap_tier_tt.slug = 'tier-2' THEN 100
-            WHEN ap_tier_tt.slug = 'tier-3' THEN 10
+            WHEN ap_tier_terms.slug = 'tier-1' THEN 1000
+            WHEN ap_tier_terms.slug = 'tier-2' THEN 100
+            WHEN ap_tier_terms.slug = 'tier-3' THEN 10
             ELSE 1
         END";
 
@@ -464,17 +459,15 @@ class EMFN_Action_Pack_Plugin {
         $clauses['join'] .= " LEFT JOIN {$wpdb->term_relationships} AS ap_cat_tr ON {$wpdb->posts}.ID = ap_cat_tr.object_id";
         $clauses['join'] .= " LEFT JOIN {$wpdb->term_taxonomy} AS ap_cat_tt ON ap_cat_tr.term_taxonomy_id = ap_cat_tt.term_taxonomy_id AND ap_cat_tt.taxonomy = 'category'";
 
-        // Join tier tag relationships
+        // Join tier tag relationships (need terms table to access slug)
         $clauses['join'] .= " LEFT JOIN {$wpdb->term_relationships} AS ap_tier_tr ON {$wpdb->posts}.ID = ap_tier_tr.object_id";
-        $clauses['join'] .= " LEFT JOIN {$wpdb->term_taxonomy} AS ap_tier_tt ON ap_tier_tr.term_taxonomy_id = ap_tier_tt.term_taxonomy_id AND ap_tier_tt.taxonomy = 'post_tag' AND ap_tier_tt.slug LIKE 'tier-%'";
+        $clauses['join'] .= " LEFT JOIN {$wpdb->term_taxonomy} AS ap_tier_tt ON ap_tier_tr.term_taxonomy_id = ap_tier_tt.term_taxonomy_id AND ap_tier_tt.taxonomy = 'post_tag'";
+        $clauses['join'] .= " LEFT JOIN {$wpdb->terms} AS ap_tier_terms ON ap_tier_tt.term_id = ap_tier_terms.term_id AND ap_tier_terms.slug LIKE 'tier-%'";
 
         // Final score = tier_weight + category_relevance_score
         // Tier determines quality band, category score creates diversity within that band
         $clauses['groupby'] = "{$wpdb->posts}.ID";
         $clauses['orderby'] = "MAX({$tier_sql}) DESC, SUM({$score_sql}) DESC, {$wpdb->posts}.ID DESC";
-
-        // Reset flag after applying
-        $this->is_action_pack_query_active = false;
 
         return $clauses;
     }
@@ -538,7 +531,6 @@ class EMFN_Action_Pack_Plugin {
         }
 
         $parsed_block['attrs']['categories'] = $term_ids;
-        $this->is_action_pack_query_active = true;
 
         $this->queue_action_pack_debug_entry(
             'Block categories applied',
@@ -549,6 +541,43 @@ class EMFN_Action_Pack_Plugin {
         );
 
         return $parsed_block;
+    }
+
+    /**
+     * Mark Newspack block queries for Action Pack scoring.
+     * 
+     * This runs during pre_get_posts to set a query var on queries created
+     * by Newspack blocks that have Action Pack categories applied.
+     *
+     * @param WP_Query $query The WordPress query object.
+     */
+    public function mark_action_pack_newspack_queries( $query ) {
+        if ( ! $this->is_action_pack_page_request() ) {
+            return;
+        }
+
+        // Check if this query has Action Pack categories
+        $category_in = $query->get( 'category__in' );
+        if ( empty( $category_in ) ) {
+            return;
+        }
+
+        $term_ids = $this->get_action_pack_term_ids_from_request();
+        if ( empty( $term_ids ) ) {
+            return;
+        }
+
+        // If the query's categories match our Action Pack categories, mark it
+        if ( ! is_array( $category_in ) ) {
+            $category_in = array( $category_in );
+        }
+        sort( $category_in );
+        $term_ids_sorted = $term_ids;
+        sort( $term_ids_sorted );
+
+        if ( $category_in === $term_ids_sorted ) {
+            $query->set( 'emfn_action_pack', true );
+        }
     }
 
     /**

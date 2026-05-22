@@ -190,15 +190,17 @@ class EMFN_Action_Pack_Plugin {
             return $this->is_action_pack_page_request;
         }
 
-        $post_slug = isset( $post->post_name ) ? (string) $post->post_name : '';
+        $post_content = isset( $post->post_content ) ? (string) $post->post_content : '';
+        $post_slug    = isset( $post->post_name ) ? (string) $post->post_name : '';
+
+        // Check for Action Pack or Gravity Forms CSS classes/blocks in content
+        $has_action_pack_classes = false !== strpos( $post_content, 'emfn-action-pack' ) || false !== strpos( $post_content, 'emfn-forms' );
+        $has_gravity_forms       = false !== strpos( $post_content, 'gravityform' ) || false !== strpos( $post_content, 'wp:gravityforms/form' );
 
         // Check if this is the action page by slug
         $is_action_page = 'action' === $post_slug || 'action-pack' === $post_slug;
 
-        // Check for Gravity Forms block (for assessment form page)
-        $has_gravity_forms = has_block( 'gravityforms/form', $post );
-
-        $this->is_action_pack_page_request = $is_action_page || $has_gravity_forms;
+        $this->is_action_pack_page_request = $has_action_pack_classes || $has_gravity_forms || $is_action_page;
 
         return $this->is_action_pack_page_request;
     }
@@ -229,8 +231,10 @@ class EMFN_Action_Pack_Plugin {
      */
     private function prime_action_pack_debug_entries() {
         if ( empty( $this->action_pack_debug_entries ) ) {
+            $payload  = $this->get_action_pack_payload_from_request();
             $term_ids = $this->get_action_pack_term_ids_from_request();
             $this->queue_action_pack_debug_entry( 'Action Pack payload decoded', array(
+                'payload' => $payload,
                 'termIds' => $term_ids,
             ) );
         }
@@ -272,11 +276,6 @@ class EMFN_Action_Pack_Plugin {
         }
 
         if ( ! $this->is_action_pack_debug_enabled() ) {
-            return;
-        }
-
-        $payload = $this->get_action_pack_payload_from_request();
-        if ( null === $payload ) {
             return;
         }
 

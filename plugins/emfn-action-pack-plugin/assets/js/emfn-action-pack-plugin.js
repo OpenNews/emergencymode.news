@@ -944,11 +944,13 @@ const SubmissionHashing = {
  *   or script load events
  */
 
-/** only run any of this if there's a section.assessment DOM node
+/** Run if there's an assessment section or form (NOT on results page)
  * @type {HTMLElement | null}
  */
 const assessmentSection = document.querySelector("section.assessment");
-if (assessmentSection) {
+const hasForm = !!document.querySelector(gravityForm);
+
+if (assessmentSection || hasForm) {
   console.info("EMFN Action Pack Plugin active", version);
 
   SubmissionHashing.initializeSubmissionHandling();

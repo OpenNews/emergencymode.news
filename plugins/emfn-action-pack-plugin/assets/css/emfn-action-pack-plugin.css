@@ -21,7 +21,7 @@
   display: none;
 }
 .emfn-forms_wrapper .emfn-forms .gf_progressbar .percentbar_blue {
-  background-color: #d94426;
+  background-color: var(--newspack-theme-color-primary);
   height: 6px;
   border-radius: 3px;
 }

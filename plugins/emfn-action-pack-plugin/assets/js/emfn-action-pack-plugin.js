@@ -92,6 +92,16 @@ const GeolocationFlow = {
     }
     Object.assign(locData, { county: null, state: null, st: null, country: null, fips: null });
     hasResolvedGeolocation = false;
+
+    // Clear risk rendering state so new selection triggers fresh render
+    const formRoot = getGravityForm();
+    if (formRoot) {
+      const risks = /** @type {HTMLDivElement | null} */ (formRoot.querySelector("#risks"));
+      if (risks) {
+        RiskRenderer.resetRendering(risks);
+        RiskRenderer.clearRenderedRisks(risks);
+      }
+    }
   },
 
   /**
@@ -437,7 +447,7 @@ const RiskRenderer = {
     const fipsField = /** @type {HTMLInputElement | null} */ (
       formRoot.querySelector(fipsFieldSelection)
     );
-    const resolvedFips = fipsField?.value ?? null;
+    const resolvedFips = fipsField?.value ?? locData.fips ?? null;
     const resolvedSt = locData.st;
 
     if (!resolvedFips || !resolvedSt) return null;

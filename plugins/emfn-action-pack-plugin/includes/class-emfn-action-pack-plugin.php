@@ -52,7 +52,13 @@ class EMFN_Action_Pack_Plugin {
     private $action_pack_category_order = null;
 
     /**
+     * Cached category scoring data (weights and scarcity multipliers) for the current request.
+     *
+     * @var array{weights: array<int, int>, scarcity: array<int, float>, score_sql: string}|null
+     */
+    private $action_pack_scoring_cache = null;
 
+    /**
      * Buffered debug entries to emit to the browser console in the footer.
      *
      * @var array<int, array{label: string, value: mixed}>
@@ -405,46 +411,58 @@ class EMFN_Action_Pack_Plugin {
             return $clauses;
         }
 
-        // Build category weights from term order (earlier = higher weight)
-        $weights = array();
-        $max_weight = count( $term_ids );
-        foreach ( $term_ids as $index => $term_id ) {
-            $weight = $max_weight - $index;
-            $weights[ $term_id ] = $weight;
-        }
+        // Use cached scoring data if available to avoid redundant term lookups
+        if ( null === $this->action_pack_scoring_cache ) {
+            // Build category weights from term order (earlier = higher weight)
+            $weights = array();
+            $max_weight = count( $term_ids );
+            foreach ( $term_ids as $index => $term_id ) {
+                $weight = $max_weight - $index;
+                $weights[ $term_id ] = $weight;
+            }
 
-        // Get post counts per category for scarcity calculation
-        $terms = get_terms( array(
-            'taxonomy'   => 'category',
-            'include'    => $term_ids,
-            'hide_empty' => false,
-        ) );
+            // Get post counts per category for scarcity calculation
+            $terms = get_terms( array(
+                'taxonomy'   => 'category',
+                'include'    => $term_ids,
+                'hide_empty' => false,
+            ) );
 
-        $scarcity_multipliers = array();
-        if ( ! is_wp_error( $terms ) && is_array( $terms ) && ! empty( $terms ) ) {
-            $counts = array_map( function( $term ) {
-                return isset( $term->count ) ? (int) $term->count : 1;
-            }, $terms );
-            
-            $max_count = ! empty( $counts ) ? max( $counts ) : 1;
-            
-            foreach ( $terms as $term ) {
-                if ( isset( $term->term_id ) && isset( $term->count ) ) {
-                    $count = max( 1, (int) $term->count );
-                    // Scarcity: fewer posts = higher multiplier (inverse proportion)
-                    $scarcity_multipliers[ $term->term_id ] = $max_count / $count;
+            $scarcity_multipliers = array();
+            if ( ! is_wp_error( $terms ) && is_array( $terms ) && ! empty( $terms ) ) {
+                $counts = array_map( function( $term ) {
+                    return isset( $term->count ) ? (int) $term->count : 1;
+                }, $terms );
+                
+                $max_count = ! empty( $counts ) ? max( $counts ) : 1;
+                
+                foreach ( $terms as $term ) {
+                    if ( isset( $term->term_id ) && isset( $term->count ) ) {
+                        $count = max( 1, (int) $term->count );
+                        // Scarcity: fewer posts = higher multiplier (inverse proportion)
+                        $scarcity_multipliers[ $term->term_id ] = $max_count / $count;
+                    }
                 }
             }
+
+            // Build weighted score with scarcity bonus
+            $score_cases = array();
+            foreach ( $weights as $term_id => $weight ) {
+                $scarcity = isset( $scarcity_multipliers[ $term_id ] ) ? $scarcity_multipliers[ $term_id ] : 1.0;
+                $score = $weight * $scarcity;
+                $score_cases[] = $wpdb->prepare( 'WHEN ap_cat_tt.term_id = %d THEN %f', $term_id, $score );
+            }
+            $score_sql = 'CASE ' . implode( ' ', $score_cases ) . ' ELSE 0 END';
+
+            // Cache for subsequent queries in this request
+            $this->action_pack_scoring_cache = array(
+                'weights' => $weights,
+                'scarcity' => $scarcity_multipliers,
+                'score_sql' => $score_sql,
+            );
         }
 
-        // Build weighted score with scarcity bonus
-        $score_cases = array();
-        foreach ( $weights as $term_id => $weight ) {
-            $scarcity = isset( $scarcity_multipliers[ $term_id ] ) ? $scarcity_multipliers[ $term_id ] : 1.0;
-            $score = $weight * $scarcity;
-            $score_cases[] = $wpdb->prepare( 'WHEN ap_cat_tt.term_id = %d THEN %f', $term_id, $score );
-        }
-        $score_sql = 'CASE ' . implode( ' ', $score_cases ) . ' ELSE 0 END';
+        $score_sql = $this->action_pack_scoring_cache['score_sql'];
 
         // Tier-based scoring (tier-1 = best, tier-2 = good, tier-3 = acceptable, etc.)
         // Posts without tier tags get score of 1 (lowest priority)

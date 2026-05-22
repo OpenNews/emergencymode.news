@@ -3,6 +3,7 @@
 import subprocess
 import sys
 from IPython.display import HTML, display
+import requests
 
 
 def check_dependencies():
@@ -46,8 +47,14 @@ def check_dependencies():
         return
 
     # Environment is in sync; verify critical packages are importable
-    critical_packages = ['pandas', 'requests',
-                         'jupyterlab', 'ipykernel', 'tqdm']
+    critical_packages = [
+        'pandas',
+        'requests',
+        'jupyterlab',
+        'ipykernel',
+        'tqdm',
+        'numpy'
+    ]
     missing = []
 
     for pkg in critical_packages:
@@ -60,9 +67,9 @@ def check_dependencies():
         display(HTML(f"""
         <style>
             .dep-check-error {{
-                border: 2px solid #f44336;
-                padding: 15px;
-                border-radius: 5px;
+                border: 0px;
+                padding: 0px;
+                border-radius: 0px;
                 background-color: transparent;
                 color: inherit;
             }}
@@ -78,7 +85,8 @@ def check_dependencies():
         """))
     else:
         # All checks passed
-        versions = []
+        python_version = f"Python=={sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        versions = [python_version]
         for pkg in critical_packages:
             try:
                 mod = __import__(pkg)
@@ -93,9 +101,9 @@ def check_dependencies():
         display(HTML(f"""
         <style>
             .dep-check-success {{
-                border: 2px solid #4caf50;
-                padding: 15px;
-                border-radius: 5px;
+                border: 0px;
+                padding: 0px;
+                border-radius: 0px;
                 background-color: transparent;
                 color: inherit;
             }}

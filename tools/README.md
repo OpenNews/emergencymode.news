@@ -5,9 +5,9 @@ This directory contains development utilities and resources that support the Eme
 ## Contents
 
 - **`scripts/`** - Development scripts and utilities
-  - `WPAppScript.js` - Google Apps Script for fetching WordPress REST API data into Google Sheets
+  - `SheetsWPAppScript.js` - Google Apps Script for fetching WordPress REST API data into Google Sheets
 - **`styles/`** - CSS snippets and reference styles  
-  - `css.css` - CSS reference file
+  - `siteCustomRules.css` - CSS reference file
 - **`templates/`** - HTML templates and code snippets
   - `liteSitesFooter.html` - Footer template for lite sites
 

@@ -42,6 +42,11 @@ body.archive .site-breadcrumb {
   display: inherit !important;
 }
 
+/* Hide breadcrumb on author archive pages specifically */
+body.author .site-breadcrumb {
+  display: none !important;
+}
+
 /*capitalize By in all normal bylines*/
 .entry-meta .byline:not(.sponsor-byline) > span {
   text-transform: capitalize;
@@ -529,12 +534,15 @@ body.parent-pageid-284 .entry-header {
   text-wrap: balance;
   overflow-wrap: balance;
 }
+
 #emfn-disaster-wrap {
   display: block;
   position: relative;
+  height: 1.3em; /* reserves space for one line */
   text-align: center;
   color: #c1503d;
 }
+
 .emfn-word {
   position: absolute;
   left: 0;
@@ -542,15 +550,13 @@ body.parent-pageid-284 .entry-header {
   text-align: center;
   color: #c1503d;
   opacity: 0;
-  transition:
-    opacity 0.45s ease-in-out,
-    transform 0.45s ease-in-out;
-  transform: translateY(6px);
   pointer-events: none;
+  /* no transition on inactive words — instant hide */
 }
+
 .emfn-word.emfn-active {
   opacity: 1;
-  transform: translateY(0);
+  /* no transition here either — clean cut, no crossfade */
 }
 
 /** ********** YOAST FAQ ********** 
@@ -590,6 +596,12 @@ body.parent-pageid-284 .entry-header {
  * styles for the cards that appear in the FacetWP search results on the Resources page, 
  * which are separate from the main Content Loop cards and need some specific overrides to match our styles
  */
+
+@media (max-width: 768px) {
+  .post-2278 .wp-block-columns {
+    flex-direction: column-reverse !important;
+  }
+}
 .fwpl-result {
   background-color: #fff !important;
   border-radius: 24px !important;
@@ -663,6 +675,11 @@ body.parent-pageid-284 .entry-header {
 .facetwp-search:focus {
   border-color: #1b2232 !important;
   outline: none !important;
+}
+
+.facetwp-facet-search .facetwp-input-wrap {
+  width: 100% !important;
+  display: block !important;
 }
 
 /* Category pills border top */

@@ -1,209 +1,152 @@
-answerID,category,manualRank
-distribPlatforms-web,Digital,4
-distribPlatforms-print,Print,4
-distribPlatforms-social,Social media,4
-distribPlatforms-email,Newsletter,4
-distribPlatforms-audio,Radio/ podcast,4
-distribPlatforms-video,TV/ video,4
-distribPlatforms-sms,SMS/ text alerts,4
-mode-before,Before,1
-mode-during,During,1
-mode-after,After,1
-disasterType-drought,Drought,5
-disasterType-extreme-heat,Extreme heat,5
-disasterType-flooding,Flooding,5
-disasterType-hurricane,Hurricanes/ tropical storms,5
-disasterType-severe-storms,Severe storms,5
-disasterType-tornadoes,Tornadoes,5
-disasterType-wildfires,Wildfires,5
-disasterType-winter-storms,Winter storms,5
-size-1,Staff capacity,5
-size-1,Staff wellbeing,5
-size-1,Solo operator,5
-size-5,Staff capacity,4
-size-5,Staff wellbeing,4
-size-5,Staff communication,4
-size-5,Staff safety,4
-size-5,Solo operator,4
-size-5,Small newsroom,4
-size-10,Staff capacity,3
-size-10,Staff wellbeing,3
-size-10,Staff communication,3
-size-10,Staff safety,3
-size-10,Small newsroom,3
-size-10,Medium newsroom,3
-size-25,Staff capacity,3
-size-25,Staff wellbeing,3
-size-25,Staff communication,3
-size-25,Staff safety,3
-size-25,Small newsroom,3
-size-25,Medium newsroom,3
-size-26,Staff capacity,3
-size-26,Staff wellbeing,3
-size-26,Staff communication,3
-size-26,Staff safety,3
-size-26,Medium newsroom,3
-size-26,Large newsroom,3
-distribPlatforms-web,Distribution channel disruption,3
-distribPlatforms-web,Audience engagement,3
-distribPlatforms-web,Fact-checking & misinformation,3
-distribPlatforms-web,Power & connectivity,3
-distribPlatforms-web,Digital,3
-distribPlatforms-print,Distribution channel disruption,3
-distribPlatforms-print,Equipment & workspace,3
-distribPlatforms-print,Print,3
-distribPlatforms-social,Distribution channel disruption,3
-distribPlatforms-social,Audience engagement,3
-distribPlatforms-social,Fact-checking & misinformation,3
-distribPlatforms-social,Power & connectivity,3
-distribPlatforms-social,Social media,3
-distribPlatforms-email,Distribution channel disruption,3
-distribPlatforms-email,Audience engagement,3
-distribPlatforms-email,Fact-checking & misinformation,3
-distribPlatforms-email,Power & connectivity,3
-distribPlatforms-email,Newsletter,3
-distribPlatforms-audio,Distribution channel disruption,3
-distribPlatforms-audio,Audience engagement,3
-distribPlatforms-audio,Fact-checking & misinformation,3
-distribPlatforms-audio,Power & connectivity,3
-distribPlatforms-audio,Radio/ podcast,3
-distribPlatforms-video,Distribution channel disruption,3
-distribPlatforms-video,Audience engagement,3
-distribPlatforms-video,Fact-checking & misinformation,3
-distribPlatforms-video,Power & connectivity,3
-distribPlatforms-video,TV/ video,3
-distribPlatforms-sms,Distribution channel disruption,3
-distribPlatforms-sms,Audience engagement,3
-distribPlatforms-sms,Fact-checking & misinformation,3
-distribPlatforms-sms,Power & connectivity,3
-distribPlatforms-sms,SMS/ text alerts,3
-designee-true,Leadership & decision-making,1
-designee-true,Staff capacity,1
-designee-true,Staff communication,1
-designee-true,Field reporting,1
-designee-false,Leadership & decision-making,4
-designee-false,Staff capacity,4
-designee-false,Staff communication,4
-emsContact-true,Field reporting,1
-emsContact-true,Fact-checking & misinformation,1
-emsContact-true,Community partnerships,1
-emsContact-false,Field reporting,4
-emsContact-false,Fact-checking & misinformation,4
-emsContact-false,Community partnerships,4
-offlineResiliency-3,Power & connectivity,2
-offlineResiliency-3,Distribution channel disruption,2
-offlineResiliency-3,Rural,2
-offlineResiliency-3,Urban,2
-offlineResiliency-3,Print,2
-offlineResiliency-3,Digital,2
-offlineResiliency-3,TV/ video,2
-offlineResiliency-3,Social media,2
-offlineResiliency-3,Newsletter,2
-offlineResiliency-3,SMS/ text alerts,2
-offlineResiliency-3,Radio/ podcast,2
-offlineResiliency-2,Power & connectivity,3
-offlineResiliency-2,Distribution channel disruption,3
-offlineResiliency-2,Rural,3
-offlineResiliency-2,Urban,3
-offlineResiliency-2,Print,3
-offlineResiliency-2,Digital,3
-offlineResiliency-2,TV/ video,3
-offlineResiliency-2,Social media,3
-offlineResiliency-2,Newsletter,3
-offlineResiliency-2,SMS/ text alerts,3
-offlineResiliency-2,Radio/ podcast,3
-offlineResiliency-1,Power & connectivity,4
-offlineResiliency-1,Distribution channel disruption,4
-offlineResiliency-1,Rural,4
-offlineResiliency-1,Urban,4
-offlineResiliency-1,Print,4
-offlineResiliency-1,Digital,4
-offlineResiliency-1,TV/ video,4
-offlineResiliency-1,Social media,4
-offlineResiliency-1,Newsletter,4
-offlineResiliency-1,SMS/ text alerts,4
-offlineResiliency-1,Radio/ podcast,4
-offlineResiliency-0,Power & connectivity,5
-offlineResiliency-0,Distribution channel disruption,5
-offlineResiliency-0,Rural,5
-offlineResiliency-0,Urban,5
-offlineResiliency-0,Print,5
-offlineResiliency-0,Digital,5
-offlineResiliency-0,TV/ video,5
-offlineResiliency-0,Social media,5
-offlineResiliency-0,Newsletter,5
-offlineResiliency-0,SMS/ text alerts,5
-offlineResiliency-0,Radio/ podcast,5
-safetyGuidelines-true,Field reporting,2
-safetyGuidelines-true,Staff safety,2
-safetyGuidelines-false,Field reporting,5
-safetyGuidelines-false,Staff safety,5
-activeReporting-true,Field reporting,5
-activeReporting-true,Staff wellbeing,5
-activeReporting-true,Staff capacity,5
-activeReporting-true,Staff communication,5
-activeReporting-true,Staff safety,5
-activeReporting-false,Field reporting,3
-activeReporting-false,Staff wellbeing,3
-activeReporting-false,Staff capacity,3
-activeReporting-false,Staff communication,3
-activeReporting-false,Staff safety,3
-pubSituation-4,Distribution channel disruption,1
-pubSituation-3,Distribution channel disruption,2
-pubSituation-3,SMS/ text alerts,2
-pubSituation-3,Social media,2
-pubSituation-2,Distribution channel disruption,3
-pubSituation-2,Equipment & workspace,3
-pubSituation-2,Social media,3
-pubSituation-2,SMS/ text alerts,3
-pubSituation-1,Power & connectivity,4
-pubSituation-1,Distribution channel disruption,4
-pubSituation-1,Equipment & workspace,4
-pubSituation-1,Community partnerships,4
-pubSituation-1,Social media,4
-pubSituation-1,SMS/ text alerts,4
-pubSituation-0,Power & connectivity,5
-pubSituation-0,Distribution channel disruption,5
-pubSituation-0,Equipment & workspace,5
-pubSituation-0,Community partnerships,5
-pubSituation-0,Social media,5
-pubSituation-0,SMS/ text alerts,5
-contactPlan-true,Field reporting,2
-contactPlan-true,Staff communication,2
-contactPlan-false,Field reporting,5
-contactPlan-false,Staff communication,5
-contactPlan-false,Co-located team,5
-contactPlan-false,Volunteer-based,5
-audienceDemand-3,Community partnerships,2
-audienceDemand-3,Audience engagement,2
-audienceDemand-2,Community partnerships,3
-audienceDemand-2,Audience engagement,3
-audienceDemand-1,Community partnerships,4
-audienceDemand-1,Audience engagement,4
-audienceDemand-0,Community partnerships,5
-audienceDemand-0,Audience engagement,5
-disInfo-3,Fact-checking & misinformation,2
-disInfo-2,Fact-checking & misinformation,3
-disInfo-1,Fact-checking & misinformation,4
-disInfo-0,Fact-checking & misinformation,5
-mentalHealth-access,Staff safety,2
-mentalHealth-access,Staff wellbeing,2
-mentalHealth-access,Leadership & decision-making,2
-mentalHealth-timeoff,Staff safety,3
-mentalHealth-timeoff,Staff wellbeing,3
-mentalHealth-timeoff,Leadership & decision-making,3
-mentalHealth-checkins,Staff safety,2
-mentalHealth-checkins,Staff wellbeing,2
-mentalHealth-checkins,Leadership & decision-making,2
-mentalHealth-training,Staff safety,4
-mentalHealth-training,Staff wellbeing,4
-mentalHealth-training,Leadership & decision-making,4
-mentalHealth-breaks,Staff safety,4
-mentalHealth-breaks,Staff wellbeing,4
-mentalHealth-breaks,Leadership & decision-making,4
-mentalHealth-peer,Staff safety,3
-mentalHealth-peer,Staff wellbeing,3
-mentalHealth-peer,Leadership & decision-making,3
-mentalHealth-none,Staff safety,5
-mentalHealth-none,Staff wellbeing,5
-mentalHealth-none,Leadership & decision-making,5
+answerID,used,category,manualRank,catID
+mode-before,TRUE,Before,2,57
+mode-during,TRUE,During,2,58
+mode-after,TRUE,After,2,59
+disasterType-drought,TRUE,Drought,5,39
+disasterType-extreme-heat,TRUE,Extreme heat,5,40
+disasterType-flooding,TRUE,Flooding,5,3
+disasterType-hurricane,TRUE,Hurricanes/ tropical storms,5,2
+disasterType-severe-storms,TRUE,Severe storms,5,41
+disasterType-tornadoes,TRUE,Tornadoes,5,42
+disasterType-wildfires,TRUE,Wildfires,5,4
+disasterType-winter-storms,TRUE,Winter storms,5,9
+disasterType-other,TRUE,Other,5,43
+size-1,TRUE,Solo operator,5,121
+size-5,TRUE,Small newsroom,4,122
+size-10,TRUE,Medium newsroom,4,123
+size-25,TRUE,Large newsroom,4,124
+size-26,TRUE,Large newsroom,5,124
+size-10,TRUE,Small newsroom,4,122
+size-25,TRUE,Medium newsroom,4,123
+distribPlatforms-web,TRUE,Digital,5,125
+distribPlatforms-print,TRUE,Print,5,126
+distribPlatforms-social,TRUE,Social media,5,127
+distribPlatforms-email,TRUE,Newsletter,5,128
+distribPlatforms-audio,TRUE,Radio/ podcast,5,130
+distribPlatforms-video,TRUE,TV/ video,5,152
+distribPlatforms-sms,TRUE,SMS/ text alerts,5,129
+distribPlatforms-web,TRUE,Distribution channel disruption,5,109
+distribPlatforms-print,TRUE,Distribution channel disruption,1,109
+distribPlatforms-social,TRUE,Distribution channel disruption,5,109
+distribPlatforms-email,TRUE,Distribution channel disruption,4,109
+distribPlatforms-audio,TRUE,Distribution channel disruption,3,109
+distribPlatforms-video,TRUE,Distribution channel disruption,3,109
+distribPlatforms-sms,TRUE,Distribution channel disruption,5,109
+distribPlatforms-web,TRUE,Technical resiliency,3,10
+distribPlatforms-print,TRUE,Equipment &amp; workspace,2,154
+distribPlatforms-social,TRUE,Fact-checking &amp; misinformation,5,118
+distribPlatforms-email,TRUE,Audience engagement,3,115
+distribPlatforms-audio,TRUE,Technical resiliency,3,10
+distribPlatforms-video,TRUE,Technical resiliency,3,10
+distribPlatforms-sms,TRUE,Audience engagement,5,115
+designee-true,TRUE,Staff communication,3,111
+designee-false,TRUE,Community partnerships,5,116
+designee-true,TRUE,Staff safety,3,110
+designee-false,TRUE,Staff capacity,5,112
+designee-true,TRUE,Leadership &amp; decision-making,3,155
+designee-false,TRUE,Staff safety,5,110
+emsContact-true,TRUE,Field reporting,3,119
+emsContact-false,TRUE,Community partnerships,5,116
+emsContact-true,TRUE,Fact-checking &amp; misinformation,2,118
+emsContact-false,TRUE,Fact-checking &amp; misinformation,3,118
+offlineResiliency-3,TRUE,Equipment &amp; workspace,2,154
+offlineResiliency-2,TRUE,Equipment &amp; workspace,3,154
+offlineResiliency-1,TRUE,Equipment &amp; workspace,4,154
+offlineResiliency-0,TRUE,Equipment &amp; workspace,5,154
+offlineResiliency-3,TRUE,Power &amp; connectivity,2,107
+offlineResiliency-2,TRUE,Power &amp; connectivity,3,107
+offlineResiliency-1,TRUE,Power &amp; connectivity,4,107
+offlineResiliency-0,TRUE,Power &amp; connectivity,5,107
+offlineResiliency-3,TRUE,Leadership &amp; decision-making,1,155
+offlineResiliency-2,TRUE,Leadership &amp; decision-making,2,155
+offlineResiliency-1,TRUE,Leadership &amp; decision-making,4,155
+offlineResiliency-0,TRUE,Leadership &amp; decision-making,5,155
+safetyGuidelines-true,TRUE,Staff safety,2,110
+safetyGuidelines-false,TRUE,Staff safety,5,110
+safetyGuidelines-true,TRUE,Field reporting,2,119
+safetyGuidelines-false,TRUE,Field reporting,5,119
+activeReporting-true,TRUE,Staff safety,5,110
+activeReporting-false,TRUE,Staff safety,1,110
+activeReporting-true,TRUE,Field reporting,5,119
+activeReporting-false,TRUE,Field reporting,3,119
+activeReporting-true,TRUE,Staff communication,5,111
+activeReporting-false,TRUE,Staff communication,2,111
+activeReporting-true,TRUE,Staff capacity,5,112
+activeReporting-false,TRUE,Staff capacity,1,112
+pubSituation-4,TRUE,Distribution channel disruption,1,109
+pubSituation-3,TRUE,Distribution channel disruption,2,109
+pubSituation-2,TRUE,Distribution channel disruption,3,109
+pubSituation-1,TRUE,Distribution channel disruption,4,109
+pubSituation-0,TRUE,Distribution channel disruption,5,109
+pubSituation-4,TRUE,Power &amp; connectivity,1,107
+pubSituation-3,TRUE,Social media,2,127
+pubSituation-2,TRUE,Equipment &amp; workspace,3,154
+pubSituation-1,TRUE,Equipment &amp; workspace,4,154
+pubSituation-0,TRUE,Equipment &amp; workspace,5,154
+pubSituation-4,TRUE,Fact-checking &amp; misinformation,1,118
+pubSituation-3,TRUE,Power &amp; connectivity,2,107
+pubSituation-2,TRUE,Power &amp; connectivity,3,107
+pubSituation-1,TRUE,Power &amp; connectivity,4,107
+pubSituation-0,TRUE,Power &amp; connectivity,5,107
+pubSituation-4,TRUE,Audience engagement,2,115
+pubSituation-3,TRUE,SMS/ text alerts,2,129
+pubSituation-2,TRUE,Community partnerships,3,116
+pubSituation-1,TRUE,Community partnerships,4,116
+pubSituation-0,TRUE,Community partnerships,5,116
+contactPlan-true,TRUE,Staff communication,2,111
+contactPlan-false,TRUE,Staff communication,5,111
+contactPlan-true,TRUE,Staff wellbeing,3,113
+contactPlan-false,TRUE,Staff wellbeing,3,113
+audienceDemand-3,TRUE,Audience engagement,2,115
+audienceDemand-2,TRUE,Audience engagement,3,115
+audienceDemand-1,TRUE,Audience engagement,4,115
+audienceDemand-0,TRUE,Audience engagement,5,115
+audienceDemand-3,TRUE,Community partnerships,2,116
+audienceDemand-2,TRUE,Community partnerships,3,116
+audienceDemand-1,TRUE,Community partnerships,4,116
+audienceDemand-0,TRUE,Community partnerships,5,116
+audienceDemand-3,TRUE,Mutual aid &amp; peer learning,4,156
+audienceDemand-2,TRUE,Mutual aid &amp; peer learning,4,156
+audienceDemand-1,TRUE,Mutual aid &amp; peer learning,4,156
+audienceDemand-0,TRUE,Mutual aid &amp; peer learning,4,156
+disInfo-3,TRUE,Fact-checking &amp; misinformation,2,118
+disInfo-2,TRUE,Fact-checking &amp; misinformation,3,118
+disInfo-1,TRUE,Fact-checking &amp; misinformation,4,118
+disInfo-0,TRUE,Fact-checking &amp; misinformation,5,118
+mentalHealth-access,TRUE,Staff wellbeing,5,113
+mentalHealth-timeoff,TRUE,Staff wellbeing,5,113
+mentalHealth-checkins,TRUE,Staff wellbeing,5,113
+mentalHealth-training,TRUE,Staff wellbeing,5,113
+mentalHealth-breaks,TRUE,Staff wellbeing,5,113
+mentalHealth-peer,TRUE,Staff wellbeing,5,113
+mentalHealth-none,TRUE,Staff wellbeing,5,113
+mentalHealth-access,TRUE,Staff safety,5,110
+mentalHealth-timeoff,TRUE,Staff safety,5,110
+mentalHealth-checkins,TRUE,Staff safety,5,110
+mentalHealth-training,TRUE,Staff safety,5,110
+mentalHealth-breaks,TRUE,Staff safety,5,110
+mentalHealth-peer,TRUE,Staff safety,5,110
+mentalHealth-none,TRUE,Staff safety,5,110
+mentalHealth-access,TRUE,Leadership &amp; decision-making,4,155
+mentalHealth-timeoff,TRUE,Leadership &amp; decision-making,4,155
+mentalHealth-checkins,TRUE,Leadership &amp; decision-making,4,155
+mentalHealth-training,TRUE,Leadership &amp; decision-making,4,155
+mentalHealth-breaks,TRUE,Leadership &amp; decision-making,4,155
+mentalHealth-peer,TRUE,Leadership &amp; decision-making,4,155
+mentalHealth-none,TRUE,Leadership &amp; decision-making,4,155
+colocated,TRUE,Co-located team,5,72
+remote,TRUE,Fully remote,5,73
+hybrid,TRUE,Hybrid,5,74
+urban,TRUE,Urban,5,149
+rural,TRUE,Rural,5,151
+multilingual,TRUE,Multilingual audience,5,150
+volunteer,TRUE,Volunteer-based,5,131
+debriefReadiness-6,FALSE,,0,
+debriefReadiness-5,FALSE,,0,
+debriefReadiness-4,FALSE,,0,
+debriefReadiness-3,FALSE,,0,
+debriefReadiness-2,FALSE,,0,
+debriefReadiness-1,FALSE,,0,
+debriefReadiness-0,FALSE,,0,
+recentImpacts-true,FALSE,,0,
+recentImpacts-false,FALSE,,0,

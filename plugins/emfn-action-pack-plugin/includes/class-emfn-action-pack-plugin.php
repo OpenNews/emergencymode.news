@@ -38,32 +38,25 @@ class EMFN_Action_Pack_Plugin {
     private static $instance = null;
 
     /**
-     * Cached decoded Action Pack values for the current request.
+     * Cached WordPress term IDs decoded from Action Pack payload for the current request.
      *
-     * @var array<int, string>|null
+     * @var array<int, int>|null
      */
-    private $action_pack_values = null;
+    private $action_pack_term_ids = null;
 
     /**
-     * Cached Action Pack category order for the current request.
+     * Cached Action Pack category ID order from CSV (for decoding bit positions).
      *
-     * @var array<int, string>|null
+     * @var array<int, int>|null
      */
     private $action_pack_category_order = null;
 
     /**
-     * Cached resolved category names for the current request.
+     * Cached category scoring data (weights and scarcity multipliers) for the current request.
      *
-     * @var array<int, string>|null
+     * @var array{weights: array<int, int>, scarcity: array<int, float>, score_sql: string}|null
      */
-    private $action_pack_category_names = null;
-
-    /**
-     * Cached resolved category IDs for the current request.
-     *
-     * @var array<int, int>|null
-     */
-    private $action_pack_category_ids = null;
+    private $action_pack_scoring_cache = null;
 
     /**
      * Buffered debug entries to emit to the browser console in the footer.
@@ -105,6 +98,8 @@ class EMFN_Action_Pack_Plugin {
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
         add_filter( 'query_loop_block_query_vars', array( $this, 'filter_action_pack_query_loop_vars' ), 10, 3 );
         add_filter( 'render_block_data', array( $this, 'filter_action_pack_newspack_block_data' ), 10, 3 );
+        add_action( 'pre_get_posts', array( $this, 'mark_action_pack_newspack_queries' ) );
+        add_filter( 'posts_clauses', array( $this, 'apply_action_pack_category_scoring' ), 10, 2 );
         add_filter( 'editable_extensions', array( $this, 'allow_csv_in_plugin_editor' ), 10, 2 );
         add_action( 'wp_footer', array( $this, 'render_action_pack_debug_script' ), 99 );
     }
@@ -231,20 +226,10 @@ class EMFN_Action_Pack_Plugin {
      */
     private function prime_action_pack_debug_entries() {
         if ( empty( $this->action_pack_debug_entries ) ) {
-            $category_names = $this->get_action_pack_category_names_from_request();
-            $this->queue_action_pack_debug_entry( 'Action Pack payload detected', array(
-                'payloadPresent' => true,
-                'categoryNames'  => $category_names
+            $term_ids = $this->get_action_pack_term_ids_from_request();
+            $this->queue_action_pack_debug_entry( 'Action Pack payload decoded', array(
+                'termIds' => $term_ids,
             ) );
-        }
-
-        $this->get_action_pack_category_names_from_request();
-
-        if ( empty( $this->action_pack_category_ids ) ) {
-            $this->queue_action_pack_debug_entry(
-                'get_action_pack_category_ids_from_request:',
-                array_values( $this->get_action_pack_category_ids_from_request() )
-            );
         }
     }
 
@@ -333,94 +318,30 @@ class EMFN_Action_Pack_Plugin {
     }
 
     /**
-     * Decode the current request's Action Pack payload into category names.
+     * Decode the current request's Action Pack payload into WordPress term IDs.
      *
-     * @return array<int, string>|null
+     * @return array<int, int>|null
      */
-    public function get_action_pack_values_from_request() {
+    public function get_action_pack_term_ids_from_request() {
         if ( ! $this->is_action_pack_page_request() ) {
             return null;
         }
 
-        // return cached values if we've already decoded them for this request
-        if ( is_array( $this->action_pack_values ) ) {
-            return $this->action_pack_values;
+        if ( is_array( $this->action_pack_term_ids ) ) {
+            return $this->action_pack_term_ids;
         }
 
-        // get the raw payload from the request; stop if missing or has unexpected format/prefix
         $payload = $this->get_action_pack_payload_from_request();
         if ( null === $payload || 0 !== strpos( $payload, self::ACTION_PACK_PAYLOAD_PREFIX ) ) {
             return null;
         }
 
-        // decode the payload into category names and cache the result for this request
-        $this->action_pack_values = $this->decode_action_pack_bitmask_payload( $payload );
+        $this->action_pack_term_ids = $this->decode_action_pack_bitmask_payload( $payload );
 
-        return $this->action_pack_values;
+        return $this->action_pack_term_ids;
     }
 
-    /**
-     * Resolve all unique category names for the current request's Action Pack.
-     *
-     * @return array<int, string>
-     */
-    public function get_action_pack_category_names_from_request() {
-        if ( ! $this->is_action_pack_page_request() ) {
-            return array();
-        }
 
-        // return cached names if we've already resolved them for this request
-        if ( is_array( $this->action_pack_category_names ) ) {
-            return $this->action_pack_category_names;
-        }
-
-        // get the category names directly from the decoded Action Pack values
-        $values = $this->get_action_pack_values_from_request();
-        if ( null === $values ) {
-            $this->action_pack_category_names = array();
-            return $this->action_pack_category_names;
-        }
-
-        // cache the result for this request
-        $this->action_pack_category_names = $values;
-
-        return $this->action_pack_category_names;
-    }
-
-    /**
-     * Resolve all unique category IDs for the current request's Action Pack.
-     *
-     * @return array<int, int>
-     */
-    public function get_action_pack_category_ids_from_request() {
-        if ( ! $this->is_action_pack_page_request() ) {
-            return array();
-        }
-
-        // return cached IDs if we've already resolved them for this request
-        if ( is_array( $this->action_pack_category_ids ) ) {
-            return $this->action_pack_category_ids;
-        }
-
-        // get the category names from the decoded Action Pack values, then look up their term IDs
-        $category_names = $this->get_action_pack_category_names_from_request();
-        $category_ids   = array();
-
-        // get_term_by() is not especially cheap and an Action Pack can match many categories
-        // cache the resolved IDs for the request so this lookup path only runs once per load
-        foreach ( $category_names as $category_name ) {
-            $term = get_term_by( 'name', $category_name, 'category' );
-
-            if ( $term && ! is_wp_error( $term ) ) {
-                $category_ids[] = (int) $term->term_id;
-            }
-        }
-
-        // filter out any invalid or duplicate IDs and cache the result for this request
-        $this->action_pack_category_ids = array_values( array_unique( array_filter( $category_ids ) ) );
-
-        return $this->action_pack_category_ids;
-    }
 
     /**
      * Apply Action Pack category constraints to the targeted Query Loop block
@@ -452,17 +373,139 @@ class EMFN_Action_Pack_Plugin {
         }
         $this->queue_action_pack_debug_entry( 'parsed_block[\'attrs\'][\'className\']', $class_name );
 
-        // bail if no valid Action Pack categories could be resolved from the request payload
-        $category_ids = $this->get_action_pack_category_ids_from_request();
-        if ( empty( $category_ids ) ) {
-            $this->queue_action_pack_debug_entry( 'No valid Action Pack categories found', $query );
+        $term_ids = $this->get_action_pack_term_ids_from_request();
+        if ( empty( $term_ids ) ) {
+            $this->queue_action_pack_debug_entry( 'No valid Action Pack term IDs decoded', $query );
             return $query;
         }
 
-        // constrain the block's query to just the desired categories
-        $query['category__in'] = $category_ids;
+        $query['category__in'] = $term_ids;
+        $query['emfn_action_pack'] = true;
 
         return $query;
+    }
+
+    /**
+     * Apply smart category scoring to Action Pack queries.
+     * 
+     * Scoring strategy:
+     * - Tier tags (tier-1, tier-2, etc.): editorial quality ranking
+     * - Category weight (from term order): user's priority
+     * - Scarcity bonus: high-weight category + few posts = rare/specific match
+     * - Multi-category bonus: posts matching multiple user categories
+     * - Diversity: prevents one category from dominating results
+     *
+     * @param array<string, string> $clauses SQL clauses.
+     * @param WP_Query              $query Query instance.
+     * @return array<string, string>
+     */
+    public function apply_action_pack_category_scoring( $clauses, $query ) {
+        global $wpdb;
+
+        if ( ! $query->get( 'emfn_action_pack' ) ) {
+            return $clauses;
+        }
+
+        $term_ids = $this->get_action_pack_term_ids_from_request();
+        if ( empty( $term_ids ) ) {
+            return $clauses;
+        }
+
+        // Use cached scoring data if available to avoid redundant term lookups
+        if ( null === $this->action_pack_scoring_cache ) {
+            // Build category weights from term order (earlier = higher weight)
+            $weights = array();
+            $max_weight = count( $term_ids );
+            foreach ( $term_ids as $index => $term_id ) {
+                $weight = $max_weight - $index;
+                $weights[ $term_id ] = $weight;
+            }
+
+            // Get post counts per category for scarcity calculation
+            $terms = get_terms( array(
+                'taxonomy'   => 'category',
+                'include'    => $term_ids,
+                'hide_empty' => false,
+            ) );
+
+            $scarcity_multipliers = array();
+            if ( ! is_wp_error( $terms ) && is_array( $terms ) && ! empty( $terms ) ) {
+                $counts = array_map( function( $term ) {
+                    return isset( $term->count ) ? (int) $term->count : 1;
+                }, $terms );
+                
+                $max_count = ! empty( $counts ) ? max( $counts ) : 1;
+                
+                foreach ( $terms as $term ) {
+                    if ( isset( $term->term_id ) && isset( $term->count ) ) {
+                        $count = max( 1, (int) $term->count );
+                        // Scarcity: fewer posts = higher multiplier (inverse proportion)
+                        $scarcity_multipliers[ $term->term_id ] = $max_count / $count;
+                    }
+                }
+            }
+
+            // Build weighted score with scarcity bonus
+            $score_cases = array();
+            foreach ( $weights as $term_id => $weight ) {
+                $scarcity = isset( $scarcity_multipliers[ $term_id ] ) ? $scarcity_multipliers[ $term_id ] : 1.0;
+                $score = $weight * $scarcity;
+                $score_cases[] = $wpdb->prepare( 'WHEN ap_cat_tt.term_id = %d THEN %f', $term_id, $score );
+            }
+            $score_sql = 'CASE ' . implode( ' ', $score_cases ) . ' ELSE 0 END';
+
+            // Cache for subsequent queries in this request
+            $this->action_pack_scoring_cache = array(
+                'weights' => $weights,
+                'scarcity' => $scarcity_multipliers,
+                'score_sql' => $score_sql,
+            );
+        }
+
+        $score_sql = $this->action_pack_scoring_cache['score_sql'];
+
+        // Tier-based scoring (tier-1 = best, tier-2 = good, tier-3 = acceptable, etc.)
+        // Posts without tier tags get score of 1 (lowest priority)
+        // Aggregate tier data in a subquery so the main query still has only one category row per relationship.
+        $tier_score_subquery = "
+            SELECT
+                ap_tier_tr.object_id,
+                MAX(
+                    CASE
+                        WHEN ap_tier_terms.slug = 'tier-1' THEN 1000
+                        WHEN ap_tier_terms.slug = 'tier-2' THEN 100
+                        WHEN ap_tier_terms.slug = 'tier-3' THEN 10
+                        ELSE 1
+                    END
+                ) AS tier_score
+            FROM {$wpdb->term_relationships} AS ap_tier_tr
+            INNER JOIN {$wpdb->term_taxonomy} AS ap_tier_tt
+                ON ap_tier_tr.term_taxonomy_id = ap_tier_tt.term_taxonomy_id
+                AND ap_tier_tt.taxonomy = 'post_tag'
+            INNER JOIN {$wpdb->terms} AS ap_tier_terms
+                ON ap_tier_tt.term_id = ap_tier_terms.term_id
+                AND ap_tier_terms.slug LIKE 'tier-%'
+            GROUP BY ap_tier_tr.object_id
+        ";
+
+        // Join category relationships
+        $clauses['join'] .= " LEFT JOIN {$wpdb->term_relationships} AS ap_cat_tr ON {$wpdb->posts}.ID = ap_cat_tr.object_id";
+        $clauses['join'] .= " LEFT JOIN {$wpdb->term_taxonomy} AS ap_cat_tt ON ap_cat_tr.term_taxonomy_id = ap_cat_tt.term_taxonomy_id AND ap_cat_tt.taxonomy = 'category'";
+
+        // Join pre-aggregated tier scores (one row per post) to avoid category x tier row multiplication.
+        $clauses['join'] .= " LEFT JOIN ({$tier_score_subquery}) AS ap_tier_scores ON {$wpdb->posts}.ID = ap_tier_scores.object_id";
+
+        // Final score = tier_weight + category_relevance_score
+        // Tier determines quality band, category score creates diversity within that band
+        // Only set GROUP BY if not already set to avoid overwriting other plugins' clauses
+        if ( empty( $clauses['groupby'] ) ) {
+            $clauses['groupby'] = "{$wpdb->posts}.ID";
+        } elseif ( false === strpos( $clauses['groupby'], "{$wpdb->posts}.ID" ) ) {
+            $clauses['groupby'] .= ", {$wpdb->posts}.ID";
+        }
+        $clauses['orderby'] = "COALESCE(ap_tier_scores.tier_score, 1) DESC, SUM({$score_sql}) DESC, {$wpdb->posts}.ID DESC";
+
+        return $clauses;
     }
 
     /**
@@ -510,14 +553,11 @@ class EMFN_Action_Pack_Plugin {
             return $parsed_block;
         }
 
-        $category_ids = $this->get_action_pack_category_ids_from_request();
-        if ( empty( $category_ids ) ) {
+        $term_ids = $this->get_action_pack_term_ids_from_request();
+        if ( empty( $term_ids ) ) {
             $this->queue_action_pack_debug_entry(
-                'Block has no valid Action Pack categories',
-                array(
-                    'className'     => $class_name,
-                    'categoryNames' => $this->get_action_pack_category_names_from_request(),
-                )
+                'Block has no valid Action Pack term IDs',
+                array( 'className' => $class_name )
             );
             return $parsed_block;
         }
@@ -526,15 +566,13 @@ class EMFN_Action_Pack_Plugin {
             $parsed_block['attrs'] = array();
         }
 
-        $parsed_block['attrs']['categories'] = $category_ids;
+        $parsed_block['attrs']['categories'] = $term_ids;
 
-        $category_names = $this->get_action_pack_category_names_from_request();
         $this->queue_action_pack_debug_entry(
             'Block categories applied',
             array(
-                'className'      => $class_name,
-                'categoryNames'  => $category_names,
-                'categoryIDs'    => $category_ids
+                'className' => $class_name,
+                'termIds'   => $term_ids,
             )
         );
 
@@ -542,35 +580,65 @@ class EMFN_Action_Pack_Plugin {
     }
 
     /**
-     * Load the Action Pack category order from the tall category CSV.
+     * Mark Newspack block queries for Action Pack scoring.
+     * 
+     * This runs during pre_get_posts to set a query var on queries created
+     * by Newspack blocks that have Action Pack categories applied.
      *
-     * @return array{category_order: array<int, string>}
+     * @param WP_Query $query The WordPress query object.
+     */
+    public function mark_action_pack_newspack_queries( $query ) {
+        if ( ! $this->is_action_pack_page_request() ) {
+            return;
+        }
+
+        // Check if this query has Action Pack categories
+        $category_in = $query->get( 'category__in' );
+        if ( empty( $category_in ) ) {
+            return;
+        }
+
+        $term_ids = $this->get_action_pack_term_ids_from_request();
+        if ( empty( $term_ids ) ) {
+            return;
+        }
+
+        // If the query's categories match our Action Pack categories, mark it
+        if ( ! is_array( $category_in ) ) {
+            $category_in = array( $category_in );
+        }
+        sort( $category_in );
+        $term_ids_sorted = $term_ids;
+        sort( $term_ids_sorted );
+
+        if ( $category_in === $term_ids_sorted ) {
+            $query->set( 'emfn_action_pack', true );
+        }
+    }
+
+    /**
+     * Load the Action Pack category ID order from the tall category CSV.
+     *
+     * @return array<int, int> Category ID order for decoding bit positions
      */
     public function load_tall_category_csv() {
         $csv_path = EMFN_ACTION_PACK_PLUGIN_DIR . 'assets/data/_tallCategories.csv';
 
         if ( ! file_exists( $csv_path ) || ! is_readable( $csv_path ) ) {
-            return array(
-                'category_order' => array(),
-            );
+            return array();
         }
 
         $handle = fopen( $csv_path, 'r' );
         if ( false === $handle ) {
-            return array(
-                'category_order' => array(),
-            );
+            return array();
         }
 
         $header = fgetcsv( $handle );
         if ( ! is_array( $header ) ) {
             fclose( $handle );
-            return array(
-                'category_order' => array(),
-            );
+            return array();
         }
 
-        // lowercase header values for more robust column index lookup
         $normalized_header = array_map(
             static function ( $value ) {
                 return trim( strtolower( (string) $value ) );
@@ -578,73 +646,63 @@ class EMFN_Action_Pack_Plugin {
             $header
         );
 
-        $answer_id_index   = array_search( 'answerid', $normalized_header, true );
-        $category_index    = array_search( 'category', $normalized_header, true );
+        $cat_id_index      = array_search( 'catid', $normalized_header, true );
         $manual_rank_index = array_search( 'manualrank', $normalized_header, true );
 
-        if ( false === $answer_id_index || false === $category_index || false === $manual_rank_index ) {
+        if ( false === $cat_id_index || false === $manual_rank_index ) {
             fclose( $handle );
-            return array(
-                'category_order' => array(),
-            );
+            return array();
         }
 
-        $category_ranks     = array();
-        $category_positions = array();
-        $category_order     = array();
+        $cat_id_ranks     = array();
+        $cat_id_positions = array();
+        $cat_id_order     = array();
 
-        // read through the CSV and build a list of unique categories with their max manual rank
         while ( false !== ( $row = fgetcsv( $handle ) ) ) {
-            $entry_id = isset( $row[ $answer_id_index ] ) ? trim( (string) $row[ $answer_id_index ] ) : '';
-            $category = isset( $row[ $category_index ] ) ? trim( (string) $row[ $category_index ] ) : '';
+            $cat_id = isset( $row[ $cat_id_index ] )
+                ? (int) trim( (string) $row[ $cat_id_index ] )
+                : 0;
             $manual_rank = isset( $row[ $manual_rank_index ] )
                 ? (int) trim( (string) $row[ $manual_rank_index ] )
                 : 0;
 
-            if ( '' === $entry_id || '' === $category ) {
+            if ( 0 === $cat_id ) {
                 continue;
             }
 
-            if ( ! array_key_exists( $category, $category_ranks ) ) {
-                $category_positions[ $category ] = count( $category_order );
-                $category_order[]                = $category;
-                $category_ranks[ $category ]     = $manual_rank;
+            if ( ! array_key_exists( $cat_id, $cat_id_ranks ) ) {
+                $cat_id_positions[ $cat_id ] = count( $cat_id_order );
+                $cat_id_order[]              = $cat_id;
+                $cat_id_ranks[ $cat_id ]     = $manual_rank;
             } else {
-                $category_ranks[ $category ] = max( $category_ranks[ $category ], $manual_rank );
+                $cat_id_ranks[ $cat_id ] = max( $cat_id_ranks[ $cat_id ], $manual_rank );
             }
-
-            unset( $entry_id );
         }
 
         fclose( $handle );
 
-        // sort the categories by manualRank desc
         usort(
-            $category_order,
-            static function ( $left, $right ) use ( $category_ranks, $category_positions ) {
-                $left_rank      = $category_ranks[ $left ] ?? 0;
-                $right_rank     = $category_ranks[ $right ] ?? 0;
-                $left_position  = $category_positions[ $left ] ?? 0;
-                $right_position = $category_positions[ $right ] ?? 0;
+            $cat_id_order,
+            static function ( $left, $right ) use ( $cat_id_ranks, $cat_id_positions ) {
+                $left_rank  = $cat_id_ranks[ $left ] ?? 0;
+                $right_rank = $cat_id_ranks[ $right ] ?? 0;
 
                 if ( $left_rank !== $right_rank ) {
                     return $right_rank <=> $left_rank;
                 }
 
-                return $left_position <=> $right_position;
+                return ( $cat_id_positions[ $left ] ?? 0 ) <=> ( $cat_id_positions[ $right ] ?? 0 );
             }
         );
 
-        return array(
-            'category_order' => $category_order,
-        );
+        return $cat_id_order;
     }
 
     /**
      * Decode the compact bitmask/base36 Action Pack payload format.
      *
-     * @param string $payload Action Pack payload after the prefix
-     * @return array<int, string>|null
+     * @param string $payload Action Pack payload with prefix
+     * @return array<int, int>|null Array of WordPress term IDs
      */
     private function decode_action_pack_bitmask_payload( $payload ) {
         // strip the format prefix so only the encoded bitmask segments remain
@@ -655,23 +713,21 @@ class EMFN_Action_Pack_Plugin {
             return null;
         }
 
-        // load the category order once so PHP uses the same bit positions as JS
         if ( ! is_array( $this->action_pack_category_order ) ) {
-            $loaded_registry                  = $this->load_tall_category_csv();
-            $this->action_pack_category_order = $loaded_registry['category_order'];
+            $this->action_pack_category_order = $this->load_tall_category_csv();
         }
 
-        // stop if we don't have a valid category order to decode against
-        $category_order = $this->action_pack_category_order;
-        if ( empty( $category_order ) ) {
+        if ( empty( $this->action_pack_category_order ) ) {
             return null;
         }
 
-        // each dot-separated chunk is one base36-encoded 31-bit segment
-        $resolved_categories = array();
-        $segments            = explode( '.', $encoded_payload );
+        $category_id_order = $this->action_pack_category_order;
 
-        // walk through each segment and decode it back into category names based
+        // each dot-separated chunk is one base36-encoded 31-bit segment
+        $resolved_category_ids = array();
+        $segments              = explode( '.', $encoded_payload );
+
+        // walk through each segment and decode it back into category IDs based on bit positions
         foreach ( $segments as $segment_index => $segment ) {
             // normalize user input before validating or decoding it
             $normalized_segment = trim( (string) $segment );
@@ -688,22 +744,22 @@ class EMFN_Action_Pack_Plugin {
             }
 
             // walk through the 31 available bit positions for this segment
-            // each set bit maps to one category index in the shared order
+            // each set bit maps to one category ID index in the shared order
             for ( $bit_index = 0; $bit_index < self::ACTION_PACK_SEGMENT_SIZE; $bit_index++ ) {
                 $mask           = 1 << $bit_index;
                 $category_index = ( $segment_index * self::ACTION_PACK_SEGMENT_SIZE ) + $bit_index;
 
                 // skip bits that are off and skip indexes beyond the known category list
-                if ( 0 === ( $segment_value & $mask ) || ! isset( $category_order[ $category_index ] ) ) {
+                if ( 0 === ( $segment_value & $mask ) || ! isset( $category_id_order[ $category_index ] ) ) {
                     continue;
                 }
 
-                // append the category name that lives at this bit position
-                $resolved_categories[] = $category_order[ $category_index ];
+                // append the category ID that lives at this bit position
+                $resolved_category_ids[] = $category_id_order[ $category_index ];
             }
         }
 
         // return null when nothing valid was decoded so callers can bail cleanly
-        return ! empty( $resolved_categories ) ? $resolved_categories : null;
+        return ! empty( $resolved_category_ids ) ? $resolved_category_ids : null;
     }
 }

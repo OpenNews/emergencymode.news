@@ -15,7 +15,7 @@
  * @typedef {import("../../../shared/emfn-types").GFormSubmissionStartedData} GFormSubmissionStartedData
  */
 
-const version = "0.8.04"; // debugging versioning
+const version = "0.8.05"; // debugging versioning
 const riskThreshold = 85; // threshold for suggested risks
 const emfnWindow = /** @type {EmfnWindow} */ (window);
 
@@ -88,42 +88,10 @@ const GeolocationFlow = {
     try {
       sessionStorage.removeItem(GeolocationFlow.storageKey);
     } catch (err) {
-      console.warn("Unable to clear location data from sessionStorage:", err);
+      console.warn("Unable to clear sessionStorage:", err);
     }
-
-    locData.county = null;
-    locData.state = null;
-    locData.st = null;
-    locData.country = null;
-    locData.fips = null;
-
+    Object.assign(locData, { county: null, state: null, st: null, country: null, fips: null });
     hasResolvedGeolocation = false;
-    hasRenderedRisks = false;
-    RiskRenderer.lastFetchedCountyState = null;
-    RiskRenderer.lastFetchedCountyFips = null;
-    RiskRenderer.lastFetchedNriData = null;
-
-    const formRoot = getGravityForm();
-    if (!formRoot) {
-      return;
-    }
-
-    // don't accidentally submit old data
-    const fipsField = /** @type {HTMLInputElement | null} */ (
-      formRoot.querySelector(fipsFieldSelection)
-    );
-    if (fipsField) {
-      fipsField.value = "";
-    }
-
-    const risks = /** @type {HTMLDivElement | null} */ (formRoot.querySelector("#risks"));
-    if (risks) {
-      delete risks.dataset.emfnRendered;
-      Array.from(risks.children).forEach(child => {
-        if (["risk-template"].includes(child.id)) return;
-        child.remove();
-      });
-    }
   },
 
   /**
@@ -409,8 +377,7 @@ const RiskRenderer = {
    */
   clearRenderedRisks(risks) {
     Array.from(risks.children).forEach(child => {
-      if (["risk-template"].includes(child.id)) return;
-      child.remove();
+      if (child.id !== "risk-template") child.remove();
     });
   },
 
@@ -422,18 +389,13 @@ const RiskRenderer = {
    */
   renderFallbackRisk(risks, risksTemplate) {
     const fallbackElements = RiskRenderer.createRiskElements(risks, risksTemplate);
-    if (!fallbackElements) {
-      return;
-    }
+    if (!fallbackElements) return;
 
     const { riskItem, riskRegion, riskType } = fallbackElements;
-    if (riskItem) riskItem.textContent = locData.county ?? "Unable to resolve location";
-    if (riskRegion) riskRegion.textContent = locData.state ?? "Location unavailable";
-    if (riskType)
-      riskType.textContent = [
-        "Unable to determine specific risks for your location.",
-        "Please pick another location in your county or province.",
-      ].join(" ");
+    if (riskItem) riskItem.textContent = locData.county || "Unable to resolve location";
+    if (riskRegion) riskRegion.textContent = locData.state || "Location unavailable";
+    riskType.textContent =
+      "Unable to determine specific risks for your location. Please pick another location in your county or province.";
   },
 
   /**
@@ -442,22 +404,18 @@ const RiskRenderer = {
    * @returns {string[]} - ranked hazards with risk percentages (e.g. "Hurricane (80%)")
    */
   deriveLikelyHazards(nriData) {
-    /** @type {[string, number][]} */
-    // Get all valid hazard scores with their labels, sorted by score descending
     const allHazardScores = Object.entries(nriData)
-      .filter(([key, _val]) => key.endsWith("_risk_score"))
-      .map(([key, val]) => [
-        RiskRenderer.hazardLabels[key.replace("_risk_score", "").toLowerCase()] ?? null,
-        parseFloat(String(val)),
-      ])
-      .filter(entry => entry[0] !== null && !isNaN(/** @type {number} */ (entry[1])))
-      .map(entry => /** @type {[string, number]} */ ([/** @type {string} */ (entry[0]), entry[1]]))
+      .filter(([key]) => key.endsWith("_risk_score"))
+      .map(([key, val]) => {
+        const hazardKey = key.replace("_risk_score", "").toLowerCase();
+        const label = RiskRenderer.hazardLabels[hazardKey];
+        const score = parseFloat(val);
+        return /** @type {[string, number]} */ ([label, score]);
+      })
+      .filter(([label, score]) => label && !isNaN(score))
       .sort(([, a], [, b]) => b - a);
 
-    // Filter for scores >= threshold
     const highRiskHazards = allHazardScores.filter(([, score]) => score >= riskThreshold);
-
-    // If none meet threshold, take top 3
     const likelyHazardScores =
       highRiskHazards.length > 0 ? highRiskHazards : allHazardScores.slice(0, 3);
 
@@ -469,22 +427,22 @@ const RiskRenderer = {
    * @returns {{ resolvedFips: string, resolvedSt: string } | null}
    */
   getResolvedLocation() {
+    if (locData.fips && locData.st) {
+      return { resolvedFips: locData.fips, resolvedSt: locData.st };
+    }
+
     const formRoot = getGravityForm();
-    if (!formRoot) {
-      return null;
-    }
+    if (!formRoot) return null;
 
-    /** @type {HTMLInputElement | null} */
-    const fipsField = formRoot.querySelector(fipsFieldSelection);
-    const resolvedFips = locData.fips ?? fipsField?.value ?? null;
-    const resolvedSt = locData.st ?? null;
+    const fipsField = /** @type {HTMLInputElement | null} */ (
+      formRoot.querySelector(fipsFieldSelection)
+    );
+    const resolvedFips = fipsField?.value ?? null;
+    const resolvedSt = locData.st;
 
-    if (!resolvedFips || !resolvedSt) {
-      return null;
-    }
+    if (!resolvedFips || !resolvedSt) return null;
 
     locData.fips = resolvedFips;
-    locData.st = resolvedSt;
     GeolocationFlow.persist();
 
     return { resolvedFips, resolvedSt };
@@ -501,9 +459,12 @@ const RiskRenderer = {
    * } | null} - the key DOM elements to populate with risk data
    */
   createRiskElements(risks, risksTemplate) {
-    /** @type {HTMLElement} */
     const riskEl = /** @type {HTMLElement} */ (risksTemplate.cloneNode(true));
     riskEl.removeAttribute("id");
+    riskEl.classList.remove("is-hidden");
+    riskEl.classList.add("is-visible");
+    risks.appendChild(riskEl);
+
     const riskItem = riskEl.querySelector(".location");
     const riskRegion = riskEl.querySelector(".region");
     const riskType = riskEl.querySelector(".list");
@@ -512,13 +473,6 @@ const RiskRenderer = {
       console.error("Risk .list DOM not found in risk template.");
       return null;
     }
-
-    if (riskItem) riskItem.textContent = locData.county ?? "Unable to resolve location";
-    if (riskRegion) riskRegion.textContent = locData.state ?? "Missing";
-    if (riskType) riskType.textContent = "Resolving risks based on your location...";
-    riskEl.classList.remove("is-hidden");
-    riskEl.classList.add("is-visible");
-    risks.appendChild(riskEl);
 
     return { riskItem, riskRegion, riskType };
   },
@@ -530,12 +484,9 @@ const RiskRenderer = {
    * @returns {void} - populates the riskType element for users
    */
   renderRiskList(riskType, likelyHazards) {
-    if (!likelyHazards.length) {
-      riskType.textContent = "No high risk for any specific hazards based on our data.";
-      return;
-    }
-
-    riskType.textContent = [`FEMA's top risks:`, likelyHazards.join(", ")].join(" ");
+    riskType.textContent = likelyHazards.length
+      ? `FEMA's top hazards: ${likelyHazards.join(", ")}`
+      : "No high risk for any specific hazards based on our data.";
   },
 
   /**
@@ -616,20 +567,26 @@ const SubmissionHashing = {
    * Custom types for the Action Pack tallCategories.csv "registry"
    * @typedef {Object} HashedCategory
    * @property {string} category
-   * @property {number} manual_rank
-   * @property {number} [manualRank]
+   * @property {number} manual_rank - Internal snake_case storage from CSV's manualRank column
+   * @property {number} cat_id - Category ID from CSV's catID column
    * @typedef {Object} MatchedCategory
-   * @property {string} category
-   * @property {number} count
-   * @property {number} manualRank
+   * @property {string} category - name of the category in WP's database
+   * @property {number} count - count of tokens matched for this category
+   * @property {number} manualRank - rank for this answer + category
+   * @property {number} catId - Category ID for encoding
    * @typedef {Object} HashSet
    * @property {Object.<string, HashedCategory[]>} registry
    * @property {Map<string, number>} categoryRanks
+   * @property {Map<string, number>} categoryIds
    * @property {string[]} categoryOrder
+   * @property {number[]} categoryIdOrder
    */
 
   /** @type {string[]} */
   actionPackCategoryOrder: [],
+
+  /** @type {number[]} */
+  actionPackCategoryIdOrder: [],
 
   /** @type {Object.<string, HashedCategory[]>} */
   actionPackCategoryRegistry: {},
@@ -656,26 +613,36 @@ const SubmissionHashing = {
       const header = (lines[0] ?? "").split(",").map(value => value.trim().toLowerCase());
 
       // validate required columns and get their indices
-      const answerIdIndex = header.indexOf("answerID".toLowerCase());
+      const answerIdIndex = header.indexOf("answerid");
       const categoryIndex = header.indexOf("category");
-      const manualRankIndex = header.indexOf("manualRank".toLowerCase());
-      if (answerIdIndex === -1 || categoryIndex === -1 || manualRankIndex === -1) {
+      const manualRankIndex = header.indexOf("manualrank");
+      const catIdIndex = header.indexOf("catid");
+      if (
+        answerIdIndex === -1 ||
+        categoryIndex === -1 ||
+        manualRankIndex === -1 ||
+        catIdIndex === -1
+      ) {
         throw new Error(
-          `CSV header missing required columns: [answerID, category, manualRank]. Found: ${header.join(", ")}`
+          [
+            `CSV header missing required columns: [answerID, category, manualRank, catID].`,
+            `Found: ${header.join(", ")}`,
+          ].join(" ")
         );
       }
 
-      // build and order the registry of answerID <> Category & manualRank
-      const { registry, categoryRanks, categoryOrder } = lines.slice(1).reduce(
+      // build and order the registry of answerID <> Category & manualRank & catID
+      const { registry, categoryRanks, categoryOrder, categoryIds } = lines.slice(1).reduce(
         (acc, line) => {
           if (!line.trim()) return acc;
 
           const columns = line.split(",");
-          const answerId = (columns[answerIdIndex] ?? "").trim();
-          const categoryName = (columns[categoryIndex] ?? "").trim();
-          const manualRank = Number((columns[manualRankIndex] ?? "0").trim() || "0");
+          const answerId = columns[answerIdIndex]?.trim();
+          const categoryName = columns[categoryIndex]?.trim();
+          const manualRank = Number(columns[manualRankIndex]?.trim());
+          const catId = Number(columns[catIdIndex]?.trim());
 
-          if (!answerId || !categoryName) return acc;
+          if (!answerId || !categoryName || !catId) return acc;
 
           // keep one entry per answer/category pair with the highest rank seen
           const answerEntries = acc.registry[answerId] ?? (acc.registry[answerId] = []);
@@ -684,12 +651,13 @@ const SubmissionHashing = {
           if (existingEntry) {
             existingEntry.manual_rank = Math.max(existingEntry.manual_rank, manualRank);
           } else {
-            answerEntries.push({ category: categoryName, manual_rank: manualRank });
+            answerEntries.push({ category: categoryName, manual_rank: manualRank, cat_id: catId });
           }
 
           // keep a first-seen category order then upgrade its rank as needed
           if (!acc.categoryRanks.has(categoryName)) {
             acc.categoryOrder.push(categoryName);
+            acc.categoryIds.set(categoryName, catId);
             acc.categoryRanks.set(categoryName, manualRank);
             return acc;
           }
@@ -703,27 +671,27 @@ const SubmissionHashing = {
         /** @type {HashSet} */ ({
           registry: {},
           categoryRanks: new Map(),
+          categoryIds: new Map(),
           categoryOrder: [],
+          categoryIdOrder: [],
         })
       );
 
       // safety: sort each answer's categories by manual rank descending
       Object.values(registry).forEach(entries => {
-        entries.sort((left, right) => {
-          const leftRank = Number(left.manual_rank ?? 0);
-          const rightRank = Number(right.manual_rank ?? 0);
-          if (leftRank === rightRank) return 0;
-          return rightRank - leftRank;
-        });
+        entries.sort((left, right) => right.manual_rank - left.manual_rank);
       });
 
       // re-sort the order by manual rank descending with first-seen tiebreaker
       SubmissionHashing.actionPackCategoryRegistry = registry;
       SubmissionHashing.actionPackCategoryOrder = categoryOrder.sort((left, right) => {
-        const leftRank = categoryRanks.get(left) ?? 0;
-        const rightRank = categoryRanks.get(right) ?? 0;
-        return leftRank === rightRank ? 0 : rightRank - leftRank;
+        return (categoryRanks.get(right) ?? 0) - (categoryRanks.get(left) ?? 0);
       });
+
+      // build the parallel catID order array
+      SubmissionHashing.actionPackCategoryIdOrder = SubmissionHashing.actionPackCategoryOrder.map(
+        categoryName => categoryIds.get(categoryName) ?? 0
+      );
     } catch (err) {
       console.warn("Unable to load Action Pack categories from CSV", err);
     }
@@ -734,44 +702,6 @@ const SubmissionHashing = {
    * @returns {string[]}
    */
   getActionPackCategoryOrder() {
-    if (SubmissionHashing.actionPackCategoryOrder.length > 0) {
-      return SubmissionHashing.actionPackCategoryOrder;
-    }
-
-    /** @type {Map<string, number>} */
-    const categoryRanks = new Map();
-    /** @type {string[]} */
-    const categoryOrder = [];
-
-    Object.values(SubmissionHashing.actionPackCategoryRegistry).forEach(categoryEntries => {
-      categoryEntries.forEach(entry => {
-        const categoryName = String(entry.category ?? "").trim();
-        const manualRank = Number(entry.manual_rank ?? entry.manualRank ?? 0);
-        if (!categoryName) return;
-
-        if (!categoryRanks.has(categoryName)) {
-          categoryOrder.push(categoryName);
-          categoryRanks.set(categoryName, manualRank);
-          return;
-        }
-
-        categoryRanks.set(categoryName, Math.max(categoryRanks.get(categoryName) ?? 0, manualRank));
-      });
-    });
-
-    SubmissionHashing.actionPackCategoryOrder = categoryOrder.sort((left, right) => {
-      const leftRank = categoryRanks.get(left) ?? 0;
-      const rightRank = categoryRanks.get(right) ?? 0;
-
-      if (leftRank === rightRank) return 0;
-      return rightRank - leftRank;
-    });
-
-    emfnDebug(`Resolved Action Pack category order:`, SubmissionHashing.actionPackCategoryOrder);
-    if (SubmissionHashing.actionPackCategoryOrder.length === 0) {
-      console.warn("Action Pack category order could not be derived from the localized registry.");
-    }
-
     return SubmissionHashing.actionPackCategoryOrder;
   },
 
@@ -783,24 +713,23 @@ const SubmissionHashing = {
   resolveMatchedCategories(selectedTokens) {
     /** @type {Map<string, MatchedCategory>} */
     const matchedCategoriesByName = new Map();
-    /** @type {string[]} */
-    const categoryOrder = [];
 
     selectedTokens.forEach(token => {
       const categoryEntries = SubmissionHashing.actionPackCategoryRegistry[token] ?? [];
 
       categoryEntries.forEach(entry => {
-        const categoryName = String(entry.category ?? "").trim();
-        const manualRank = Number(entry.manual_rank ?? entry.manualRank ?? 0);
-        if (!categoryName) return;
+        const categoryName = entry.category.trim();
+        const manualRank = entry.manual_rank;
+        const catId = entry.cat_id;
+        if (!categoryName || !catId) return;
 
         const existingMatch = matchedCategoriesByName.get(categoryName);
         if (!existingMatch) {
-          categoryOrder.push(categoryName);
           matchedCategoriesByName.set(categoryName, {
             category: categoryName,
             count: 1,
             manualRank,
+            catId,
           });
           return;
         }
@@ -810,17 +739,9 @@ const SubmissionHashing = {
       });
     });
 
-    return categoryOrder
-      .sort((left, right) => {
-        const leftRank = matchedCategoriesByName.get(left)?.manualRank ?? 0;
-        const rightRank = matchedCategoriesByName.get(right)?.manualRank ?? 0;
-
-        if (leftRank === rightRank) return 0;
-        return rightRank - leftRank;
-      })
-      .map(categoryName => {
-        return /** @type {MatchedCategory} */ (matchedCategoriesByName.get(categoryName));
-      });
+    return Array.from(matchedCategoriesByName.values()).sort(
+      (left, right) => right.manualRank - left.manualRank
+    );
   },
 
   /**
@@ -839,12 +760,14 @@ const SubmissionHashing = {
   },
 
   /**
-   * Format matched categories for debug output with their pre-dedupe counts.
+   * Format matched categories for debug output with their pre-dedupe counts and catIDs.
    * @param {MatchedCategory[]} matchedCategories - selected categories with duplicate counts
    * @returns {string[]}
    */
   formatPackedCategoriesForDebug(matchedCategories) {
-    return matchedCategories.map(({ category, count }) => `${category} (${count})`);
+    return matchedCategories.map(
+      ({ category, count, catId }) => `${category} (${count}) [catID: ${catId}]`
+    );
   },
 
   /**
@@ -871,34 +794,32 @@ const SubmissionHashing = {
   },
 
   /**
-   * Pack canonical Action Pack categories into compact 31-bit segments.
-   * @param {string[]} categoryNames - unique category names to encode
+   * Pack canonical Action Pack category IDs into compact 31-bit segments.
+   * @param {number[]} catIds - unique category IDs to encode
    * @returns {number[]}
    */
-  packActionPackBits(categoryNames) {
+  packActionPackBits(catIds) {
     const packedSegments = []; // use an array to avoid JS bitwise math pitfalls
     const segmentSize = 31;
-    const orderedCategories = SubmissionHashing.getActionPackCategoryOrder();
-    const actionPackCategoryIndex = new Map(
-      orderedCategories.map((categoryName, index) => [categoryName, index])
-    );
+    const orderedCatIds = SubmissionHashing.actionPackCategoryIdOrder;
+    const catIdIndex = new Map(orderedCatIds.map((catId, index) => [catId, index]));
 
-    for (const categoryName of categoryNames) {
-      const categoryIndex = actionPackCategoryIndex.get(categoryName);
-      if (categoryIndex === undefined) {
+    for (const catId of catIds) {
+      const bitPosition = catIdIndex.get(catId);
+      if (bitPosition === undefined) {
         continue;
       }
 
       // each segment stores 31 token flags so JS bitwise math stays predictable
-      const segmentIndex = Math.floor(categoryIndex / segmentSize);
-      const bitIndex = categoryIndex % segmentSize;
+      const segmentIndex = Math.floor(bitPosition / segmentSize);
+      const bitIndex = bitPosition % segmentSize;
 
       // build up segments
       while (packedSegments.length <= segmentIndex) {
         packedSegments.push(0);
       }
 
-      // turn on the bit for this token inside its segment.
+      // turn on the bit for this catID inside its segment.
       packedSegments[segmentIndex] |= 1 << bitIndex;
     }
 
@@ -912,23 +833,15 @@ const SubmissionHashing = {
    * @returns {string[]}
    */
   collectHashableValues(form) {
-    /** @type {Set<string>} */
     const uniqueHashableValues = new Set();
 
     new FormData(form).forEach((value, name) => {
       const hashableControl = form.querySelector(`fieldset.hashable [name="${CSS.escape(name)}"]`);
       const cleanTxt = String(value).trim();
-
       if (hashableControl && cleanTxt) uniqueHashableValues.add(cleanTxt);
     });
 
-    const hashableValues = Array.from(uniqueHashableValues);
-    if (hashableValues.length === 0) {
-      console.warn("No hashable fieldset values found (unlikely edge case)");
-      return [];
-    }
-
-    return hashableValues;
+    return Array.from(uniqueHashableValues);
   },
 
   /**
@@ -986,19 +899,15 @@ const SubmissionHashing = {
 
       const packedCategories = SubmissionHashing.getCanonicalPackedCategories(matchedCategories);
 
-      // pack the canonicalized categories into compact bit segments
+      // pack the canonicalized category IDs into compact bit segments
       const bits = SubmissionHashing.packActionPackBits(
-        packedCategories.map(categoryMatch => categoryMatch.category)
+        packedCategories.map(categoryMatch => categoryMatch.catId)
       );
       const packedCategoryLabels =
         SubmissionHashing.formatPackedCategoriesForDebug(packedCategories);
       emfnDebug(`Encoded Action Pack categories:`, packedCategoryLabels);
-      // encode as base36 for a shorter string
-      const base36Segs = Array.from({ length: bits.length }, (_, index) => bits[index] ?? 0)
-        .map(segment => segment.toString(36))
-        .join(".");
 
-      // prepend the payload prefix to identify and namespace the hash in the backend
+      const base36Segs = bits.map(segment => segment.toString(36)).join(".");
       hashMarkerField.value = `${actionPackPayloadPrefix}${base36Segs}`;
 
       // data.abort = true; // DEBUGGING uncomment to block submission
@@ -1047,14 +956,9 @@ if (assessmentSection) {
         GeolocationFlow.bindPlaceSelection(geoInput);
       }
 
-      const riskSection = /** @type {HTMLDivElement | null} */ (
-        formRoot.querySelector("#risks") ?? null
-      );
-      if (riskSection && Boolean(locData.fips) && riskSection.dataset.emfnRendered !== "1") {
-        void RiskRenderer.mapLocationToRisks().catch(error => {
-          console.error("Error mapping location to risks:", error);
-        });
-      }
+      void RiskRenderer.mapLocationToRisks().catch(error => {
+        console.error("Error mapping location to risks:", error);
+      });
     });
   }
 }

@@ -453,25 +453,39 @@ class EMFN_Action_Pack_Plugin {
 
         // Tier-based scoring (tier-1 = best, tier-2 = good, tier-3 = acceptable, etc.)
         // Posts without tier tags get score of 1 (lowest priority)
-        $tier_sql = "CASE 
-            WHEN ap_tier_tt.slug = 'tier-1' THEN 1000
-            WHEN ap_tier_tt.slug = 'tier-2' THEN 100
-            WHEN ap_tier_tt.slug = 'tier-3' THEN 10
-            ELSE 1
-        END";
+        // Aggregate tier data in a subquery so the main query still has only one category row per relationship.
+        $tier_score_subquery = "
+            SELECT
+                ap_tier_tr.object_id,
+                MAX(
+                    CASE
+                        WHEN ap_tier_terms.slug = 'tier-1' THEN 1000
+                        WHEN ap_tier_terms.slug = 'tier-2' THEN 100
+                        WHEN ap_tier_terms.slug = 'tier-3' THEN 10
+                        ELSE 1
+                    END
+                ) AS tier_score
+            FROM {$wpdb->term_relationships} AS ap_tier_tr
+            INNER JOIN {$wpdb->term_taxonomy} AS ap_tier_tt
+                ON ap_tier_tr.term_taxonomy_id = ap_tier_tt.term_taxonomy_id
+                AND ap_tier_tt.taxonomy = 'post_tag'
+            INNER JOIN {$wpdb->terms} AS ap_tier_terms
+                ON ap_tier_tt.term_id = ap_tier_terms.term_id
+                AND ap_tier_terms.slug LIKE 'tier-%'
+            GROUP BY ap_tier_tr.object_id
+        ";
 
         // Join category relationships
         $clauses['join'] .= " LEFT JOIN {$wpdb->term_relationships} AS ap_cat_tr ON {$wpdb->posts}.ID = ap_cat_tr.object_id";
         $clauses['join'] .= " LEFT JOIN {$wpdb->term_taxonomy} AS ap_cat_tt ON ap_cat_tr.term_taxonomy_id = ap_cat_tt.term_taxonomy_id AND ap_cat_tt.taxonomy = 'category'";
 
-        // Join tier tag relationships
-        $clauses['join'] .= " LEFT JOIN {$wpdb->term_relationships} AS ap_tier_tr ON {$wpdb->posts}.ID = ap_tier_tr.object_id";
-        $clauses['join'] .= " LEFT JOIN {$wpdb->term_taxonomy} AS ap_tier_tt ON ap_tier_tr.term_taxonomy_id = ap_tier_tt.term_taxonomy_id AND ap_tier_tt.taxonomy = 'post_tag' AND ap_tier_tt.slug LIKE 'tier-%'";
+        // Join pre-aggregated tier scores (one row per post) to avoid category x tier row multiplication.
+        $clauses['join'] .= " LEFT JOIN ({$tier_score_subquery}) AS ap_tier_scores ON {$wpdb->posts}.ID = ap_tier_scores.object_id";
 
         // Final score = tier_weight + category_relevance_score
         // Tier determines quality band, category score creates diversity within that band
         $clauses['groupby'] = "{$wpdb->posts}.ID";
-        $clauses['orderby'] = "MAX({$tier_sql}) DESC, SUM({$score_sql}) DESC, {$wpdb->posts}.ID DESC";
+        $clauses['orderby'] = "COALESCE(ap_tier_scores.tier_score, 1) DESC, SUM({$score_sql}) DESC, {$wpdb->posts}.ID DESC";
 
         // Reset flag after applying
         $this->is_action_pack_query_active = false;

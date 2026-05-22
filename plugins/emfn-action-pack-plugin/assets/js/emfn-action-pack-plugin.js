@@ -966,9 +966,11 @@ if (assessmentSection) {
         GeolocationFlow.bindPlaceSelection(geoInput);
       }
 
-      void RiskRenderer.mapLocationToRisks().catch(error => {
-        console.error("Error mapping location to risks:", error);
-      });
+      if (hasResolvedGeolocation) {
+        void RiskRenderer.mapLocationToRisks().catch(error => {
+          console.error("Error mapping location to risks:", error);
+        });
+      }
     });
   }
 }

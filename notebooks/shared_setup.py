@@ -53,8 +53,7 @@ def check_dependencies():
         'jupyterlab',
         'ipykernel',
         'tqdm',
-        'numpy',
-        'requests'
+        'numpy'
     ]
     missing = []
 

@@ -177,25 +177,28 @@ class EMFN_Action_Pack_Plugin {
             return $this->is_action_pack_page_request;
         }
 
+        // Check if actionPack query parameter is present (results page)
+        $has_action_pack_param = null !== $this->get_action_pack_payload_from_request();
+        if ( $has_action_pack_param ) {
+            $this->is_action_pack_page_request = true;
+            return $this->is_action_pack_page_request;
+        }
+
         $post = get_queried_object();
         if ( ! ( $post instanceof WP_Post ) ) {
             $this->is_action_pack_page_request = false;
             return $this->is_action_pack_page_request;
         }
 
-        $post_content = isset( $post->post_content ) ? (string) $post->post_content : '';
-        $post_slug    = isset( $post->post_name ) ? (string) $post->post_name : '';
-
-        // Check for CSS classes in content (for results page)
-        $has_action_pack_classes = false !== strpos( $post_content, 'emfn-action-pack' ) || false !== strpos( $post_content, 'emfn-forms' );
-
-        // Check for Gravity Forms (for assessment form page)
-        $has_gravity_forms = false !== strpos( $post_content, 'gravityform' ) || false !== strpos( $post_content, 'wp:gravityforms/form' );
+        $post_slug = isset( $post->post_name ) ? (string) $post->post_name : '';
 
         // Check if this is the action page by slug
-        $is_action_page = 'action' === $post_slug;
+        $is_action_page = 'action' === $post_slug || 'action-pack' === $post_slug;
 
-        $this->is_action_pack_page_request = $has_action_pack_classes || $has_gravity_forms || $is_action_page;
+        // Check for Gravity Forms block (for assessment form page)
+        $has_gravity_forms = has_block( 'gravityforms/form', $post );
+
+        $this->is_action_pack_page_request = $is_action_page || $has_gravity_forms;
 
         return $this->is_action_pack_page_request;
     }

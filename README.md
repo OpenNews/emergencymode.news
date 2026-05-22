@@ -102,21 +102,10 @@ Responsibilities:
 
 These event bindings and `/data/` file fetches can be memory-intensive and we want to simplify that for EMFN site visitors possibly experiencing an emergency or amid recovery from a disaster.
 
-The plugin uses multiple detection methods to determine when to load its assets, ensuring coverage across both the assessment form and results pages:
+Assets load on any frontend page with either of these querystring parameters:
 
-1. **CSS Class Detection**: Checks for `.emfn-action-pack` or `.emfn-forms` classes
-   - `form.emfn-forms` is our Gravity Form
-   - `.emfn-action-pack` is our Action Pack results
-
-2. **Gravity Forms Detection**: Checks for `gravityform` shortcode or `wp:gravityforms/form` block syntax
-   - Catches assessment pages even when CSS classes aren't in stored content
-   - Handles cases where classes are added dynamically during rendering
-
-3. **Page Slug Detection**: Matches the page slug `action`
-   - Provides fallback detection for `/start/action/` and similar URLs
-   - Ensures assets load regardless of content changes
-
-The plugin returns `true` from `is_action_pack_page_request()` if **any** of these conditions match, ensuring robust asset loading across the Action Pack two-phase flow.
+- `?mode=<value>` → quiz/form pages
+- `?actionPack=<hash>` → results pages
 
 ### Debugging & Troubleshooting
 
@@ -129,10 +118,7 @@ https://emergencymode.newspackstaging.com/start/action/?mode=mode-during&emfnDeb
 https://emergencymode.newspackstaging.com/start/action-pack/?actionPack=ap2.xyz123&emfnDebug=true
 ```
 
-Server-side PHP debug output only appears when `emfnDebug=true` **and** one of the following is true:
-- Current user can `manage_options`
-- WordPress environment is not `production`
-- `WP_DEBUG` is enabled
+Server-side PHP debug output only appears when `emfnDebug=true` **and** the user is logged in to WordPress.
 
 **What Gets Logged:**
 - **Client-side JS (browser console):** Form values, category mappings, encoded payloads
@@ -182,7 +168,7 @@ The Action Pack operates in two phases, with payload encoding/decoding coordinat
 - Resolves Category names → WordPress term IDs
 - Filters Newspack Content Loop blocks with `.emfn-action-pack` class to matched categories
 - URL is shareable; returns user a similarly ranked personalized Action Pack configuration
-- Debug mode (`&emfnDebug=true`) logs decode details when PHP debug gating conditions are met
+- Debug mode (`&emfnDebug=true`) logs decode details when the user is logged in to WordPress
 
 ### Content Recommendation Algorithm
 
@@ -268,7 +254,7 @@ Using realistic numbers from a sample quiz result:
 For developers maintaining the algorithm:
 
 **Small Dataset Safeguards:**
-- `wp_count_terms()` checks for empty arrays before calling `max()` to avoid PHP warnings
+- `get_terms()` checks for empty arrays before calling `max()` to avoid PHP warnings
 - Empty categories default to scarcity multiplier of 1.0 (weight-only scoring)
 - Posts without tier tags receive score of 1 (lowest priority)
 - GROUP BY ensures each post scored once even with multiple category/tag joins
@@ -299,16 +285,16 @@ $cache_key = 'emfn_ap_counts_' . md5( serialize( $term_ids ) );
 $term_counts = get_transient( $cache_key );
 
 if ( false === $term_counts ) {
-    $term_counts = wp_count_terms( array(
+    $terms = get_terms( array(
         'taxonomy'   => 'category',
         'include'    => $term_ids,
         'hide_empty' => false,
     ) );
-    set_transient( $cache_key, $term_counts, HOUR_IN_SECONDS );
+    set_transient( $cache_key, $terms, HOUR_IN_SECONDS );
 }
 ```
 
-**Benefits:** Reduces wp_count_terms() database queries from every page load to once per hour per unique category set.
+**Benefits:** Reduces `get_terms()` database queries from every page load to once per hour per unique category set.
 
 **2. Limit Category Count (100+ matched categories)**
 

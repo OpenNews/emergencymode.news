@@ -165,6 +165,10 @@ class EMFN_Action_Pack_Plugin {
     /**
      * Return whether this frontend request targets the Action Pack page.
      *
+     * Presence of either recognised querystring parameter is the sole signal:
+     * - `actionPack` → results page
+     * - `mode`       → quiz / form page (e.g. ?mode=mode-before)
+     *
      * @return bool
      */
     private function is_action_pack_page_request() {
@@ -172,35 +176,15 @@ class EMFN_Action_Pack_Plugin {
             return $this->is_action_pack_page_request;
         }
 
-        if ( is_admin() || ! is_page() ) {
+        if ( is_admin() ) {
             $this->is_action_pack_page_request = false;
             return $this->is_action_pack_page_request;
         }
 
-        // Check if actionPack query parameter is present (results page)
         $has_action_pack_param = null !== $this->get_action_pack_payload_from_request();
-        if ( $has_action_pack_param ) {
-            $this->is_action_pack_page_request = true;
-            return $this->is_action_pack_page_request;
-        }
+        $has_mode_param        = isset( $_GET['mode'] ) && '' !== $_GET['mode'];
 
-        $post = get_queried_object();
-        if ( ! ( $post instanceof WP_Post ) ) {
-            $this->is_action_pack_page_request = false;
-            return $this->is_action_pack_page_request;
-        }
-
-        $post_content = isset( $post->post_content ) ? (string) $post->post_content : '';
-        $post_slug    = isset( $post->post_name ) ? (string) $post->post_name : '';
-
-        // Check for Action Pack or Gravity Forms CSS classes/blocks in content
-        $has_action_pack_classes = false !== strpos( $post_content, 'emfn-action-pack' ) || false !== strpos( $post_content, 'emfn-forms' );
-        $has_gravity_forms       = false !== strpos( $post_content, 'gravityform' ) || false !== strpos( $post_content, 'wp:gravityforms/form' );
-
-        // Check if this is the action page by slug
-        $is_action_page = 'action' === $post_slug || 'action-pack' === $post_slug;
-
-        $this->is_action_pack_page_request = $has_action_pack_classes || $has_gravity_forms || $is_action_page;
+        $this->is_action_pack_page_request = $has_action_pack_param || $has_mode_param;
 
         return $this->is_action_pack_page_request;
     }
@@ -230,14 +214,21 @@ class EMFN_Action_Pack_Plugin {
      * @return void
      */
     private function prime_action_pack_debug_entries() {
-        if ( empty( $this->action_pack_debug_entries ) ) {
-            $payload  = $this->get_action_pack_payload_from_request();
-            $term_ids = $this->get_action_pack_term_ids_from_request();
-            $this->queue_action_pack_debug_entry( 'Action Pack payload decoded', array(
-                'payload' => $payload,
-                'termIds' => $term_ids,
-            ) );
-        }
+        $payload  = $this->get_action_pack_payload_from_request();
+        $term_ids = $this->get_action_pack_term_ids_from_request();
+
+        // Always prepend the base entry so it appears first in console output,
+        // regardless of whether block-render filters already queued their own entries.
+        array_unshift(
+            $this->action_pack_debug_entries,
+            array(
+                'label' => 'EMFN: Action Pack payload decoded',
+                'value' => array(
+                    'payload' => $payload,
+                    'termIds' => $term_ids,
+                ),
+            )
+        );
     }
 
     /**
@@ -246,23 +237,9 @@ class EMFN_Action_Pack_Plugin {
      * @return bool
      */
     private function is_action_pack_debug_enabled() {
-        $debug_flag = filter_input( INPUT_GET, 'emfnDebug', FILTER_UNSAFE_RAW );
+        $debug_flag = isset( $_GET['emfnDebug'] ) ? strtolower( trim( wp_unslash( (string) $_GET['emfnDebug'] ) ) ) : '';
 
-        if ( ! is_string( $debug_flag ) && isset( $_GET['emfnDebug'] ) ) {
-            $debug_flag = wp_unslash( $_GET['emfnDebug'] );
-        }
-
-        if ( ! is_string( $debug_flag ) || 'true' !== strtolower( trim( wp_unslash( $debug_flag ) ) ) ) {
-            return false;
-        }
-
-        $is_privileged_user = is_user_logged_in() && current_user_can( 'manage_options' );
-
-        $environment_type  = function_exists( 'wp_get_environment_type' ) ? wp_get_environment_type() : 'production';
-        $is_non_production = 'production' !== $environment_type;
-        $is_wp_debug       = defined( 'WP_DEBUG' ) && WP_DEBUG;
-
-        return $is_privileged_user || $is_non_production || $is_wp_debug;
+        return 'true' === $debug_flag && is_user_logged_in();
     }
 
     /**
@@ -307,14 +284,11 @@ class EMFN_Action_Pack_Plugin {
      * @return string|null
      */
     public function get_action_pack_payload_from_request() {
-        // stop if no payload is present in the request
-        $payload = filter_input( INPUT_GET, 'actionPack', FILTER_UNSAFE_RAW );
-        if ( ! is_string( $payload ) ) {
+        if ( ! isset( $_GET['actionPack'] ) ) {
             return null;
         }
 
-        // normalize and strip payload 
-        $payload = trim( wp_unslash( $payload ) );
+        $payload = trim( wp_unslash( (string) $_GET['actionPack'] ) );
 
         return '' !== $payload ? $payload : null;
     }
@@ -395,7 +369,6 @@ class EMFN_Action_Pack_Plugin {
      * - Category weight (from term order): user's priority
      * - Scarcity bonus: high-weight category + few posts = rare/specific match
      * - Multi-category bonus: posts matching multiple user categories
-     * - Diversity: prevents one category from dominating results
      *
      * @param array<string, string> $clauses SQL clauses.
      * @param WP_Query              $query Query instance.
@@ -458,9 +431,18 @@ class EMFN_Action_Pack_Plugin {
 
             // Cache for subsequent queries in this request
             $this->action_pack_scoring_cache = array(
-                'weights' => $weights,
-                'scarcity' => $scarcity_multipliers,
+                'weights'   => $weights,
+                'scarcity'  => $scarcity_multipliers,
                 'score_sql' => $score_sql,
+            );
+
+            $this->queue_action_pack_debug_entry(
+                'Action Pack scoring cache built',
+                array(
+                    'termIds'  => $term_ids,
+                    'weights'  => $weights,
+                    'scarcity' => $scarcity_multipliers,
+                )
             );
         }
 
@@ -609,11 +591,12 @@ class EMFN_Action_Pack_Plugin {
         if ( ! is_array( $category_in ) ) {
             $category_in = array( $category_in );
         }
-        sort( $category_in );
-        $term_ids_sorted = $term_ids;
+        $category_in_ints = array_map( 'intval', $category_in );
+        sort( $category_in_ints );
+        $term_ids_sorted = array_map( 'intval', $term_ids );
         sort( $term_ids_sorted );
 
-        if ( $category_in === $term_ids_sorted ) {
+        if ( $category_in_ints === $term_ids_sorted ) {
             $query->set( 'emfn_action_pack', true );
         }
     }

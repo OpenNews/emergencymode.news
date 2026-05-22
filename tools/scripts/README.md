@@ -11,7 +11,7 @@ This Google Apps Script connects your Google Sheets to the EmergencyMode.news Wo
 1. Open your Google Sheet
 2. Go to **Extensions → Apps Script**
 3. Delete any default code
-4. Copy and paste the entire contents of `WPAppScript.js`
+4. Copy and paste the entire contents of `SheetsWPAppScript.js`
 5. Click **Save** (💾 icon)
 6. Close the Apps Script tab and return to your Sheet
 

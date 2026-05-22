@@ -8,7 +8,6 @@ Current notebooks:
 
 - **`US_disaster_risk_analysis.ipynb`** downloads FEMA National Risk Index county data and generates per-state CSV files for US states plus DC.
 - **`CA-MX_disaster_risk_analysis.ipynb`** is a research notebook that documents the data and lookup gaps for Canada and Mexico. It makes exploratory live API calls but does not currently generate runtime output files for the site.
-- **`action_pack_roundtrip_dev.ipynb`** is a local validation notebook for the Action Pack category payload contract. It loads `_tallCategories.csv`, resolves selected answer tokens to categories, packs the `ap2.` payload and checks that decoding returns the same canonical category set.
 
 ## Current Output Location
 
@@ -22,8 +21,6 @@ That directory currently contains committed US state files plus DC:
 - `DC.csv`
 
 There are no committed Canada or Mexico runtime CSVs in the current branch.
-
-The same directory also contains `_tallCategories.csv`, which is the current Action Pack category mapping source used by the roundtrip notebook.
 
 ## Data Source
 
@@ -42,12 +39,6 @@ The generated CSV files used by the plugin contain:
 
 The Action Pack plugin matches rows by `county_fips` and filters hazards in client-side JS using its `riskThreshold` setting.
 
-The Action Pack roundtrip notebook validates a separate CSV contract in `_tallCategories.csv` with these columns:
-
-- `answerID`
-- `category`
-- `manualRank`
-
 ## Dependency Management
 
 All notebooks share setup utilities via `shared_setup.py`, which both notebooks import to verify their execution environment:
@@ -60,7 +51,7 @@ All notebooks share setup utilities via `shared_setup.py`, which both notebooks 
 The `shared_setup.py` module provides a single source of truth for environment checking across both `US_disaster_risk_analysis.ipynb` and `CA-MX_disaster_risk_analysis.ipynb`. It:
 
 - Verifies that `uv sync --frozen` succeeds (environment is in sync with lock file)
-- Tests critical package imports (`pandas`, `requests`, `jupyterlab`, `ipykernel`, `tqdm`)
+- Tests critical package imports
 - Reports installed versions and displays clear status
 
 **When Cell 3 reports an issue:**
@@ -102,12 +93,10 @@ Typical setup:
 
 ```bash
 uv sync
-uv run jupyter lab
+uv run jupyter lab # if you're not in a code editor that can render notebooks
 ```
 
 Then open the desired notebook from `notebooks/`.
-
-For Action Pack contract checks, open `action_pack_roundtrip_dev.ipynb` and run the cells in order.
 
 Python dependencies are managed in `pyproject.toml` and currently include:
 

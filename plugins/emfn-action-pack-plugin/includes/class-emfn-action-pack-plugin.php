@@ -479,7 +479,12 @@ class EMFN_Action_Pack_Plugin {
 
         // Final score = tier_weight + category_relevance_score
         // Tier determines quality band, category score creates diversity within that band
-        $clauses['groupby'] = "{$wpdb->posts}.ID";
+        // Only set GROUP BY if not already set to avoid overwriting other plugins' clauses
+        if ( empty( $clauses['groupby'] ) ) {
+            $clauses['groupby'] = "{$wpdb->posts}.ID";
+        } elseif ( false === strpos( $clauses['groupby'], "{$wpdb->posts}.ID" ) ) {
+            $clauses['groupby'] .= ", {$wpdb->posts}.ID";
+        }
         $clauses['orderby'] = "COALESCE(ap_tier_scores.tier_score, 1) DESC, SUM({$score_sql}) DESC, {$wpdb->posts}.ID DESC";
 
         return $clauses;

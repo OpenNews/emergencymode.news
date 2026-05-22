@@ -101,6 +101,14 @@ const GeolocationFlow = {
         RiskRenderer.resetRendering(risks);
         RiskRenderer.clearRenderedRisks(risks);
       }
+
+      // Clear hidden FIPS field to prevent stale data submission if lookup fails
+      const fipsField = /** @type {HTMLInputElement | null} */ (
+        formRoot.querySelector(fipsFieldSelection)
+      );
+      if (fipsField) {
+        fipsField.value = "";
+      }
     }
   },
 

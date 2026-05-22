@@ -100,32 +100,93 @@ class EMFN_Action_Pack_Plugin {
         add_filter( 'render_block_data', array( $this, 'filter_action_pack_newspack_block_data' ), 10, 3 );
         add_action( 'pre_get_posts', array( $this, 'mark_action_pack_newspack_queries' ) );
         add_filter( 'posts_clauses', array( $this, 'apply_action_pack_category_scoring' ), 10, 2 );
-        add_filter( 'editable_extensions', array( $this, 'allow_csv_in_plugin_editor' ), 10, 2 );
+        add_filter( 'editable_extensions', array( $this, 'allow_viewable_file_extensions' ), 10, 2 );
+        add_action( 'admin_head-plugin-editor.php', array( $this, 'make_csv_md_files_readonly' ) );
         add_action( 'wp_footer', array( $this, 'render_action_pack_debug_script' ), 99 );
     }
 
     /**
-     * Allow CSV files to appear in the Plugin File Editor.
+     * Allow CSV and Markdown files to appear in the Plugin File Editor (read-only).
+     *
+     * These files will be viewable but not editable in the plugin editor.
+     * The readonly state is enforced via JavaScript injection on the editor page.
      *
      * Note: The `editable_extensions` filter receives the editor context
      * ('plugins' or 'themes') as its second argument, not an individual plugin
      * basename, so this addition applies to all plugins when the Plugin File
      * Editor is active.
      *
-     * @param array<int, string> $extensions Editable file extensions.
+     * @param array<int, string> $extensions Viewable file extensions.
      * @param string             $context    Editor context: 'plugins' or 'themes'.
      * @return array<int, string>
      */
-    public function allow_csv_in_plugin_editor( $extensions, $context ) {
+    public function allow_viewable_file_extensions( $extensions, $context ) {
         if ( 'plugins' !== $context ) {
             return $extensions;
         }
 
-        if ( ! in_array( 'csv', $extensions, true ) ) {
-            $extensions[] = 'csv';
+        $allowed_extensions = array( 'csv', 'md' );
+        foreach ( $allowed_extensions as $ext ) {
+            if ( ! in_array( $ext, $extensions, true ) ) {
+                $extensions[] = $ext;
+            }
         }
 
         return $extensions;
+    }
+
+    /**
+     * Make CSV and Markdown files read-only in the Plugin File Editor.
+     *
+     * Injects JavaScript and CSS to disable editing of these file types.
+     * Changes are prevented from being saved.
+     *
+     * @return void
+     */
+    public function make_csv_md_files_readonly() {
+        global $file;
+
+        // Only apply to CSV and MD files
+        if ( ! isset( $file ) || ! preg_match( '/\.(csv|md)$/', $file ) ) {
+            return;
+        }
+
+        // Get the current filename from the file path
+        $filename = basename( $file );
+
+        // Inject CSS to disable the editor and hide the save button
+        ?>
+        <style>
+            #template textarea {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+            #submit,
+            .submit {
+                display: none;
+            }
+            #template::before {
+                content: 'This file is read-only and cannot be edited.';
+                display: block;
+                padding: 10px;
+                background-color: #fff8e5;
+                border-left: 4px solid #ffb900;
+                margin-bottom: 10px;
+                color: #333;
+            }
+        </style>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const textarea = document.querySelector('#template textarea');
+                if (textarea) {
+                    textarea.setAttribute('readonly', 'readonly');
+                    textarea.style.opacity = '0.6';
+                    textarea.style.cursor = 'not-allowed';
+                    textarea.style.backgroundColor = '#f5f5f5';
+                }
+            });
+        </script>
+        <?php
     }
 
     /**

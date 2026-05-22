@@ -3,7 +3,7 @@
  * Fetches data from WordPress REST API endpoints with flexible filtering and field selection
  */
 
-var WP_BASE_URL = "https://emergencymode.newspackstaging.com/wp-json/wp/v2"; // FAKE URL, must be configured 
+var WP_BASE_URL = "https://emergencymode.newspackstaging.com/wp-json/wp/v2"; // FAKE URL, must be configured
 var ALLOWED_ENDPOINTS = ["categories", "tags", "pages", "posts"];
 var DEFAULT_FIELDS = ["id", "name", "slug", "description", "parent", "status", "count", "link"];
 
@@ -21,7 +21,7 @@ var DEFAULT_FIELDS = ["id", "name", "slug", "description", "parent", "status", "
  */
 function fetchWPData(endpoint, options) {
   options = options || {};
-  
+
   // Validate endpoint
   if (!ALLOWED_ENDPOINTS.includes(endpoint)) {
     throw new Error("Invalid endpoint. Must be one of: " + ALLOWED_ENDPOINTS.join(", "));
@@ -49,7 +49,7 @@ function fetchWPData(endpoint, options) {
       params.push("search=" + encodeURIComponent(options.filter));
     }
   }
-  
+
   // Handle parent filtering for categories
   if (endpoint === "categories" && options.parent !== undefined && options.parent !== null) {
     params.push("parent=" + options.parent);
@@ -69,7 +69,7 @@ function fetchWPData(endpoint, options) {
     var items = Array.isArray(data) ? data : [data];
 
     // Extract specified fields
-    var filtered = items.map(function(item) {
+    var filtered = items.map(function (item) {
       return extractFields(item, fields);
     });
 
@@ -104,7 +104,7 @@ function detectFilterType(value) {
 function extractFields(item, fields) {
   var result = {};
 
-  fields.forEach(function(field) {
+  fields.forEach(function (field) {
     // Handle nested fields with dot notation
     if (field.includes(".")) {
       var parts = field.split(".");
@@ -134,8 +134,8 @@ function flattenForSheetsOutput(data, fields) {
   var output = [fields];
 
   // Data rows
-  data.forEach(function(item) {
-    var row = fields.map(function(field) {
+  data.forEach(function (item) {
+    var row = fields.map(function (field) {
       var value = item[field];
       // Convert objects/arrays to JSON strings for Sheets
       if (value && typeof value === "object") {
@@ -164,10 +164,13 @@ function flattenForSheetsOutput(data, fields) {
  */
 function getCategories(filter, returnFields, includeHeaders, parentId) {
   var options = {
-    flattenForSheets: true
+    flattenForSheets: true,
   };
   if (filter) options.filter = filter;
-  if (returnFields) options.fields = returnFields.split(",").map(function(f) { return f.trim(); });
+  if (returnFields)
+    options.fields = returnFields.split(",").map(function (f) {
+      return f.trim();
+    });
   if (parentId !== undefined && parentId !== null && parentId !== "") options.parent = parentId;
 
   var result = fetchWPData("categories", options);
@@ -184,10 +187,13 @@ function getCategories(filter, returnFields, includeHeaders, parentId) {
  */
 function getTags(filter, returnFields, includeHeaders) {
   var options = {
-    flattenForSheets: true
+    flattenForSheets: true,
   };
   if (filter) options.filter = filter;
-  if (returnFields) options.fields = returnFields.split(",").map(function(f) { return f.trim(); });
+  if (returnFields)
+    options.fields = returnFields.split(",").map(function (f) {
+      return f.trim();
+    });
 
   var result = fetchWPData("tags", options);
   return includeHeaders ? result : result.slice(1);
@@ -203,10 +209,13 @@ function getTags(filter, returnFields, includeHeaders) {
  */
 function getPages(filter, returnFields, includeHeaders) {
   var options = {
-    flattenForSheets: true
+    flattenForSheets: true,
   };
   if (filter) options.filter = filter;
-  if (returnFields) options.fields = returnFields.split(",").map(function(f) { return f.trim(); });
+  if (returnFields)
+    options.fields = returnFields.split(",").map(function (f) {
+      return f.trim();
+    });
 
   var result = fetchWPData("pages", options);
   return includeHeaders ? result : result.slice(1);
@@ -222,10 +231,13 @@ function getPages(filter, returnFields, includeHeaders) {
  */
 function getPosts(filter, returnFields, includeHeaders) {
   var options = {
-    flattenForSheets: true
+    flattenForSheets: true,
   };
   if (filter) options.filter = filter;
-  if (returnFields) options.fields = returnFields.split(",").map(function(f) { return f.trim(); });
+  if (returnFields)
+    options.fields = returnFields.split(",").map(function (f) {
+      return f.trim();
+    });
 
   var result = fetchWPData("posts", options);
   return includeHeaders ? result : result.slice(1);
@@ -242,10 +254,13 @@ function getPosts(filter, returnFields, includeHeaders) {
  */
 function getWPData(endpoint, filter, returnFields, includeHeaders) {
   var options = {
-    flattenForSheets: true
+    flattenForSheets: true,
   };
   if (filter) options.filter = filter;
-  if (returnFields) options.fields = returnFields.split(",").map(function(f) { return f.trim(); });
+  if (returnFields)
+    options.fields = returnFields.split(",").map(function (f) {
+      return f.trim();
+    });
 
   var result = fetchWPData(endpoint, options);
   return includeHeaders ? result : result.slice(1);

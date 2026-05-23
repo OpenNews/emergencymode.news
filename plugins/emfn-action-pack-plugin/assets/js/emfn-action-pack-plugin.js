@@ -330,8 +330,7 @@ const RiskRenderer = {
     }
 
     /** @type {string|null} */
-    // eslint-disable-next-line no-useless-assignment
-    let csvData = null;
+    let csvData;
     try {
       const res = await fetch(`${dataUrl.replace(/\/$/, "")}/${st}.csv`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

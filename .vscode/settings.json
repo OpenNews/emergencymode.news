@@ -11,16 +11,24 @@
   // Enable format on paste
   "editor.formatOnPaste": false,
 
+  // Line length and wrapping
+  "editor.wordWrap": "off",
+  "editor.wordWrapColumn": 100,
+  "editor.rulers": [100, 120],
+
   // Prettier configuration
   "prettier.requireConfig": true,
   "prettier.useEditorConfig": true,
 
-  // Disable ESLint save hooks in this workspace; Prettier is the formatter of record
-  "eslint.enable": false,
+  // Enable ESLint for linting (but not formatting - Prettier handles that)
+  "eslint.enable": true,
   "eslint.format.enable": false,
+  "eslint.validate": ["javascript"],
 
   // Use Prettier as the only JavaScript formatter and disable built-in formatter fallback
-  "js/ts.format.enable": false,
+  "js/ts.format.enabled": false,
+  "js/ts.validate.enabled": true,
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
 
   // Language-specific formatters
   "[html]": {
@@ -30,11 +38,9 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[javascript]": {
-    "editor.formatOnSave": false,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
-      "source.fixAll": "never",
-      "source.fixAll.eslint": "never"
+      "source.fixAll.eslint": "explicit"
     }
   },
   "[json]": {

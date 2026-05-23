@@ -1,16 +1,26 @@
 {
   "name": "emergencymode-news",
   "version": "0.1.0",
+  "type": "module",
   "description": "emergencymode.news scripts, Notebooks and WordPress customizations",
   "private": true,
   "scripts": {
     "format": "prettier --write '**/*.{html,css,js,json,yml,yaml,md}'",
     "format:check": "prettier --check '**/*.{html,css,js,json,yml,yaml,md}'",
+    "eslint": "eslint 'plugins/**/*.js'",
+    "eslint:fix": "eslint 'plugins/**/*.js' --fix",
     "notebooks:strip": "scripts/strip-notebook-outputs.sh",
     "notebooks:check-clean": "scripts/check-notebooks-clean.sh",
-    "lint": "npm run format:check && npm run notebooks:check-clean"
+    "lint": "npm run format:check && npm run eslint && npm run notebooks:check-clean"
   },
   "devDependencies": {
-    "prettier": "^3.8.3"
+    "@eslint/js": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.59.4",
+    "@typescript-eslint/parser": "^8.59.4",
+    "eslint": "^10.4.0",
+    "eslint-plugin-jsdoc": "^63.0.0",
+    "globals": "^17.6.0",
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3"
   }
 }

@@ -16,8 +16,9 @@ run_test() {
     VERSION="1.0.0"
     BUMP_TYPE="initial"
   else
-    MAJOR=$(echo "$LATEST" | sed 's/v\([0-9]*\).*/\1/')
-    MINOR=$(echo "$LATEST" | sed 's/v[0-9]*\.\([0-9]*\).*/\1/')
+    # Parse version (strip everything after the digits to handle any suffixes)
+    MAJOR=$(echo "$LATEST" | sed 's/v\([0-9]*\)\..*/\1/')
+    MINOR=$(echo "$LATEST" | sed 's/v[0-9]*\.\([0-9]*\)\..*/\1/')
     PATCH=$(echo "$LATEST" | sed 's/v[0-9]*\.[0-9]*\.\([0-9]*\).*/\1/')
     
     if ! [[ "$MAJOR" =~ ^[0-9]+$ && "$MINOR" =~ ^[0-9]+$ && "$PATCH" =~ ^[0-9]+$ ]]; then
@@ -25,12 +26,12 @@ run_test() {
       return 1
     fi
     
-    if echo "$COMMIT_MSG" | grep -qiE '\[major\]|\bmajor\b'; then
+    if echo "$COMMIT_MSG" | grep -qiE '\[major\]|(^|[^[:alnum:]_])major([^[:alnum:]_]|$)'; then
       MAJOR=$((MAJOR + 1))
       MINOR=0
       PATCH=0
       BUMP_TYPE="major"
-    elif echo "$COMMIT_MSG" | grep -qiE '\[minor\]|\bminor\b'; then
+    elif echo "$COMMIT_MSG" | grep -qiE '\[minor\]|(^|[^[:alnum:]_])minor([^[:alnum:]_]|$)'; then
       MINOR=$((MINOR + 1))
       PATCH=0
       BUMP_TYPE="minor"
@@ -72,6 +73,10 @@ if run_test "v2.3.5" "This is a minor update to the API" "2.4.0"; then ((passed+
 if run_test "v1.0.0" "[major] Breaking API changes" "2.0.0"; then ((passed++)); else ((failed++)); fi
 if run_test "v1.9.15" "major refactor of data model" "2.0.0"; then ((passed++)); else ((failed++)); fi
 if run_test "v5.2.8" "MAJOR: Complete rewrite" "6.0.0"; then ((passed++)); else ((failed++)); fi
+
+# Test: Tags with suffixes (ensure they parse correctly)
+if run_test "v1.2.3-rc1" "Fix bug" "1.2.4"; then ((passed++)); else ((failed++)); fi
+if run_test "v2.0.0-beta" "[minor] New feature" "2.1.0"; then ((passed++)); else ((failed++)); fi
 
 echo ""
 echo "=== Results ==="

@@ -96,5 +96,12 @@ jobs:
           git add package.json package-lock.json pyproject.toml uv.lock \
             plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php \
             plugins/emfn-action-pack-plugin/readme.txt
-          git commit -m "Release ${{ steps.version.outputs.version }}" || true
-          git push
+          
+          # Only commit and push if there are actual changes
+          if ! git diff --cached --quiet; then
+            git commit -m "Release ${{ steps.version.outputs.version }}"
+            git pull --rebase origin main
+            git push
+          else
+            echo "No version changes to commit"
+          fi

@@ -45,11 +45,15 @@ jobs:
           # Get latest semver tag
           LATEST=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | head -n1)
           
-          # Default to v1.0.0 if no tags exist
+          # If no tags exist yet, derive the starting version from package.json
           if [[ -z "$LATEST" ]]; then
-            TAG="v1.0.0"
-            VERSION="1.0.0"
-            echo "No existing tags, starting at: $VERSION"
+            VERSION=$(node -p "require('./package.json').version")
+            if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+              echo "ERROR: package.json version '$VERSION' is not a valid x.y.z semver version"
+              exit 1
+            fi
+            TAG="v${VERSION}"
+            echo "No existing tags, starting from package.json version: $VERSION"
           else
             # Parse current version
             MAJOR=$(echo "$LATEST" | sed 's/v\([0-9]*\).*/\1/')

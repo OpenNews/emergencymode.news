@@ -117,6 +117,17 @@ class EMFN_Action_Pack_Plugin {
             return $extensions;
         }
 
+        // Only add extensions when viewing/editing this plugin specifically
+        $plugin = isset( $_REQUEST['plugin'] ) ? wp_unslash( $_REQUEST['plugin'] ) : '';
+        $file   = isset( $_REQUEST['file'] ) ? wp_unslash( $_REQUEST['file'] ) : '';
+        
+        $is_this_plugin = false !== strpos( $plugin, 'emfn-action-pack-plugin' ) 
+                       || false !== strpos( $file, 'emfn-action-pack-plugin' );
+        
+        if ( ! $is_this_plugin ) {
+            return $extensions;
+        }
+
         $allowed_extensions = array( 'csv', 'md' );
         foreach ( $allowed_extensions as $ext ) {
             if ( ! in_array( $ext, $extensions, true ) ) {

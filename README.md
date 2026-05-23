@@ -12,11 +12,11 @@ Custom WordPress plugins, Python Notebooks and miscellaneous code version contro
 
 ## Overview
 
-This repository contains the `emfn-action-pack-plugin` — the active front-end integration for the Action Pack assessment flow.
+This repository contains:
+* the `emfn-action-pack-plugin` — the active front-end integration for the Action Pack assessment flow
+* Python notebooks that generate and validate FEMA National Risk Index county-level CSVs consumed by the Action Pack plugin
 
-The repo also includes Python notebooks that generate and validate FEMA National Risk Index county-level CSVs consumed by the Action Pack plugin.
-
-## Repository Structure
+### Repository Structure
 
 ```text
 emergencymode.news/
@@ -81,42 +81,30 @@ emergencymode.news/
 
 ## emfn-action-pack-plugin
 
-This is the sole custom plugin in the EMFN Newspack site.
-
+This is the core custom plugin in the EMFN Newspack site.  
 Responsibilities:
 
 - **Setup**
   - Enqueues the Action Pack CSS and JS bundles
   - Exposes `window.emfnData.dataUrl` and an `ap2.`-prefix in the final quiz URL to help both client and server see canonical data
 - **Geolocation**
-  - Binds to Google Places v2 integration within Gravity Forms to resolve user's geolocation
-  - Hits FCC's Area API to resolve `countyFIPS` from Places v2's lat/lng coords
-  - Fetches the matching `<st>.csv` and renders likely hazards from FEMA National Risk Index scores (see Notebooks README)
-  - Persists resolved location data in `sessionStorage` so multi-page Gravity Forms flows can keep using it, in addition to in-memory client-side variables
-- **Submission client-side Hash Encoding**  
-   Computes a compact client-side Action Pack payload from matched Categories for subsequent share URLs, looking (probably) like `?actionPack=ap2.2w6g74.1y`
-- **PHP server-side Hash Decoding**  
-  Decodes `actionPack` request payloads on the server and maps them to Newspack Query Loop category filters and sort-ordering
+  - Binds to [Google Places v2 integration within Gravity Forms](https://www.gravityforms.com/blog/get-started-geolocation-add-on-tutorial/) to resolve user's geolocation
+  - Hits [FCC's Area API](https://geo.fcc.gov/api/census/) to resolve `countyFIPS` from Places' `lat`/`lng` coords
+  - Fetches the matching `<st>.csv` and renders likely hazards from [FEMA National Risk Index scores](https://www.fema.gov/about/openfema/data-sets/national-risk-index-data) (_see [/notebooks/README](/notebooks/README.md)_)
+  - Persists resolved location data in `sessionStorage` so it persists across a multi-page Gravity Form (in addition to in-memory client-side variables)
+- **Submission client-side Hash Encoding**
+  - Computes a compact [client-side Action Pack payload/hash](#action-pack-flow) from matched Categories for subsequent share URLs, looking (probably) like `?actionPack=ap2.2w6g74.1y`
+- **PHP server-side Hash Decoding**
+  - Decodes the same `actionPack` payload/hash on the server and maps them to Newspack Query Loop query params including `category__in`, filtering and sort-order
 
 ### Page Detection
 
-These event bindings and `/data/` file fetches can be memory-intensive and we want to simplify that for EMFN site visitors possibly experiencing an emergency or amid recovery from a disaster.
+These event bindings and `/data/` file fetches can be memory-intensive and **we want to simplify that for EMFN site visitors** experiencing an emergency or amid recovery from a disaster.
 
-The plugin uses multiple detection methods to determine when to load its assets, ensuring coverage across both the assessment form and results pages:
+Assets load on any frontend page with either of these querystring parameters:
 
-1. **CSS Class Detection**: Checks for `.emfn-action-pack` or `.emfn-forms` classes
-   - `form.emfn-forms` is our Gravity Form
-   - `.emfn-action-pack` is our Action Pack results
-
-2. **Gravity Forms Detection**: Checks for `gravityform` shortcode or `wp:gravityforms/form` block syntax
-   - Catches assessment pages even when CSS classes aren't in stored content
-   - Handles cases where classes are added dynamically during rendering
-
-3. **Page Slug Detection**: Matches the page slug `action`
-   - Provides fallback detection for `/start/action/` and similar URLs
-   - Ensures assets load regardless of content changes
-
-The plugin returns `true` from `is_action_pack_page_request()` if **any** of these conditions match, ensuring robust asset loading across the Action Pack two-phase flow.
+- `?mode=<value>` → quiz/form pages
+- `?actionPack=<hash>` → results pages
 
 ### Debugging & Troubleshooting
 
@@ -125,14 +113,11 @@ The plugin returns `true` from `is_action_pack_page_request()` if **any** of the
 Add `&emfnDebug=true` to Action Pack URLs to request debug logging:
 
 ```
-https://emergencymode.newspackstaging.com/start/action/?mode=mode-during&emfnDebug=true
-https://emergencymode.newspackstaging.com/start/action-pack/?actionPack=ap2.xyz123&emfnDebug=true
+.../start/action/?mode=mode-during&emfnDebug=true
+.../start/action-pack/?actionPack=ap2.xyz123&emfnDebug=true
 ```
 
-Server-side PHP debug output only appears when `emfnDebug=true` **and** one of the following is true:
-- Current user can `manage_options`
-- WordPress environment is not `production`
-- `WP_DEBUG` is enabled
+Server-side PHP debug output only appears when `emfnDebug=true` **and** the current user is a WordPress administrator or editor.
 
 **What Gets Logged:**
 - **Client-side JS (browser console):** Form values, category mappings, encoded payloads
@@ -156,7 +141,7 @@ Server-side PHP debug output only appears when `emfnDebug=true` **and** one of t
 <LOG_TIMESTAMP> .hashable form values: (6) ['mode-during', 'disasterType-flooding', 'size-25', 'activeReporting-true', 'pubSituation-0', 'contactPlan-true']
 <LOG_TIMESTAMP> Encoded Action Pack categories: (32) ['Flooding (1)', 'Power & connectivity (2)', 'Solo operator (1)', 'Small newsroom (1)', 'Co-located team (1)', 'Rural (3)', ...]
 
-Navigated to https://emergencymode.newspackstaging.com/start/action-pack/?actionPack=ap2.<hash>&emfnDebug=true
+Navigated to https://<domain>/start/action-pack/?actionPack=ap2.<hash>&emfnDebug=true
 
 <LOG_TIMESTAMP> EMFN: Block categories applied {
   className: "emfn-action-pack emfn-content-cards is-style-default",
@@ -168,21 +153,22 @@ Navigated to https://emergencymode.newspackstaging.com/start/action-pack/?action
 
 The Action Pack operates in two phases, with payload encoding/decoding coordinated between `emfn-action-pack-plugin.js` and `class-emfn-action-pack-plugin.php`.
 
-**Phase 1: Assessment (form.emfn-forms)**
-- Multi-"page" Gravity Form at `/start/action/` collects location, disaster type, newsroom characteristics
-- JS plugin binds geolocation (Google Places → FCC Area API → FEMA NRI risk display)
-- On submit, collects `.hashable` form values (ignoring "lead gen" fields like Org Name, address, contact email, etc)
-- Fetches `_tallCategories.csv` to map selections → Category names → compact `ap2.` bitmask payload
-- Writes encoded payload to `.hashMarker input` and form redirects with `?actionPack=ap2.<hash>`
-- Location data persists in `sessionStorage` across form pages; hash stored in form submission for tracking
+**Phase 1: Assessment (.emfn-forms)**
+- Multi-"page" Gravity Form at `/action/` collects location, disaster type, newsroom characteristics
+- JS plugin binds geolocation
+- On submit, collects `.hashable`-marked form entries
+- Fetches `_tallCategories.csv` to map answers → WP Category IDs → compact `ap2.` bitmask payload
+- Writes encoded payload to `.hashMarker input` (to save to Form entry) and form redirects with `?actionPack=ap2.<hash>`
+- Location data persists in `sessionStorage` across form pages, as a backup mechanism 
 
 **Phase 2: Action Pack Customization**
 - User lands on results page with `?actionPack=ap2.<hash>` parameter
 - PHP decodes payload using `_tallCategories.csv` category order (synchronized with client JS)
 - Resolves Category names → WordPress term IDs
 - Filters Newspack Content Loop blocks with `.emfn-action-pack` class to matched categories
-- URL is shareable; returns user a similarly ranked personalized Action Pack configuration
-- Debug mode (`&emfnDebug=true`) logs decode details when PHP debug gating conditions are met
+- URL is shareable; returns user a similarly ranked personalized Action Pack configuration... at least until we change any Categories in WP, then they all break
+  - Not much we can do about that except re-compute `_tallCategories` with the new Category-tagging strategy for the content store
+- Debug mode (`&emfnDebug=true`) logs decode details when the user is logged in to WordPress
 
 ### Content Recommendation Algorithm
 
@@ -216,188 +202,7 @@ Here's where the algorithm prevents your highest-weighted category from dominati
 
 **Why this matters:** Imagine your quiz strongly matches "Staff safety" (which might have 8 articles) and moderately matches "Field reporting" (which has only 3 articles). Without scarcity balancing, you'd see mostly staff safety content. The multiplier boosts the field reporting articles so they appear alongside staff safety pieces, giving you **topical diversity** instead of redundancy.
 
-#### Small Content Libraries Are Robust
-
-**Your 50-article library is production-ready.** Here's why:
-
-- **Quality over quantity**: Tier tags ensure your best 10-15 articles always surface first, regardless of library size
-- **Graceful scaling**: With smaller libraries, scarcity multipliers are subtle (1.0× to ~2.7×), meaning category weights dominate — this is correct behavior for curated collections
-- **No empty results**: The algorithm handles edge cases (categories with 0 posts, single-post categories, missing tier tags) without breaking
-- **Consistent experience**: Users with similar quiz responses see similar top recommendations, even as you grow the library
-
-#### Example Scoring Scenario
-
-Using realistic numbers from a sample quiz result:
-
-**Quiz generates these top categories:**
-- Staff safety: 13 answer matches → weight 10 → 8 posts in library
-- Leadership & decision-making: 12 matches → weight 9 → 7 posts
-- Staff wellbeing: 9 matches → weight 8 → 5 posts
-- Field reporting: 5 matches → weight 1 → 3 posts
-
-**Scarcity multipliers (max posts = 8):**
-- Staff safety: 8/8 = 1.0× (no bonus)
-- Leadership: 8/7 = 1.14×
-- Staff wellbeing: 8/5 = 1.6×
-- Field reporting: 8/3 = 2.67× (biggest boost)
-
-**Final category scores (weight × scarcity):**
-- Staff safety: 10 × 1.0 = **10.0**
-- Leadership: 9 × 1.14 = **10.3**
-- Staff wellbeing: 8 × 1.6 = **12.8** ← rare content boosted
-- Field reporting: 1 × 2.67 = **2.7** (low weight limits boost)
-
-**Sample Results Ranking:**
-
-| Rank | Title | Tier | Categories | Score | Why It Ranked Here |
-|------|-------|------|------------|-------|-------------------|
-| 1 | "Trauma-Informed Newsroom Guide" | tier-1 | Staff wellbeing, Leadership | 1022.8 | Tier-1 + rare categories (12.8 + 10.3) |
-| 2 | "Field Safety Protocols" | tier-1 | Staff safety, Leadership, Field reporting | 1023.0 | Tier-1 + multi-category (10.0 + 10.3 + 2.7) |
-| 3 | "Emergency Contact Templates" | tier-1 | Staff safety | 1010.0 | Tier-1 + single common category |
-| 4 | "Freelancer Safety Checklist" | tier-2 | Staff wellbeing, Field reporting | 115.5 | Tier-2 + rare categories (12.8 + 2.7) |
-
-**Key insights:**
-- Tier-1 content dominates top results (scores 1000+)
-- Within tier-1, article #1 wins despite matching fewer categories because it hits rare, high-value topics
-- Article #2 matches 3 categories (multi-category bonus) and scores very close
-- Article #3 is solid tier-1 but common category → ranks third
-- Tier-2 content appears after all tier-1, regardless of category scores
-
-#### Technical Implementation Notes
-
-For developers maintaining the algorithm:
-
-**Small Dataset Safeguards:**
-- `wp_count_terms()` checks for empty arrays before calling `max()` to avoid PHP warnings
-- Empty categories default to scarcity multiplier of 1.0 (weight-only scoring)
-- Posts without tier tags receive score of 1 (lowest priority)
-- GROUP BY ensures each post scored once even with multiple category/tag joins
-
-**Performance:**
-- SQL JOINs with `term_relationships` and `term_taxonomy` are fast at 50-500 posts
-- No custom database indexes required for this scale
-- Scarcity calculation happens once per request (cached in `$scarcity_multipliers`)
-
-**Scaling Considerations:**
-- At 500+ posts, scarcity multipliers become more pronounced (10×+ differences possible)
-- Consider adding composite indexes on `term_taxonomy_id` if library exceeds 1000 posts
-- Tier tag distribution matters: aim for 30% tier-1, 50% tier-2, 20% tier-3
-
-### Future Content Strategy Growth
-
-As your content library scales beyond 500 posts and 50+ categories, consider these performance optimizations. **Current implementation is already optimized for 50-500 posts** — these are for future growth only.
-
-#### Performance Optimizations for Large Libraries
-
-**1. Cache Term Counts (500+ posts)**
-
-Reduce database load by caching category post counts with WordPress transients:
-
-```php
-// In apply_action_pack_category_scoring()
-$cache_key = 'emfn_ap_counts_' . md5( serialize( $term_ids ) );
-$term_counts = get_transient( $cache_key );
-
-if ( false === $term_counts ) {
-    $term_counts = wp_count_terms( array(
-        'taxonomy'   => 'category',
-        'include'    => $term_ids,
-        'hide_empty' => false,
-    ) );
-    set_transient( $cache_key, $term_counts, HOUR_IN_SECONDS );
-}
-```
-
-**Benefits:** Reduces wp_count_terms() database queries from every page load to once per hour per unique category set.
-
-**2. Limit Category Count (100+ matched categories)**
-
-Prevent massive SQL queries when quiz results match many categories:
-
-```php
-// After decoding term IDs
-if ( count( $term_ids ) > 30 ) {
-    // Keep top 30 by position (highest ranked categories)
-    $term_ids = array_slice( $term_ids, 0, 30 );
-}
-```
-
-**Benefits:** Caps CASE statement size, reduces JOIN complexity, maintains UX (users won't notice beyond top 30 categories).
-
-**3. Skip Tier JOINs When Unused (1000+ posts)**
-
-Detect whether tier tags exist before adding JOIN overhead:
-
-```php
-// Cache tier tag existence check
-$has_tier_tags = get_transient( 'emfn_ap_has_tiers' );
-if ( false === $has_tier_tags ) {
-    $tier_count = wp_count_terms( array(
-        'taxonomy' => 'post_tag',
-        'slug'     => array( 'tier-1', 'tier-2', 'tier-3' ),
-    ) );
-    $has_tier_tags = is_array( $tier_count ) && ! empty( $tier_count );
-    set_transient( 'emfn_ap_has_tiers', $has_tier_tags, DAY_IN_SECONDS );
-}
-
-// Only add tier JOINs if tags exist
-if ( $has_tier_tags ) {
-    $clauses['join'] .= " LEFT JOIN {$wpdb->term_relationships} AS ap_tier_tr...";
-    // Use tier scoring
-} else {
-    // Skip tier scoring, use category scores only
-    $clauses['orderby'] = "SUM({$score_sql}) DESC, {$wpdb->posts}.ID DESC";
-}
-```
-
-**Benefits:** Eliminates unnecessary JOINs when tier tagging system isn't active, reducing query execution time by ~30% on large datasets.
-
-#### Content Strategy Recommendations
-
-**Tier Tag Distribution (Editorial Quality)**
-
-As your library grows, maintain balanced tier distribution to prevent tier-1 inflation:
-
-- **Tier-1 (30%):** Flagship resources, thoroughly vetted guides, essential practices
-- **Tier-2 (50%):** Solid supporting content, case studies, practical templates  
-- **Tier-3 (20%):** Supplementary material, experimental approaches, niche topics
-
-**Why it matters:** If 80% of content is tier-1, the tier system loses its signal value. Scarcity multiplier then becomes primary ranking — defeating the editorial priority system.
-
-**Category Coverage Monitoring**
-
-Track category post counts to identify content gaps:
-
-```sql
-SELECT 
-    t.name AS category,
-    COUNT(DISTINCT p.ID) AS post_count
-FROM wp_terms t
-JOIN wp_term_taxonomy tt ON t.term_id = tt.term_id
-LEFT JOIN wp_term_relationships tr ON tt.term_taxonomy_id = tr.term_taxonomy_id
-LEFT JOIN wp_posts p ON tr.object_id = p.ID AND p.post_status = 'publish'
-WHERE tt.taxonomy = 'category'
-    AND t.term_id IN (110, 155, 113, ...) -- Action Pack category IDs
-GROUP BY t.term_id
-ORDER BY post_count ASC;
-```
-
-**Target:** Aim for at least 3-5 posts per Action Pack category. Categories with 0-1 posts receive maximum scarcity boost but may indicate content gaps.
-
-#### When to Implement These Optimizations
-
-| Library Size | Action | Priority |
-|--------------|--------|----------|
-| 50-200 posts | Ship current implementation as-is | ✅ Done |
-| 200-500 posts | Monitor query performance (no changes needed yet) | Low |
-| 500-1000 posts | Add transient caching for term counts | Medium |
-| 1000-2000 posts | Add category count limiting (30 max) | Medium |
-| 2000+ posts | Implement tier detection + add database indexes | High |
-
-**Performance Benchmarks:**
-- Current implementation: <5ms query execution at 50 posts
-- With caching: <3ms at 500 posts (vs ~8ms without caching)
-- With all optimizations: <10ms at 2000 posts (vs ~40ms without)
+**For _A LOT_ more on content strategy growth and query optimization, see [/data/_tallCategoriesREADME](/plugins/emfn-action-pack-plugin/assets/data/_tallCategoriesREADME.md)**
 
 ### Risk data flow
 
@@ -452,7 +257,7 @@ Dependency automation is configured in [.github/dependabot.yml](.github/dependab
 | Ecosystem | Frequency | Notes |
 |-----------|-----------|-------|
 | `npm` | Weekly | Plugin production dependencies + dev tools |
-| `github-actions` | Weekly | Workflow & CI/CD tool updates |
+| `github-actions` | Weekly | Workflow & CI/CD tool updates (if available) |
 | `pip` | Disabled | Python deps manually maintained (notebooks are rarely used) |
 
 ## Data Analysis Notebooks
@@ -529,9 +334,9 @@ Relevant scripts live in `scripts/strip-notebook-outputs.sh` and `scripts/check-
 
 This repo uses Dependabot (`.github/dependabot.yml`) for automated dependency management:
 
-- **npm dependencies:** Weekly updates with grouped minor/patch PRs
+- **npm dependencies:** Weekly checks for updates with grouped minor/patch PRs (if available)
 - **Python/pip dependencies:** Not configured in Dependabot; notebook deps are maintained manually
-- **GitHub Actions:** Weekly updates for workflow dependencies
+- **GitHub Actions:** Weekly checks for workflow dependency updates (if available)
 
 Dependabot PRs can be auto-merged after CI passes, enabling frequent maintenance with minimal manual intervention.
 
@@ -564,17 +369,17 @@ On every push to `main`, `.github/workflows/release.yml` executes:
 
 ## Deployment
 
-Deployment to Newspack staging and production is handled manually by Newspack Support.
+Deployment to Newspack staging and production is handled manually by site owners. We _SHOULD NOT_ ask Newspack Support TAMs about this custom plugin.
 
 For plugin deployment:
 
 1. Merge changes to `main` (automated release workflow creates GitHub Release)
-2. Download plugin ZIP from GitHub Releases
-3. Provide to Newspack Support for installation via WordPress Admin or direct server copy
+2. Download plugin ZIP from the newly generated (and successfully vetted and created) GitHub Release
+3. Install WordPress Admin and activate, overriding the prior plugin if necessary
 
-The devcontainer, notebooks, scripts, tests, and scratch files are **not** deployed to WordPress.
+The devcontainer, notebooks, scripts, tests, and `tmp/` files are **not** deployed to WordPress.
 
-## Testing
+## 🛑 Testing (TODO)
 
 Automated testing infrastructure is planned but not yet implemented. See `tests/TESTING_PLAN.md` for:
 
@@ -659,20 +464,3 @@ Testing will enable safe auto-merge of Dependabot PRs and provide confidence in 
 
 - Newspack Plugin documentation: https://github.com/Automattic/newspack-plugin
 - Newspack Blocks documentation: https://github.com/Automattic/newspack-blocks
-
-## TODO: Documentation Improvements
-
-The following sections need to be added to improve developer experience and troubleshooting:
-
-### CSS/JS Asset Loading Details
-- Document when assets load vs when they don't
-- Explain what the CSS does (styles form UI, hides Gravity Forms default progress bar, custom risk display)
-- Document JS responsibilities beyond encoding/decoding (geolocation binding, risk rendering, form interaction)
-
-### sessionStorage Contract
-Document the client-side storage schema:
-- Keys stored and their data types
-- When storage is written (geolocation resolution, form navigation)
-- When storage is cleared (form completion, session end)
-- Why it's necessary for multi-page Gravity Forms
-- Example data structure and lifecycle

@@ -333,7 +333,3 @@ Combine data from multiple functions using VLOOKUP or INDEX/MATCH:
 
 For issues with the WordPress API or available fields, visit:
 https://developer.wordpress.org/rest-api/reference/
-
----
-
-**Note:** This script connects to `emergencymode.newspackstaging.com`. Data updates in real-time based on the WordPress site's current content.

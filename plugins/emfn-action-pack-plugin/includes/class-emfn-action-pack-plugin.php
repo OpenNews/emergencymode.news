@@ -100,32 +100,72 @@ class EMFN_Action_Pack_Plugin {
         add_filter( 'render_block_data', array( $this, 'filter_action_pack_newspack_block_data' ), 10, 3 );
         add_action( 'pre_get_posts', array( $this, 'mark_action_pack_newspack_queries' ) );
         add_filter( 'posts_clauses', array( $this, 'apply_action_pack_category_scoring' ), 10, 2 );
-        add_filter( 'editable_extensions', array( $this, 'allow_csv_in_plugin_editor' ), 10, 2 );
+        add_filter( 'editable_extensions', array( $this, 'allow_viewable_file_extensions' ), 10, 2 );
+        add_action( 'admin_head-plugin-editor.php', array( $this, 'make_md_files_readonly' ) );
         add_action( 'wp_footer', array( $this, 'render_action_pack_debug_script' ), 99 );
     }
 
     /**
-     * Allow CSV files to appear in the Plugin File Editor.
+     * Allow CSV and Markdown files to appear in the Plugin File Editor (read-only).
      *
-     * Note: The `editable_extensions` filter receives the editor context
-     * ('plugins' or 'themes') as its second argument, not an individual plugin
-     * basename, so this addition applies to all plugins when the Plugin File
-     * Editor is active.
-     *
-     * @param array<int, string> $extensions Editable file extensions.
+     * @param array<int, string> $extensions Viewable file extensions.
      * @param string             $context    Editor context: 'plugins' or 'themes'.
      * @return array<int, string>
      */
-    public function allow_csv_in_plugin_editor( $extensions, $context ) {
+    public function allow_viewable_file_extensions( $extensions, $context ) {
         if ( 'plugins' !== $context ) {
             return $extensions;
         }
 
-        if ( ! in_array( 'csv', $extensions, true ) ) {
-            $extensions[] = 'csv';
+        // Only add extensions when viewing/editing this plugin specifically
+        $plugin = isset( $_REQUEST['plugin'] ) ? wp_unslash( $_REQUEST['plugin'] ) : '';
+        $file   = isset( $_REQUEST['file'] ) ? wp_unslash( $_REQUEST['file'] ) : '';
+        
+        $is_this_plugin = false !== strpos( $plugin, 'emfn-action-pack-plugin' ) 
+                       || false !== strpos( $file, 'emfn-action-pack-plugin' );
+        
+        if ( ! $is_this_plugin ) {
+            return $extensions;
+        }
+
+        $allowed_extensions = array( 'csv', 'md' );
+        foreach ( $allowed_extensions as $ext ) {
+            if ( ! in_array( $ext, $extensions, true ) ) {
+                $extensions[] = $ext;
+            }
         }
 
         return $extensions;
+    }
+
+    /**
+     * Prevent direct editing of Markdown data files.
+     *
+     * Blocks access to this plugin's data files via the WordPress file editor
+     * using server-side enforcement that cannot be bypassed by disabling JavaScript.
+     *
+     * @return void
+     */
+    public function make_md_files_readonly() {
+        global $file;
+
+        if ( ! isset( $file ) ) {
+            return;
+        }
+
+        // Only protect THIS plugin's data files, not global file editor
+        if ( false === strpos( $file, 'emfn-action-pack-plugin/assets/data' ) ) {
+            return;
+        }
+
+        // Block attempts to edit data files
+        if ( preg_match( '/\.(md)$/', $file ) ) {
+            wp_die(
+                esc_html__( 'Markdown should be maintained in GitHub.', 'emfn-action-pack-plugin' ),
+                esc_html__( 'File Protected', 'emfn-action-pack-plugin' ),
+                array( 'response' => 403 )
+            );
+        }
     }
 
     /**
@@ -165,6 +205,10 @@ class EMFN_Action_Pack_Plugin {
     /**
      * Return whether this frontend request targets the Action Pack page.
      *
+     * Presence of either recognised querystring parameter is the sole signal:
+     * - `actionPack` → results page
+     * - `mode`       → quiz / form page (e.g. ?mode=mode-before)
+     *
      * @return bool
      */
     private function is_action_pack_page_request() {
@@ -172,35 +216,15 @@ class EMFN_Action_Pack_Plugin {
             return $this->is_action_pack_page_request;
         }
 
-        if ( is_admin() || ! is_page() ) {
+        if ( is_admin() ) {
             $this->is_action_pack_page_request = false;
             return $this->is_action_pack_page_request;
         }
 
-        // Check if actionPack query parameter is present (results page)
         $has_action_pack_param = null !== $this->get_action_pack_payload_from_request();
-        if ( $has_action_pack_param ) {
-            $this->is_action_pack_page_request = true;
-            return $this->is_action_pack_page_request;
-        }
+        $has_mode_param        = ! empty( wp_unslash( $_GET['mode'] ?? '' ) );
 
-        $post = get_queried_object();
-        if ( ! ( $post instanceof WP_Post ) ) {
-            $this->is_action_pack_page_request = false;
-            return $this->is_action_pack_page_request;
-        }
-
-        $post_content = isset( $post->post_content ) ? (string) $post->post_content : '';
-        $post_slug    = isset( $post->post_name ) ? (string) $post->post_name : '';
-
-        // Check for Action Pack or Gravity Forms CSS classes/blocks in content
-        $has_action_pack_classes = false !== strpos( $post_content, 'emfn-action-pack' ) || false !== strpos( $post_content, 'emfn-forms' );
-        $has_gravity_forms       = false !== strpos( $post_content, 'gravityform' ) || false !== strpos( $post_content, 'wp:gravityforms/form' );
-
-        // Check if this is the action page by slug
-        $is_action_page = 'action' === $post_slug || 'action-pack' === $post_slug;
-
-        $this->is_action_pack_page_request = $has_action_pack_classes || $has_gravity_forms || $is_action_page;
+        $this->is_action_pack_page_request = $has_action_pack_param || $has_mode_param;
 
         return $this->is_action_pack_page_request;
     }
@@ -230,39 +254,34 @@ class EMFN_Action_Pack_Plugin {
      * @return void
      */
     private function prime_action_pack_debug_entries() {
-        if ( empty( $this->action_pack_debug_entries ) ) {
-            $payload  = $this->get_action_pack_payload_from_request();
-            $term_ids = $this->get_action_pack_term_ids_from_request();
-            $this->queue_action_pack_debug_entry( 'Action Pack payload decoded', array(
-                'payload' => $payload,
-                'termIds' => $term_ids,
-            ) );
-        }
+        $payload  = $this->get_action_pack_payload_from_request();
+        $term_ids = $this->get_action_pack_term_ids_from_request();
+
+        // Always prepend the base entry so it appears first in console output,
+        // regardless of whether block-render filters already queued their own entries.
+        array_unshift(
+            $this->action_pack_debug_entries,
+            array(
+                'label' => 'EMFN: Action Pack payload decoded',
+                'value' => array(
+                    'payload' => $payload,
+                    'termIds' => $term_ids,
+                ),
+            )
+        );
     }
 
     /**
      * Return whether Action Pack debug output is enabled for the current request.
      *
+     * Debug output is restricted to WordPress administrators and editors only.
+     *
      * @return bool
      */
     private function is_action_pack_debug_enabled() {
-        $debug_flag = filter_input( INPUT_GET, 'emfnDebug', FILTER_UNSAFE_RAW );
+        $debug_flag = isset( $_GET['emfnDebug'] ) ? strtolower( trim( wp_unslash( (string) $_GET['emfnDebug'] ) ) ) : '';
 
-        if ( ! is_string( $debug_flag ) && isset( $_GET['emfnDebug'] ) ) {
-            $debug_flag = wp_unslash( $_GET['emfnDebug'] );
-        }
-
-        if ( ! is_string( $debug_flag ) || 'true' !== strtolower( trim( wp_unslash( $debug_flag ) ) ) ) {
-            return false;
-        }
-
-        $is_privileged_user = is_user_logged_in() && current_user_can( 'manage_options' );
-
-        $environment_type  = function_exists( 'wp_get_environment_type' ) ? wp_get_environment_type() : 'production';
-        $is_non_production = 'production' !== $environment_type;
-        $is_wp_debug       = defined( 'WP_DEBUG' ) && WP_DEBUG;
-
-        return $is_privileged_user || $is_non_production || $is_wp_debug;
+        return 'true' === $debug_flag && ( current_user_can( 'manage_options' ) || current_user_can( 'edit_pages' ) );
     }
 
     /**
@@ -307,14 +326,11 @@ class EMFN_Action_Pack_Plugin {
      * @return string|null
      */
     public function get_action_pack_payload_from_request() {
-        // stop if no payload is present in the request
-        $payload = filter_input( INPUT_GET, 'actionPack', FILTER_UNSAFE_RAW );
-        if ( ! is_string( $payload ) ) {
+        if ( ! isset( $_GET['actionPack'] ) ) {
             return null;
         }
 
-        // normalize and strip payload 
-        $payload = trim( wp_unslash( $payload ) );
+        $payload = trim( wp_unslash( (string) $_GET['actionPack'] ) );
 
         return '' !== $payload ? $payload : null;
     }
@@ -391,11 +407,10 @@ class EMFN_Action_Pack_Plugin {
      * Apply smart category scoring to Action Pack queries.
      * 
      * Scoring strategy:
-     * - Tier tags (tier-1, tier-2, etc.): editorial quality ranking
+     * - Tier tags (resources-tier-1, resources-tier-2, etc.): editorial quality
      * - Category weight (from term order): user's priority
      * - Scarcity bonus: high-weight category + few posts = rare/specific match
      * - Multi-category bonus: posts matching multiple user categories
-     * - Diversity: prevents one category from dominating results
      *
      * @param array<string, string> $clauses SQL clauses.
      * @param WP_Query              $query Query instance.
@@ -458,37 +473,47 @@ class EMFN_Action_Pack_Plugin {
 
             // Cache for subsequent queries in this request
             $this->action_pack_scoring_cache = array(
-                'weights' => $weights,
-                'scarcity' => $scarcity_multipliers,
+                'weights'   => $weights,
+                'scarcity'  => $scarcity_multipliers,
                 'score_sql' => $score_sql,
+            );
+
+            $this->queue_action_pack_debug_entry(
+                'Action Pack scoring cache built',
+                array(
+                    'termIds'  => $term_ids,
+                    'weights'  => $weights,
+                    'scarcity' => $scarcity_multipliers,
+                )
             );
         }
 
         $score_sql = $this->action_pack_scoring_cache['score_sql'];
 
-        // Tier-based scoring (tier-1 = best, tier-2 = good, tier-3 = acceptable, etc.)
-        // Posts without tier tags get score of 1 (lowest priority)
+        // Tier-based scoring 
+        // (resources-tier-1 = best, resources-tier-2 = good, resources-tier-3 = acceptable, etc.)
+        // Posts without tier Tags get score of 1 (lowest priority)
         // Aggregate tier data in a subquery so the main query still has only one category row per relationship.
-        $tier_score_subquery = "
+        $tier_score_subquery = $wpdb->prepare( "
             SELECT
                 ap_tier_tr.object_id,
                 MAX(
                     CASE
-                        WHEN ap_tier_terms.slug = 'tier-1' THEN 1000
-                        WHEN ap_tier_terms.slug = 'tier-2' THEN 100
-                        WHEN ap_tier_terms.slug = 'tier-3' THEN 10
+                        WHEN ap_tier_terms.slug = %s THEN 1000
+                        WHEN ap_tier_terms.slug = %s THEN 100
+                        WHEN ap_tier_terms.slug = %s THEN 10
                         ELSE 1
                     END
                 ) AS tier_score
             FROM {$wpdb->term_relationships} AS ap_tier_tr
             INNER JOIN {$wpdb->term_taxonomy} AS ap_tier_tt
                 ON ap_tier_tr.term_taxonomy_id = ap_tier_tt.term_taxonomy_id
-                AND ap_tier_tt.taxonomy = 'post_tag'
+                AND ap_tier_tt.taxonomy = %s
             INNER JOIN {$wpdb->terms} AS ap_tier_terms
                 ON ap_tier_tt.term_id = ap_tier_terms.term_id
-                AND ap_tier_terms.slug LIKE 'tier-%'
+                AND ap_tier_terms.slug LIKE %s
             GROUP BY ap_tier_tr.object_id
-        ";
+        ", 'resources-tier-1', 'resources-tier-2', 'resources-tier-3', 'post_tag', 'resources-tier-%' );
 
         // Join category relationships
         $clauses['join'] .= " LEFT JOIN {$wpdb->term_relationships} AS ap_cat_tr ON {$wpdb->posts}.ID = ap_cat_tr.object_id";
@@ -609,95 +634,140 @@ class EMFN_Action_Pack_Plugin {
         if ( ! is_array( $category_in ) ) {
             $category_in = array( $category_in );
         }
-        sort( $category_in );
-        $term_ids_sorted = $term_ids;
+        $category_in_ints = array_map( 'intval', $category_in );
+        sort( $category_in_ints );
+        $term_ids_sorted = array_map( 'intval', $term_ids );
         sort( $term_ids_sorted );
 
-        if ( $category_in === $term_ids_sorted ) {
+        if ( $category_in_ints === $term_ids_sorted ) {
             $query->set( 'emfn_action_pack', true );
         }
     }
 
     /**
      * Load the Action Pack category ID order from the tall category CSV.
+     * Includes file size validation and error logging for production debugging.
      *
      * @return array<int, int> Category ID order for decoding bit positions
      */
     public function load_tall_category_csv() {
+        // Check transient cache first for 24-hour caching
+        // Cache key includes plugin version to invalidate when CSV updates via plugin release
+        $cache_key = 'emfn_action_pack_category_order_' . EMFN_ACTION_PACK_PLUGIN_VERSION;
+        $cached = get_transient( $cache_key );
+        if ( ! empty( $cached ) && is_array( $cached ) ) {
+            return $cached;
+        }
+
         $csv_path = EMFN_ACTION_PACK_PLUGIN_DIR . 'assets/data/_tallCategories.csv';
 
-        if ( ! file_exists( $csv_path ) || ! is_readable( $csv_path ) ) {
+        // Check file exists and is readable
+        if ( ! file_exists( $csv_path ) ) {
+            if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                error_log( 'EMFN Action Pack: CSV file not found at ' . $csv_path );
+            }
             return array();
         }
 
-        $handle = fopen( $csv_path, 'r' );
+        if ( ! is_readable( $csv_path ) ) {
+            if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                error_log( 'EMFN Action Pack: CSV file not readable at ' . $csv_path );
+            }
+            return array();
+        }
+
+        // Validate file size to prevent loading huge files (max 5MB)
+        $file_size = @filesize( $csv_path );
+        if ( false === $file_size || $file_size > 5 * 1024 * 1024 ) {
+            if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                error_log( 'EMFN Action Pack: CSV file exceeds maximum size (size: ' . ( $file_size ?: 'unknown' ) . ' bytes)' );
+            }
+            return array();
+        }
+
+        // Open file with error suppression to avoid warnings
+        $handle = @fopen( $csv_path, 'r' );
         if ( false === $handle ) {
+            if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                error_log( 'EMFN Action Pack: Failed to open CSV file at ' . $csv_path );
+            }
             return array();
         }
 
-        $header = fgetcsv( $handle );
-        if ( ! is_array( $header ) ) {
-            fclose( $handle );
-            return array();
-        }
-
-        $normalized_header = array_map(
-            static function ( $value ) {
-                return trim( strtolower( (string) $value ) );
-            },
-            $header
-        );
-
-        $cat_id_index      = array_search( 'catid', $normalized_header, true );
-        $manual_rank_index = array_search( 'manualrank', $normalized_header, true );
-
-        if ( false === $cat_id_index || false === $manual_rank_index ) {
-            fclose( $handle );
-            return array();
-        }
-
-        $cat_id_ranks     = array();
-        $cat_id_positions = array();
-        $cat_id_order     = array();
-
-        while ( false !== ( $row = fgetcsv( $handle ) ) ) {
-            $cat_id = isset( $row[ $cat_id_index ] )
-                ? (int) trim( (string) $row[ $cat_id_index ] )
-                : 0;
-            $manual_rank = isset( $row[ $manual_rank_index ] )
-                ? (int) trim( (string) $row[ $manual_rank_index ] )
-                : 0;
-
-            if ( 0 === $cat_id ) {
-                continue;
+        // Use try-finally to ensure file is closed even if error occurs
+        try {
+            $header = fgetcsv( $handle );
+            if ( ! is_array( $header ) || empty( $header ) ) {
+                if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                    error_log( 'EMFN Action Pack: Invalid or empty CSV header' );
+                }
+                return array();
             }
 
-            if ( ! array_key_exists( $cat_id, $cat_id_ranks ) ) {
-                $cat_id_positions[ $cat_id ] = count( $cat_id_order );
-                $cat_id_order[]              = $cat_id;
-                $cat_id_ranks[ $cat_id ]     = $manual_rank;
-            } else {
-                $cat_id_ranks[ $cat_id ] = max( $cat_id_ranks[ $cat_id ], $manual_rank );
+            $normalized_header = array_map(
+                static function ( $value ) {
+                    return trim( strtolower( (string) $value ) );
+                },
+                $header
+            );
+
+            $cat_id_index      = array_search( 'catid', $normalized_header, true );
+            $manual_rank_index = array_search( 'manualrank', $normalized_header, true );
+
+            if ( false === $cat_id_index || false === $manual_rank_index ) {
+                if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                    error_log( 'EMFN Action Pack: CSV header missing required columns (catid, manualrank)' );
+                }
+                return array();
             }
-        }
 
-        fclose( $handle );
+            $cat_id_ranks     = array();
+            $cat_id_positions = array();
+            $cat_id_order     = array();
 
-        usort(
-            $cat_id_order,
-            static function ( $left, $right ) use ( $cat_id_ranks, $cat_id_positions ) {
-                $left_rank  = $cat_id_ranks[ $left ] ?? 0;
-                $right_rank = $cat_id_ranks[ $right ] ?? 0;
+            while ( false !== ( $row = fgetcsv( $handle ) ) ) {
+                $cat_id = isset( $row[ $cat_id_index ] )
+                    ? (int) trim( (string) $row[ $cat_id_index ] )
+                    : 0;
+                $manual_rank = isset( $row[ $manual_rank_index ] )
+                    ? (int) trim( (string) $row[ $manual_rank_index ] )
+                    : 0;
 
-                if ( $left_rank !== $right_rank ) {
-                    return $right_rank <=> $left_rank;
+                if ( 0 === $cat_id ) {
+                    continue;
                 }
 
-                return ( $cat_id_positions[ $left ] ?? 0 ) <=> ( $cat_id_positions[ $right ] ?? 0 );
+                if ( ! array_key_exists( $cat_id, $cat_id_ranks ) ) {
+                    $cat_id_positions[ $cat_id ] = count( $cat_id_order );
+                    $cat_id_order[]              = $cat_id;
+                    $cat_id_ranks[ $cat_id ]     = $manual_rank;
+                } else {
+                    $cat_id_ranks[ $cat_id ] = max( $cat_id_ranks[ $cat_id ], $manual_rank );
+                }
             }
-        );
 
-        return $cat_id_order;
+            usort(
+                $cat_id_order,
+                static function ( $left, $right ) use ( $cat_id_ranks, $cat_id_positions ) {
+                    $left_rank  = $cat_id_ranks[ $left ] ?? 0;
+                    $right_rank = $cat_id_ranks[ $right ] ?? 0;
+
+                    if ( $left_rank !== $right_rank ) {
+                        return $right_rank <=> $left_rank;
+                    }
+
+                    return ( $cat_id_positions[ $left ] ?? 0 ) <=> ( $cat_id_positions[ $right ] ?? 0 );
+                }
+            );
+
+            // Cache the result for 24 hours
+            set_transient( $cache_key, $cat_id_order, DAY_IN_SECONDS );
+
+            return $cat_id_order;
+
+        } finally {
+            @fclose( $handle );
+        }
     }
 
     /**

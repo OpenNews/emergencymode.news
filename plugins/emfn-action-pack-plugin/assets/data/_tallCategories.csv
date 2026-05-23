@@ -10,27 +10,27 @@ disasterType-severe-storms,TRUE,Severe storms,5,41
 disasterType-tornadoes,TRUE,Tornadoes,5,42
 disasterType-wildfires,TRUE,Wildfires,5,4
 disasterType-winter-storms,TRUE,Winter storms,5,9
-disasterType-other,TRUE,Other,5,43
+disasterType-other,TRUE,Other,2,43
 size-1,TRUE,Solo operator,5,121
-size-5,TRUE,Small newsroom,4,122
-size-10,TRUE,Medium newsroom,4,123
-size-25,TRUE,Large newsroom,4,124
-size-26,TRUE,Large newsroom,5,124
-size-10,TRUE,Small newsroom,4,122
-size-25,TRUE,Medium newsroom,4,123
+size-5,TRUE,Small newsroom,3,122
+size-10,TRUE,Medium newsroom,3,123
+size-25,TRUE,Large newsroom,2,124
+size-26,TRUE,Large newsroom,2,124
+size-10,TRUE,Small newsroom,2,122
+size-25,TRUE,Medium newsroom,2,123
 distribPlatforms-web,TRUE,Digital,5,125
-distribPlatforms-print,TRUE,Print,5,126
+distribPlatforms-print,TRUE,Print,3,126
 distribPlatforms-social,TRUE,Social media,5,127
 distribPlatforms-email,TRUE,Newsletter,5,128
 distribPlatforms-audio,TRUE,Radio/ podcast,5,130
 distribPlatforms-video,TRUE,TV/ video,5,152
 distribPlatforms-sms,TRUE,SMS/ text alerts,5,129
-distribPlatforms-web,TRUE,Distribution channel disruption,5,109
+distribPlatforms-web,TRUE,Distribution channel disruption,4,109
 distribPlatforms-print,TRUE,Distribution channel disruption,1,109
-distribPlatforms-social,TRUE,Distribution channel disruption,5,109
+distribPlatforms-social,TRUE,Distribution channel disruption,4,109
 distribPlatforms-email,TRUE,Distribution channel disruption,4,109
 distribPlatforms-audio,TRUE,Distribution channel disruption,3,109
-distribPlatforms-video,TRUE,Distribution channel disruption,3,109
+distribPlatforms-video,TRUE,Distribution channel disruption,2,109
 distribPlatforms-sms,TRUE,Distribution channel disruption,5,109
 distribPlatforms-web,TRUE,Technical resiliency,3,10
 distribPlatforms-print,TRUE,Equipment &amp; workspace,2,154
@@ -105,10 +105,10 @@ audienceDemand-3,TRUE,Community partnerships,2,116
 audienceDemand-2,TRUE,Community partnerships,3,116
 audienceDemand-1,TRUE,Community partnerships,4,116
 audienceDemand-0,TRUE,Community partnerships,5,116
-audienceDemand-3,TRUE,Mutual aid &amp; peer learning,4,156
-audienceDemand-2,TRUE,Mutual aid &amp; peer learning,4,156
-audienceDemand-1,TRUE,Mutual aid &amp; peer learning,4,156
-audienceDemand-0,TRUE,Mutual aid &amp; peer learning,4,156
+audienceDemand-3,TRUE,Mutual aid &amp; peer learning,3,156
+audienceDemand-2,TRUE,Mutual aid &amp; peer learning,3,156
+audienceDemand-1,TRUE,Mutual aid &amp; peer learning,3,156
+audienceDemand-0,TRUE,Mutual aid &amp; peer learning,3,156
 disInfo-3,TRUE,Fact-checking &amp; misinformation,2,118
 disInfo-2,TRUE,Fact-checking &amp; misinformation,3,118
 disInfo-1,TRUE,Fact-checking &amp; misinformation,4,118
@@ -120,20 +120,20 @@ mentalHealth-training,TRUE,Staff wellbeing,5,113
 mentalHealth-breaks,TRUE,Staff wellbeing,5,113
 mentalHealth-peer,TRUE,Staff wellbeing,5,113
 mentalHealth-none,TRUE,Staff wellbeing,5,113
-mentalHealth-access,TRUE,Staff safety,5,110
-mentalHealth-timeoff,TRUE,Staff safety,5,110
-mentalHealth-checkins,TRUE,Staff safety,5,110
-mentalHealth-training,TRUE,Staff safety,5,110
-mentalHealth-breaks,TRUE,Staff safety,5,110
-mentalHealth-peer,TRUE,Staff safety,5,110
-mentalHealth-none,TRUE,Staff safety,5,110
-mentalHealth-access,TRUE,Leadership &amp; decision-making,4,155
-mentalHealth-timeoff,TRUE,Leadership &amp; decision-making,4,155
-mentalHealth-checkins,TRUE,Leadership &amp; decision-making,4,155
-mentalHealth-training,TRUE,Leadership &amp; decision-making,4,155
-mentalHealth-breaks,TRUE,Leadership &amp; decision-making,4,155
-mentalHealth-peer,TRUE,Leadership &amp; decision-making,4,155
-mentalHealth-none,TRUE,Leadership &amp; decision-making,4,155
+mentalHealth-access,TRUE,Staff safety,2,110
+mentalHealth-timeoff,TRUE,Staff safety,2,110
+mentalHealth-checkins,TRUE,Staff safety,2,110
+mentalHealth-training,TRUE,Staff safety,2,110
+mentalHealth-breaks,TRUE,Staff safety,2,110
+mentalHealth-peer,TRUE,Staff safety,2,110
+mentalHealth-none,TRUE,Staff safety,2,110
+mentalHealth-access,TRUE,Leadership &amp; decision-making,3,155
+mentalHealth-timeoff,TRUE,Leadership &amp; decision-making,3,155
+mentalHealth-checkins,TRUE,Leadership &amp; decision-making,3,155
+mentalHealth-training,TRUE,Leadership &amp; decision-making,3,155
+mentalHealth-breaks,TRUE,Leadership &amp; decision-making,3,155
+mentalHealth-peer,TRUE,Leadership &amp; decision-making,3,155
+mentalHealth-none,TRUE,Leadership &amp; decision-making,3,155
 colocated,TRUE,Co-located team,5,72
 remote,TRUE,Fully remote,5,73
 hybrid,TRUE,Hybrid,5,74

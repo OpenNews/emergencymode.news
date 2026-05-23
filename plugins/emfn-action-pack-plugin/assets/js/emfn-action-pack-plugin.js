@@ -944,13 +944,14 @@ const SubmissionHashing = {
  *   or script load events
  */
 
-/** Run if there's an assessment section or form (NOT on results page)
+/** Run if there's an assessment section, form, or a `?mode=` param (NOT on results page)
  * @type {HTMLElement | null}
  */
 const assessmentSection = document.querySelector("section.assessment");
 const hasForm = !!document.querySelector(gravityForm);
+const hasModeParam = (new URLSearchParams(window.location.search).get("mode") ?? "").trim() !== "";
 
-if (assessmentSection || hasForm) {
+if (assessmentSection || hasForm || hasModeParam) {
   console.info("EMFN Action Pack Plugin active", version);
 
   SubmissionHashing.initializeSubmissionHandling();

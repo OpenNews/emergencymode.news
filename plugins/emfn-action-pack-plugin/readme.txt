@@ -3,7 +3,7 @@ Contributors:       tiffehr
 Tags:               newspack, emergency-mode-for-news, nclocal, opennews
 Requires at least:  6.3
 Tested up to:       6.9
-Stable tag:         0.0.3
+Stable tag:         0.0.9
 Requires PHP:       8.0
 License:            MIT
 License URI:        https://opensource.org/licenses/MIT
@@ -24,12 +24,30 @@ Gravity Forms for emergencymode.news:
 1. Upload the `emfn-action-pack-plugin` folder to `wp-content/plugins/`.
 2. Activate the plugin through the *Plugins* menu in WordPress Admin.
 
+== External Services ==
+
+This plugin relies on the following external service:
+
+**FCC Census Block API** (https://geo.fcc.gov/api/census/block/find)
+- Used for: Geolocation lookup to determine county FIPS codes
+- Data sent: User's latitude and longitude coordinates only
+- Privacy: No personally identifying information is sent
+- License: Public domain (operated by the Federal Communications Commission)
+
+== Dependencies ==
+
+**Gravity Forms**
+This plugin is built as an enhancement to Gravity Forms and requires an 
+active Gravity Forms installation. The plugin is designed to work within a 
+Newspack-managed WordPress environment where Gravity Forms versioning is 
+managed as part of the platform. The plugin handles all supported 
+Gravity Forms versions available in the Newspack environment and 
+does not control or specify a particular Gravity Forms 
+version requirement—it simply reacts to the version that is active in the site.
+
 == Changelog ==
 
-= 0.0.3 =
-* See GitHub release notes for this version
+= Releases =
 
-= 0.0.2 =
-* See GitHub release notes for this version
-
+* GitHub drives release versions and history
 * Please see GitHub: https://github.com/OpenNews/emergencymode.news/releases

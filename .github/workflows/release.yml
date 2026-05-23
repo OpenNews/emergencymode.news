@@ -59,13 +59,13 @@ jobs:
             # Check commit message for version bump signals
             COMMIT_MSG="${{ github.event.head_commit.message }}"
             
-            if echo "$COMMIT_MSG" | grep -qiE '\[major\]|\bmajor\b'; then
+            if echo "$COMMIT_MSG" | grep -qiE '\[major\]|(^|[^[:alnum:]_])major([^[:alnum:]_]|$)'; then
               # Major bump: x.0.0
               MAJOR=$((MAJOR + 1))
               MINOR=0
               PATCH=0
               BUMP_TYPE="major"
-            elif echo "$COMMIT_MSG" | grep -qiE '\[minor\]|\bminor\b'; then
+            elif echo "$COMMIT_MSG" | grep -qiE '\[minor\]|(^|[^[:alnum:]_])minor([^[:alnum:]_]|$)'; then
               # Minor bump: x.y.0
               MINOR=$((MINOR + 1))
               PATCH=0

@@ -1,22 +1,23 @@
+/* eslint jsdoc/check-tag-names: ["warn", {"definedTags": ["customfunction"]}] */
+
 /**
  * WordPress REST API Data Fetcher for Google Sheets
  * Fetches data from WordPress REST API endpoints with flexible filtering and field selection
  */
 
-var WP_BASE_URL = "https://emergencymode.newspackstaging.com/wp-json/wp/v2"; // FAKE URL, must be configured
+var WP_BASE_URL = "https://emergencymode.newspackstaging.com/wp-json/wp/v2"; // FAKE URL, configure!
 var ALLOWED_ENDPOINTS = ["categories", "tags", "pages", "posts"];
 var DEFAULT_FIELDS = ["id", "name", "slug", "description", "parent", "status", "count", "link"];
 
 /**
  * Main function to fetch WordPress REST API data
- *
  * @param {string} endpoint - The endpoint to fetch from: 'categories', 'tags', 'pages', or 'posts'
- * @param {Object} options - Optional configuration object
+ * @param {object} options - Optional configuration object
  * @param {string|number} options.filter - Filter by id, slug, or name
- * @param {string} options.filterType - Type of filter: 'id', 'slug', or 'name' (default: auto-detect)
+ * @param {string} options.filterType - Type of filter: [id,slug, name] (default: auto-detect)
  * @param {Array<string>} options.fields - Array of field names to return (default: DEFAULT_FIELDS)
  * @param {number} options.perPage - Number of results per page (default: 100, max: 100)
- * @param {boolean} options.flattenForSheets - Return 2D array for direct Sheets output (default: false)
+ * @param {boolean} options.flattenForSheets - 2D array for direct Sheets output (default: false)
  * @returns {Array} Array of objects or 2D array if flattenForSheets is true
  */
 function fetchWPData(endpoint, options) {
@@ -62,6 +63,7 @@ function fetchWPData(endpoint, options) {
 
   try {
     // Fetch data
+    // eslint-disable-next-line no-undef
     var response = UrlFetchApp.fetch(url);
     var data = JSON.parse(response.getContentText());
 
@@ -80,13 +82,17 @@ function fetchWPData(endpoint, options) {
 
     return filtered;
   } catch (error) {
+    // eslint-disable-next-line no-undef
     Logger.log("Error fetching from " + url + ": " + error.message);
+    // eslint-disable-next-line preserve-caught-error
     throw new Error("Failed to fetch " + endpoint + ": " + error.message);
   }
 }
 
 /**
  * Auto-detect filter type based on value
+ * @param {string|number} value - The filter value to analyze
+ * @returns {string} "id", "slug", or "name"
  */
 function detectFilterType(value) {
   if (typeof value === "number" || /^\d+$/.test(value)) {
@@ -100,6 +106,9 @@ function detectFilterType(value) {
 
 /**
  * Extract specified fields from an object, handling nested properties
+ * @param {object} item
+ * @param {Array<string>} fields
+ * @returns {object}
  */
 function extractFields(item, fields) {
   var result = {};
@@ -124,6 +133,9 @@ function extractFields(item, fields) {
 
 /**
  * Flatten data to 2D array format for Google Sheets
+ * @param {Array<object>} data - data to flatten
+ * @param {string[]} fields - field names to extract
+ * @returns {Array<Array<string>>} 2D array with headers and data rows
  */
 function flattenForSheetsOutput(data, fields) {
   if (!data || data.length === 0) {
@@ -160,8 +172,10 @@ function flattenForSheetsOutput(data, fields) {
  * @param {string} returnFields - Optional comma-separated field names (e.g. "id,name,count,parent")
  * @param {boolean} includeHeaders - Set to TRUE to include header row (default: FALSE)
  * @param {number} parentId - Optional parent category ID to filter by (0 for top-level categories)
+ * @returns {Array<Array<string>>} 2D array of category data
  * @customfunction
  */
+// eslint-disable-next-line no-unused-vars
 function getCategories(filter, returnFields, includeHeaders, parentId) {
   var options = {
     flattenForSheets: true,
@@ -183,8 +197,10 @@ function getCategories(filter, returnFields, includeHeaders, parentId) {
  * @param {string} filter - Optional filter by id, slug, or name
  * @param {string} returnFields - Optional comma-separated field names (e.g. "id,name,count")
  * @param {boolean} includeHeaders - Set to TRUE to include header row (default: FALSE)
+ * @returns {Array<Array<string>>} 2D array of tag data
  * @customfunction
  */
+// eslint-disable-next-line no-unused-vars
 function getTags(filter, returnFields, includeHeaders) {
   var options = {
     flattenForSheets: true,
@@ -205,8 +221,10 @@ function getTags(filter, returnFields, includeHeaders) {
  * @param {string} filter - Optional filter by id, slug, or name
  * @param {string} returnFields - Optional comma-separated field names (e.g. "id,title.rendered,link")
  * @param {boolean} includeHeaders - Set to TRUE to include header row (default: FALSE)
+ * @returns {Array<Array<string>>} 2D array of page data
  * @customfunction
  */
+// eslint-disable-next-line no-unused-vars
 function getPages(filter, returnFields, includeHeaders) {
   var options = {
     flattenForSheets: true,
@@ -225,10 +243,13 @@ function getPages(filter, returnFields, includeHeaders) {
  * Get WordPress posts
  * Default fields: id, name, slug, description, parent, status, count, link
  * @param {string} filter - Optional filter by id, slug, or name
- * @param {string} returnFields - Optional comma-separated field names (e.g. "id,title.rendered,date,categories")
+ * @param {string} returnFields - Optional comma-separated field names
+ *   (e.g. "id,title.rendered,date,categories")
  * @param {boolean} includeHeaders - Set to TRUE to include header row (default: FALSE)
+ * @returns {Array<Array<string>>} 2D array of post data
  * @customfunction
  */
+// eslint-disable-next-line no-unused-vars
 function getPosts(filter, returnFields, includeHeaders) {
   var options = {
     flattenForSheets: true,
@@ -250,8 +271,10 @@ function getPosts(filter, returnFields, includeHeaders) {
  * @param {string} filter - Optional filter by id, slug, or name
  * @param {string} returnFields - Optional comma-separated field names
  * @param {boolean} includeHeaders - Set to TRUE to include header row (default: FALSE)
+ * @returns {Array<Array<string>>} 2D array of WordPress data
  * @customfunction
  */
+// eslint-disable-next-line no-unused-vars
 function getWPData(endpoint, filter, returnFields, includeHeaders) {
   var options = {
     flattenForSheets: true,

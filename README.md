@@ -117,7 +117,7 @@ Add `&emfnDebug=true` to Action Pack URLs to request debug logging:
 .../start/action-pack/?actionPack=ap2.xyz123&emfnDebug=true
 ```
 
-Server-side PHP debug output only appears when `emfnDebug=true` **and** the user is logged in to WordPress.
+Server-side PHP debug output only appears when `emfnDebug=true` **and** the current user is a WordPress administrator or editor.
 
 **What Gets Logged:**
 - **Client-side JS (browser console):** Form values, category mappings, encoded payloads

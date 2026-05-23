@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Test script to prove commit-message-driven version bumping works correctly
 
-set -o pipefail
+set -euo pipefail
 
 echo "=== Testing Version Bump Logic ==="
 echo ""

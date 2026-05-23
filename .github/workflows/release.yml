@@ -5,11 +5,6 @@ on:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (e.g., 1.2.3). Leave empty to auto-increment.'
-        required: false
-        type: string
 
 permissions:
   contents: write
@@ -47,50 +42,51 @@ jobs:
       - name: Get next version
         id: version
         run: |
-          # Priority 1: Manual input from workflow_dispatch
-          if [[ -n "${{ inputs.version }}" ]]; then
-            VERSION="${{ inputs.version }}"
-            TAG="v${VERSION}"
-            echo "Using manually specified version: $VERSION"
+          # Get latest semver tag
+          LATEST=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | head -n1)
           
-          # Priority 2: Check if package.json has a version different from latest tag
-          elif [[ -f "package.json" ]]; then
-            PKG_VERSION=$(node -p "require('./package.json').version")
-            LATEST=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | head -n1)
-            LATEST_VERSION="${LATEST#v}"
-            
-            if [[ -n "$PKG_VERSION" && "$PKG_VERSION" != "$LATEST_VERSION" ]]; then
-              VERSION="$PKG_VERSION"
-              TAG="v${VERSION}"
-              echo "Using version from package.json: $VERSION"
-            else
-              # Priority 3: Auto-increment patch version
-              if [[ -z "$LATEST" ]]; then
-                TAG="v1.0.0"
-              else
-                MAJOR=$(echo "$LATEST" | sed 's/v\([0-9]*\).*/\1/')
-                MINOR=$(echo "$LATEST" | sed 's/v[0-9]*\.\([0-9]*\).*/\1/')
-                PATCH=$(echo "$LATEST" | sed 's/v[0-9]*\.[0-9]*\.\([0-9]*\)/\1/')
-                TAG="v${MAJOR}.${MINOR}.$((PATCH + 1))"
-              fi
-              VERSION="${TAG#v}"
-              echo "Auto-incrementing to: $VERSION"
-            fi
+          # Default to v1.0.0 if no tags exist
+          if [[ -z "$LATEST" ]]; then
+            TAG="v1.0.0"
+            VERSION="1.0.0"
+            echo "No existing tags, starting at: $VERSION"
           else
-            # Fallback: Auto-increment
-            LATEST=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | head -n1)
-            if [[ -z "$LATEST" ]]; then
-              TAG="v1.0.0"
+            # Parse current version
+            MAJOR=$(echo "$LATEST" | sed 's/v\([0-9]*\).*/\1/')
+            MINOR=$(echo "$LATEST" | sed 's/v[0-9]*\.\([0-9]*\).*/\1/')
+            PATCH=$(echo "$LATEST" | sed 's/v[0-9]*\.[0-9]*\.\([0-9]*\)/\1/')
+            
+            # Check commit message for version bump signals
+            COMMIT_MSG="${{ github.event.head_commit.message }}"
+            
+            if echo "$COMMIT_MSG" | grep -qiE '\[major\]|\bmajor\b'; then
+              # Major bump: x.0.0
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              BUMP_TYPE="major"
+            elif echo "$COMMIT_MSG" | grep -qiE '\[minor\]|\bminor\b'; then
+              # Minor bump: x.y.0
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              BUMP_TYPE="minor"
             else
-              MAJOR=$(echo "$LATEST" | sed 's/v\([0-9]*\).*/\1/')
-              MINOR=$(echo "$LATEST" | sed 's/v[0-9]*\.\([0-9]*\).*/\1/')
-              PATCH=$(echo "$LATEST" | sed 's/v[0-9]*\.[0-9]*\.\([0-9]*\)/\1/')
-              TAG="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+              # Default: patch bump x.y.z
+              PATCH=$((PATCH + 1))
+              BUMP_TYPE="patch"
             fi
-            VERSION="${TAG#v}"
-            echo "Auto-incrementing to: $VERSION"
+            
+            VERSION="${MAJOR}.${MINOR}.${PATCH}"
+            TAG="v${VERSION}"
+            echo "Bumping $BUMP_TYPE version from $LATEST to $TAG"
           fi
-
+          
+          # Validate tag doesn't already exist
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "ERROR: Tag $TAG already exists!"
+            exit 1
+          fi
+          
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 

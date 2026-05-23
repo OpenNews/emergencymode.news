@@ -154,7 +154,7 @@ $has_tier_tags = get_transient( 'emfn_ap_has_tiers' );
 if ( false === $has_tier_tags ) {
     $tier_count = wp_count_terms( array(
         'taxonomy' => 'post_tag',
-        'slug'     => array( 'tier-1', 'tier-2', 'tier-3' ),
+        'slug'     => array( 'resources-tier-1', 'resources-tier-2', 'resources-tier-3' ),
     ) );
     $has_tier_tags = is_array( $tier_count ) && ! empty( $tier_count );
     set_transient( 'emfn_ap_has_tiers', $has_tier_tags, DAY_IN_SECONDS );

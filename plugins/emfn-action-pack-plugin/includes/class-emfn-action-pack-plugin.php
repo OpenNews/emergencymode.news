@@ -101,20 +101,12 @@ class EMFN_Action_Pack_Plugin {
         add_action( 'pre_get_posts', array( $this, 'mark_action_pack_newspack_queries' ) );
         add_filter( 'posts_clauses', array( $this, 'apply_action_pack_category_scoring' ), 10, 2 );
         add_filter( 'editable_extensions', array( $this, 'allow_viewable_file_extensions' ), 10, 2 );
-        add_action( 'admin_head-plugin-editor.php', array( $this, 'make_csv_md_files_readonly' ) );
+        add_action( 'admin_head-plugin-editor.php', array( $this, 'make_md_files_readonly' ) );
         add_action( 'wp_footer', array( $this, 'render_action_pack_debug_script' ), 99 );
     }
 
     /**
      * Allow CSV and Markdown files to appear in the Plugin File Editor (read-only).
-     *
-     * These files will be viewable but not editable in the plugin editor.
-     * The readonly state is enforced via JavaScript injection on the editor page.
-     *
-     * Note: The `editable_extensions` filter receives the editor context
-     * ('plugins' or 'themes') as its second argument, not an individual plugin
-     * basename, so this addition applies to all plugins when the Plugin File
-     * Editor is active.
      *
      * @param array<int, string> $extensions Viewable file extensions.
      * @param string             $context    Editor context: 'plugins' or 'themes'.
@@ -136,57 +128,33 @@ class EMFN_Action_Pack_Plugin {
     }
 
     /**
-     * Make CSV and Markdown files read-only in the Plugin File Editor.
+     * Prevent direct editing of Markdown data files.
      *
-     * Injects JavaScript and CSS to disable editing of these file types.
-     * Changes are prevented from being saved.
+     * Blocks access to this plugin's data files via the WordPress file editor
+     * using server-side enforcement that cannot be bypassed by disabling JavaScript.
      *
      * @return void
      */
-    public function make_csv_md_files_readonly() {
+    public function make_md_files_readonly() {
         global $file;
 
-        // Only apply to CSV and MD files
-        if ( ! isset( $file ) || ! preg_match( '/\.(csv|md)$/', $file ) ) {
+        if ( ! isset( $file ) ) {
             return;
         }
 
-        // Get the current filename from the file path
-        $filename = basename( $file );
+        // Only protect THIS plugin's data files, not global file editor
+        if ( false === strpos( $file, 'emfn-action-pack-plugin/assets/data' ) ) {
+            return;
+        }
 
-        // Inject CSS to disable the editor and hide the save button
-        ?>
-        <style>
-            #template textarea {
-                opacity: 0.6;
-                cursor: not-allowed;
-            }
-            #submit,
-            .submit {
-                display: none;
-            }
-            #template::before {
-                content: 'This file is read-only and cannot be edited.';
-                display: block;
-                padding: 10px;
-                background-color: #fff8e5;
-                border-left: 4px solid #ffb900;
-                margin-bottom: 10px;
-                color: #333;
-            }
-        </style>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const textarea = document.querySelector('#template textarea');
-                if (textarea) {
-                    textarea.setAttribute('readonly', 'readonly');
-                    textarea.style.opacity = '0.6';
-                    textarea.style.cursor = 'not-allowed';
-                    textarea.style.backgroundColor = '#f5f5f5';
-                }
-            });
-        </script>
-        <?php
+        // Block attempts to edit data files
+        if ( preg_match( '/\.(md)$/', $file ) ) {
+            wp_die(
+                esc_html__( 'Markdown should be maintained in GitHub.', 'emfn-action-pack-plugin' ),
+                esc_html__( 'File Protected', 'emfn-action-pack-plugin' ),
+                array( 'response' => 403 )
+            );
+        }
     }
 
     /**
@@ -295,12 +263,14 @@ class EMFN_Action_Pack_Plugin {
     /**
      * Return whether Action Pack debug output is enabled for the current request.
      *
+     * Debug output is restricted to WordPress administrators and editors only.
+     *
      * @return bool
      */
     private function is_action_pack_debug_enabled() {
         $debug_flag = isset( $_GET['emfnDebug'] ) ? strtolower( trim( wp_unslash( (string) $_GET['emfnDebug'] ) ) ) : '';
 
-        return 'true' === $debug_flag && is_user_logged_in();
+        return 'true' === $debug_flag && ( current_user_can( 'manage_options' ) || current_user_can( 'edit_pages' ) );
     }
 
     /**
@@ -426,7 +396,7 @@ class EMFN_Action_Pack_Plugin {
      * Apply smart category scoring to Action Pack queries.
      * 
      * Scoring strategy:
-     * - Tier tags (tier-1, tier-2, etc.): editorial quality ranking
+     * - Tier tags (resources-tier-1, resources-tier-2, etc.): editorial quality
      * - Category weight (from term order): user's priority
      * - Scarcity bonus: high-weight category + few posts = rare/specific match
      * - Multi-category bonus: posts matching multiple user categories
@@ -509,29 +479,30 @@ class EMFN_Action_Pack_Plugin {
 
         $score_sql = $this->action_pack_scoring_cache['score_sql'];
 
-        // Tier-based scoring (tier-1 = best, tier-2 = good, tier-3 = acceptable, etc.)
-        // Posts without tier tags get score of 1 (lowest priority)
+        // Tier-based scoring 
+        // (resources-tier-1 = best, resources-tier-2 = good, resources-tier-3 = acceptable, etc.)
+        // Posts without tier Tags get score of 1 (lowest priority)
         // Aggregate tier data in a subquery so the main query still has only one category row per relationship.
-        $tier_score_subquery = "
+        $tier_score_subquery = $wpdb->prepare( "
             SELECT
                 ap_tier_tr.object_id,
                 MAX(
                     CASE
-                        WHEN ap_tier_terms.slug = 'tier-1' THEN 1000
-                        WHEN ap_tier_terms.slug = 'tier-2' THEN 100
-                        WHEN ap_tier_terms.slug = 'tier-3' THEN 10
+                        WHEN ap_tier_terms.slug = %s THEN 1000
+                        WHEN ap_tier_terms.slug = %s THEN 100
+                        WHEN ap_tier_terms.slug = %s THEN 10
                         ELSE 1
                     END
                 ) AS tier_score
             FROM {$wpdb->term_relationships} AS ap_tier_tr
             INNER JOIN {$wpdb->term_taxonomy} AS ap_tier_tt
                 ON ap_tier_tr.term_taxonomy_id = ap_tier_tt.term_taxonomy_id
-                AND ap_tier_tt.taxonomy = 'post_tag'
+                AND ap_tier_tt.taxonomy = %s
             INNER JOIN {$wpdb->terms} AS ap_tier_terms
                 ON ap_tier_tt.term_id = ap_tier_terms.term_id
-                AND ap_tier_terms.slug LIKE 'tier-%'
+                AND ap_tier_terms.slug LIKE %s
             GROUP BY ap_tier_tr.object_id
-        ";
+        ", 'resources-tier-1', 'resources-tier-2', 'resources-tier-3', 'post_tag', 'resources-tier-%' );
 
         // Join category relationships
         $clauses['join'] .= " LEFT JOIN {$wpdb->term_relationships} AS ap_cat_tr ON {$wpdb->posts}.ID = ap_cat_tr.object_id";
@@ -664,84 +635,114 @@ class EMFN_Action_Pack_Plugin {
 
     /**
      * Load the Action Pack category ID order from the tall category CSV.
+     * Includes file size validation and error logging for production debugging.
      *
      * @return array<int, int> Category ID order for decoding bit positions
      */
     public function load_tall_category_csv() {
+        // Check transient cache first for 24-hour caching
+        $cached = get_transient( 'emfn_action_pack_category_order' );
+        if ( ! empty( $cached ) && is_array( $cached ) ) {
+            return $cached;
+        }
+
         $csv_path = EMFN_ACTION_PACK_PLUGIN_DIR . 'assets/data/_tallCategories.csv';
 
-        if ( ! file_exists( $csv_path ) || ! is_readable( $csv_path ) ) {
+        // Check file exists and is readable
+        if ( ! file_exists( $csv_path ) ) {
+            error_log( 'EMFN Action Pack: CSV file not found at ' . $csv_path );
             return array();
         }
 
-        $handle = fopen( $csv_path, 'r' );
+        if ( ! is_readable( $csv_path ) ) {
+            error_log( 'EMFN Action Pack: CSV file not readable at ' . $csv_path );
+            return array();
+        }
+
+        // Validate file size to prevent loading huge files (max 5MB)
+        $file_size = @filesize( $csv_path );
+        if ( false === $file_size || $file_size > 5 * 1024 * 1024 ) {
+            error_log( 'EMFN Action Pack: CSV file exceeds maximum size (size: ' . ( $file_size ?: 'unknown' ) . ' bytes)' );
+            return array();
+        }
+
+        // Open file with error suppression to avoid warnings
+        $handle = @fopen( $csv_path, 'r' );
         if ( false === $handle ) {
+            error_log( 'EMFN Action Pack: Failed to open CSV file at ' . $csv_path );
             return array();
         }
 
-        $header = fgetcsv( $handle );
-        if ( ! is_array( $header ) ) {
-            fclose( $handle );
-            return array();
-        }
-
-        $normalized_header = array_map(
-            static function ( $value ) {
-                return trim( strtolower( (string) $value ) );
-            },
-            $header
-        );
-
-        $cat_id_index      = array_search( 'catid', $normalized_header, true );
-        $manual_rank_index = array_search( 'manualrank', $normalized_header, true );
-
-        if ( false === $cat_id_index || false === $manual_rank_index ) {
-            fclose( $handle );
-            return array();
-        }
-
-        $cat_id_ranks     = array();
-        $cat_id_positions = array();
-        $cat_id_order     = array();
-
-        while ( false !== ( $row = fgetcsv( $handle ) ) ) {
-            $cat_id = isset( $row[ $cat_id_index ] )
-                ? (int) trim( (string) $row[ $cat_id_index ] )
-                : 0;
-            $manual_rank = isset( $row[ $manual_rank_index ] )
-                ? (int) trim( (string) $row[ $manual_rank_index ] )
-                : 0;
-
-            if ( 0 === $cat_id ) {
-                continue;
+        // Use try-finally to ensure file is closed even if error occurs
+        try {
+            $header = fgetcsv( $handle );
+            if ( ! is_array( $header ) || empty( $header ) ) {
+                error_log( 'EMFN Action Pack: Invalid or empty CSV header' );
+                return array();
             }
 
-            if ( ! array_key_exists( $cat_id, $cat_id_ranks ) ) {
-                $cat_id_positions[ $cat_id ] = count( $cat_id_order );
-                $cat_id_order[]              = $cat_id;
-                $cat_id_ranks[ $cat_id ]     = $manual_rank;
-            } else {
-                $cat_id_ranks[ $cat_id ] = max( $cat_id_ranks[ $cat_id ], $manual_rank );
+            $normalized_header = array_map(
+                static function ( $value ) {
+                    return trim( strtolower( (string) $value ) );
+                },
+                $header
+            );
+
+            $cat_id_index      = array_search( 'catid', $normalized_header, true );
+            $manual_rank_index = array_search( 'manualrank', $normalized_header, true );
+
+            if ( false === $cat_id_index || false === $manual_rank_index ) {
+                error_log( 'EMFN Action Pack: CSV header missing required columns (catid, manualrank)' );
+                return array();
             }
-        }
 
-        fclose( $handle );
+            $cat_id_ranks     = array();
+            $cat_id_positions = array();
+            $cat_id_order     = array();
 
-        usort(
-            $cat_id_order,
-            static function ( $left, $right ) use ( $cat_id_ranks, $cat_id_positions ) {
-                $left_rank  = $cat_id_ranks[ $left ] ?? 0;
-                $right_rank = $cat_id_ranks[ $right ] ?? 0;
+            while ( false !== ( $row = fgetcsv( $handle ) ) ) {
+                $cat_id = isset( $row[ $cat_id_index ] )
+                    ? (int) trim( (string) $row[ $cat_id_index ] )
+                    : 0;
+                $manual_rank = isset( $row[ $manual_rank_index ] )
+                    ? (int) trim( (string) $row[ $manual_rank_index ] )
+                    : 0;
 
-                if ( $left_rank !== $right_rank ) {
-                    return $right_rank <=> $left_rank;
+                if ( 0 === $cat_id ) {
+                    continue;
                 }
 
-                return ( $cat_id_positions[ $left ] ?? 0 ) <=> ( $cat_id_positions[ $right ] ?? 0 );
+                if ( ! array_key_exists( $cat_id, $cat_id_ranks ) ) {
+                    $cat_id_positions[ $cat_id ] = count( $cat_id_order );
+                    $cat_id_order[]              = $cat_id;
+                    $cat_id_ranks[ $cat_id ]     = $manual_rank;
+                } else {
+                    $cat_id_ranks[ $cat_id ] = max( $cat_id_ranks[ $cat_id ], $manual_rank );
+                }
             }
-        );
 
-        return $cat_id_order;
+            usort(
+                $cat_id_order,
+                static function ( $left, $right ) use ( $cat_id_ranks, $cat_id_positions ) {
+                    $left_rank  = $cat_id_ranks[ $left ] ?? 0;
+                    $right_rank = $cat_id_ranks[ $right ] ?? 0;
+
+                    if ( $left_rank !== $right_rank ) {
+                        return $right_rank <=> $left_rank;
+                    }
+
+                    return ( $cat_id_positions[ $left ] ?? 0 ) <=> ( $cat_id_positions[ $right ] ?? 0 );
+                }
+            );
+
+            // Cache the result for 24 hours
+            set_transient( 'emfn_action_pack_category_order', $cat_id_order, DAY_IN_SECONDS );
+
+            return $cat_id_order;
+
+        } finally {
+            @fclose( $handle );
+        }
     }
 
     /**

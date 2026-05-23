@@ -28,7 +28,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install uv
         run: pip install uv
@@ -75,7 +75,7 @@ jobs:
           git add package.json package-lock.json pyproject.toml uv.lock \
             plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php \
             plugins/emfn-action-pack-plugin/readme.txt
-          
+
           # Only commit and push if there are actual changes
           if ! git diff --cached --quiet; then
             git commit -m "Release ${{ steps.version.outputs.version }}"

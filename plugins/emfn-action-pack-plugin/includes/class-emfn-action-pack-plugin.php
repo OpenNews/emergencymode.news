@@ -641,7 +641,9 @@ class EMFN_Action_Pack_Plugin {
      */
     public function load_tall_category_csv() {
         // Check transient cache first for 24-hour caching
-        $cached = get_transient( 'emfn_action_pack_category_order' );
+        // Cache key includes plugin version to invalidate when CSV updates via plugin release
+        $cache_key = 'emfn_action_pack_category_order_' . EMFN_ACTION_PACK_PLUGIN_VERSION;
+        $cached = get_transient( $cache_key );
         if ( ! empty( $cached ) && is_array( $cached ) ) {
             return $cached;
         }
@@ -650,26 +652,34 @@ class EMFN_Action_Pack_Plugin {
 
         // Check file exists and is readable
         if ( ! file_exists( $csv_path ) ) {
-            error_log( 'EMFN Action Pack: CSV file not found at ' . $csv_path );
+            if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                error_log( 'EMFN Action Pack: CSV file not found at ' . $csv_path );
+            }
             return array();
         }
 
         if ( ! is_readable( $csv_path ) ) {
-            error_log( 'EMFN Action Pack: CSV file not readable at ' . $csv_path );
+            if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                error_log( 'EMFN Action Pack: CSV file not readable at ' . $csv_path );
+            }
             return array();
         }
 
         // Validate file size to prevent loading huge files (max 5MB)
         $file_size = @filesize( $csv_path );
         if ( false === $file_size || $file_size > 5 * 1024 * 1024 ) {
-            error_log( 'EMFN Action Pack: CSV file exceeds maximum size (size: ' . ( $file_size ?: 'unknown' ) . ' bytes)' );
+            if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                error_log( 'EMFN Action Pack: CSV file exceeds maximum size (size: ' . ( $file_size ?: 'unknown' ) . ' bytes)' );
+            }
             return array();
         }
 
         // Open file with error suppression to avoid warnings
         $handle = @fopen( $csv_path, 'r' );
         if ( false === $handle ) {
-            error_log( 'EMFN Action Pack: Failed to open CSV file at ' . $csv_path );
+            if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                error_log( 'EMFN Action Pack: Failed to open CSV file at ' . $csv_path );
+            }
             return array();
         }
 
@@ -677,7 +687,9 @@ class EMFN_Action_Pack_Plugin {
         try {
             $header = fgetcsv( $handle );
             if ( ! is_array( $header ) || empty( $header ) ) {
-                error_log( 'EMFN Action Pack: Invalid or empty CSV header' );
+                if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                    error_log( 'EMFN Action Pack: Invalid or empty CSV header' );
+                }
                 return array();
             }
 
@@ -692,7 +704,9 @@ class EMFN_Action_Pack_Plugin {
             $manual_rank_index = array_search( 'manualrank', $normalized_header, true );
 
             if ( false === $cat_id_index || false === $manual_rank_index ) {
-                error_log( 'EMFN Action Pack: CSV header missing required columns (catid, manualrank)' );
+                if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+                    error_log( 'EMFN Action Pack: CSV header missing required columns (catid, manualrank)' );
+                }
                 return array();
             }
 
@@ -736,7 +750,7 @@ class EMFN_Action_Pack_Plugin {
             );
 
             // Cache the result for 24 hours
-            set_transient( 'emfn_action_pack_category_order', $cat_id_order, DAY_IN_SECONDS );
+            set_transient( $cache_key, $cat_id_order, DAY_IN_SECONDS );
 
             return $cat_id_order;
 

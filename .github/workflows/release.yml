@@ -68,6 +68,23 @@ jobs:
       - name: Format updated files
         run: npx prettier --write package.json package-lock.json
 
+      - name: Commit version changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json pyproject.toml uv.lock \
+            plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php \
+            plugins/emfn-action-pack-plugin/readme.txt
+          
+          # Only commit and push if there are actual changes
+          if ! git diff --cached --quiet; then
+            git commit -m "Release ${{ steps.version.outputs.version }}"
+            git pull --rebase origin main
+            git push
+          else
+            echo "No version changes to commit"
+          fi
+
       - name: Build release assets
         run: ./scripts/build-release-assets.sh "${{ steps.version.outputs.version }}" dist
 
@@ -88,20 +105,3 @@ jobs:
           git push origin latest --force
           git tag -f "v${MAJOR}"
           git push origin "v${MAJOR}" --force
-
-      - name: Commit version changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json pyproject.toml uv.lock \
-            plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php \
-            plugins/emfn-action-pack-plugin/readme.txt
-          
-          # Only commit and push if there are actual changes
-          if ! git diff --cached --quiet; then
-            git commit -m "Release ${{ steps.version.outputs.version }}"
-            git pull --rebase origin main
-            git push
-          else
-            echo "No version changes to commit"
-          fi

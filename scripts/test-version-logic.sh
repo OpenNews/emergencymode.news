@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Test script to prove commit-message-driven version bumping works correctly
 
-set -o pipefail
+set -euo pipefail
 
 echo "=== Testing Version Bump Logic ==="
 echo ""
@@ -57,26 +57,26 @@ failed=0
 passed=0
 
 # Test: Starting from no tags
-if run_test "~EMPTY~" "First commit" "1.0.0"; then ((passed++)); else ((failed++)); fi
+if run_test "~EMPTY~" "First commit" "1.0.0"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
 
 # Test: Patch bumps (default)
-if run_test "v1.0.0" "Fix bug in data processing" "1.0.1"; then ((passed++)); else ((failed++)); fi
-if run_test "v1.2.5" "Update dependencies" "1.2.6"; then ((passed++)); else ((failed++)); fi
-if run_test "v2.3.10" "Refactor utility functions" "2.3.11"; then ((passed++)); else ((failed++)); fi
+if run_test "v1.0.0" "Fix bug in data processing" "1.0.1"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
+if run_test "v1.2.5" "Update dependencies" "1.2.6"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
+if run_test "v2.3.10" "Refactor utility functions" "2.3.11"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
 
 # Test: Minor bumps (explicit)
-if run_test "v1.0.0" "[minor] Add new export feature" "1.1.0"; then ((passed++)); else ((failed++)); fi
-if run_test "v1.5.9" "Add minor analytics tracking" "1.6.0"; then ((passed++)); else ((failed++)); fi
-if run_test "v2.3.5" "This is a minor update to the API" "2.4.0"; then ((passed++)); else ((failed++)); fi
+if run_test "v1.0.0" "[minor] Add new export feature" "1.1.0"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
+if run_test "v1.5.9" "Add minor analytics tracking" "1.6.0"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
+if run_test "v2.3.5" "This is a minor update to the API" "2.4.0"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
 
 # Test: Major bumps (explicit)
-if run_test "v1.0.0" "[major] Breaking API changes" "2.0.0"; then ((passed++)); else ((failed++)); fi
-if run_test "v1.9.15" "major refactor of data model" "2.0.0"; then ((passed++)); else ((failed++)); fi
-if run_test "v5.2.8" "MAJOR: Complete rewrite" "6.0.0"; then ((passed++)); else ((failed++)); fi
+if run_test "v1.0.0" "[major] Breaking API changes" "2.0.0"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
+if run_test "v1.9.15" "major refactor of data model" "2.0.0"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
+if run_test "v5.2.8" "MAJOR: Complete rewrite" "6.0.0"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
 
 # Test: Tags with suffixes (ensure they parse correctly)
-if run_test "v1.2.3-rc1" "Fix bug" "1.2.4"; then ((passed++)); else ((failed++)); fi
-if run_test "v2.0.0-beta" "[minor] New feature" "2.1.0"; then ((passed++)); else ((failed++)); fi
+if run_test "v1.2.3-rc1" "Fix bug" "1.2.4"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
+if run_test "v2.0.0-beta" "[minor] New feature" "2.1.0"; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
 
 echo ""
 echo "=== Results ==="

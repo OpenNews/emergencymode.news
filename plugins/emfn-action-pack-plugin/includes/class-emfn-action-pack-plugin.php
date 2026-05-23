@@ -211,7 +211,7 @@ class EMFN_Action_Pack_Plugin {
         }
 
         $has_action_pack_param = null !== $this->get_action_pack_payload_from_request();
-        $has_mode_param        = isset( $_GET['mode'] ) && '' !== $_GET['mode'];
+        $has_mode_param        = ! empty( wp_unslash( $_GET['mode'] ?? '' ) );
 
         $this->is_action_pack_page_request = $has_action_pack_param || $has_mode_param;
 

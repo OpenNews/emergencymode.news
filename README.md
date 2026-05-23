@@ -202,7 +202,7 @@ Here's where the algorithm prevents your highest-weighted category from dominati
 
 **Why this matters:** Imagine your quiz strongly matches "Staff safety" (which might have 8 articles) and moderately matches "Field reporting" (which has only 3 articles). Without scarcity balancing, you'd see mostly staff safety content. The multiplier boosts the field reporting articles so they appear alongside staff safety pieces, giving you **topical diversity** instead of redundancy.
 
-**For _A LOT_ more on content strategy growth and query opitimization, see [/data/_tallCategoriesREADME](/plugins/emfn-action-pack-plugin/assets/data/_tallCategoriesREADME.md)**
+**For _A LOT_ more on content strategy growth and query optimization, see [/data/_tallCategoriesREADME](/plugins/emfn-action-pack-plugin/assets/data/_tallCategoriesREADME.md)**
 
 ### Risk data flow
 

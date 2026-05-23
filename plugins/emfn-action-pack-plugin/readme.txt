@@ -47,5 +47,7 @@ version requirement—it simply reacts to the version that is active in the site
 
 == Changelog ==
 
+= Releases =
+
 * GitHub drives release versions and history
 * Please see GitHub: https://github.com/OpenNews/emergencymode.news/releases

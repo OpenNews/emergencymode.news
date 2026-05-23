@@ -12,14 +12,14 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || github.event.head_commit.author.name != 'github-actions[bot]'
+    if: github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[skip ci]')
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -42,56 +42,18 @@ jobs:
 
       - name: Get next version
         id: version
-        env:
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          # Get latest semver tag (strict x.y.z format only, no suffixes)
-          LATEST=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
-
-          # If no tags exist yet, derive the starting version from package.json
+          LATEST=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | head -n1)
           if [[ -z "$LATEST" ]]; then
-            VERSION=$(node -p "require('./package.json').version")
-            if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-              echo "ERROR: package.json version '$VERSION' is not a valid x.y.z semver version"
-              exit 1
-            fi
-            TAG="v${VERSION}"
-            echo "No existing tags, starting from package.json version: $VERSION"
+            TAG="v1.0.0"
           else
-            # Parse current version (strip everything after the digits)
-            MAJOR=$(echo "$LATEST" | sed 's/v\([0-9]*\)\..*/\1/')
-            MINOR=$(echo "$LATEST" | sed 's/v[0-9]*\.\([0-9]*\)\..*/\1/')
-            PATCH=$(echo "$LATEST" | sed 's/v[0-9]*\.[0-9]*\.\([0-9]*\).*/\1/')
-            
-            # Check commit message for version bump signals (via env var to avoid injection)
-            if echo "$COMMIT_MESSAGE" | grep -qiE '\[major\]|(^|[^[:alnum:]_])major([^[:alnum:]_]|$)'; then
-              # Major bump: x.0.0
-              MAJOR=$((MAJOR + 1))
-              MINOR=0
-              PATCH=0
-              BUMP_TYPE="major"
-            elif echo "$COMMIT_MESSAGE" | grep -qiE '\[minor\]|(^|[^[:alnum:]_])minor([^[:alnum:]_]|$)'; then
-              # Minor bump: x.y.0
-              MINOR=$((MINOR + 1))
-              PATCH=0
-              BUMP_TYPE="minor"
-            else
-              # Default: patch bump x.y.z
-              PATCH=$((PATCH + 1))
-              BUMP_TYPE="patch"
-            fi
-            
-            VERSION="${MAJOR}.${MINOR}.${PATCH}"
-            TAG="v${VERSION}"
-            echo "Bumping $BUMP_TYPE version from $LATEST to $TAG"
+            MAJOR=$(echo "$LATEST" | sed 's/v\([0-9]*\).*/\1/')
+            MINOR=$(echo "$LATEST" | sed 's/v[0-9]*\.\([0-9]*\).*/\1/')
+            PATCH=$(echo "$LATEST" | sed 's/v[0-9]*\.[0-9]*\.\([0-9]*\)/\1/')
+            TAG="v${MAJOR}.${MINOR}.$((PATCH + 1))"
           fi
 
-          # Validate tag doesn't already exist
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "ERROR: Tag $TAG already exists!"
-            exit 1
-          fi
-
+          VERSION="${TAG#v}"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
@@ -117,7 +79,7 @@ jobs:
 
           # Only commit and push if there are actual changes
           if ! git diff --cached --quiet; then
-            git commit -m "chore: Release ${{ steps.version.outputs.version }} [skip ci]"
+            git commit -m "Release ${{ steps.version.outputs.version }} [skip ci]"
             git pull --rebase origin main
             git push
           else

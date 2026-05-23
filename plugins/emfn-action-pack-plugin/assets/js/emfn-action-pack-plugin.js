@@ -965,7 +965,6 @@ if (assessmentSection || hasForm || hasModeParam) {
   SubmissionHashing.initializeSubmissionHandling();
 
   if (!isGeoFeaturesActivated) {
-    // eslint-disable-next-line no-useless-assignment
     isGeoFeaturesActivated = true;
 
     // this must be a document-level binding

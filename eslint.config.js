@@ -41,6 +41,7 @@ export default [
       "no-unused-vars": "warn",
       "no-undef": "error",
       "no-console": "off", // Allow console in WordPress context
+      "no-useless-assignment": "off", // Allow assignments for side effects/debugging
     },
   },
   {

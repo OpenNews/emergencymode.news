@@ -47,10 +47,5 @@ version requirement—it simply reacts to the version that is active in the site
 
 == Changelog ==
 
-= 0.0.3 =
-* See GitHub release notes for this version
-
-= 0.0.2 =
-* See GitHub release notes for this version
-
+* GitHub drives release versions and history
 * Please see GitHub: https://github.com/OpenNews/emergencymode.news/releases

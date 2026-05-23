@@ -18,7 +18,12 @@ run_test() {
   else
     MAJOR=$(echo "$LATEST" | sed 's/v\([0-9]*\).*/\1/')
     MINOR=$(echo "$LATEST" | sed 's/v[0-9]*\.\([0-9]*\).*/\1/')
-    PATCH=$(echo "$LATEST" | sed 's/v[0-9]*\.[0-9]*\.\([0-9]*\)/\1/')
+    PATCH=$(echo "$LATEST" | sed 's/v[0-9]*\.[0-9]*\.\([0-9]*\).*/\1/')
+    
+    if ! [[ "$MAJOR" =~ ^[0-9]+$ && "$MINOR" =~ ^[0-9]+$ && "$PATCH" =~ ^[0-9]+$ ]]; then
+      printf "✗ FAIL: %8s + '%-40s' → Invalid version tag format\n" "$LATEST" "${COMMIT_MSG:0:40}"
+      return 1
+    fi
     
     if echo "$COMMIT_MSG" | grep -qiE '\[major\]|\bmajor\b'; then
       MAJOR=$((MAJOR + 1))

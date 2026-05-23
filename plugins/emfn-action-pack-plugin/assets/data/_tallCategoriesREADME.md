@@ -86,7 +86,7 @@ For developers maintaining the algorithm:
 
 ### Small Dataset Safeguards
 
-- `get_terms()` checks for empty arrays before calling `max()` to avoid PHP warnings
+- `wp_count_terms()` checks for empty arrays before calling `max()` to avoid PHP warnings
 - Empty categories default to scarcity multiplier of 1.0 (weight-only scoring)
 - Posts without tier tags receive score of 1 (lowest priority)
 - GROUP BY ensures each post scored once even with multiple category/tag joins

@@ -293,6 +293,38 @@ sudo apt-get install -y shellcheck  # Takes ~1-2 seconds
 
 ---
 
+### 12. Always Verify Package Registry Currency
+
+**THE TRAP**: Adding devcontainer features or packages without checking if they're maintained/deprecated.
+
+**What Happened**:
+- Initially added `ghcr.io/devcontainers-contrib/features/shellcheck:1`
+- User pointed out `devcontainers-contrib` is discontinued
+- Changed to `ghcr.io/devcontainers-extra/features/shellcheck:1`
+- But then realized the best solution was simpler: `apt-get install shellcheck`
+
+**Why This Matters**:
+- Devcontainer features can be unmaintained, deprecated, or moved to new registries
+- Package managers change over time (contrib → extra → ???)
+- Simple solutions (apt-get) often outlast complex ones (custom features)
+- No need to track registry migrations when using system packages
+
+**Better Decision Process**:
+1. **Check if tool is in debian/ubuntu apt repos** (start here)
+2. **Verify devcontainer feature is actively maintained** (check last commit date)
+3. **Prefer official features over community ones** (`ghcr.io/devcontainers/features/*`)
+4. **Document why complex solution chosen** (if not using apt-get)
+
+**For Our Devcontainer**:
+- ✅ Node.js: Complex enough to justify official devcontainer feature
+- ✅ PHP 8.3 with Composer: Complex setup, official feature available
+- ✅ Shellcheck: Simple binary, use `apt-get install shellcheck`
+- ✅ GitHub CLI: Simple binary, use `apt-get install gh`
+
+**Lesson**: Start with the simplest solution. Only reach for devcontainer features when system packages are insufficient. Always verify registry/feature is actively maintained before adding.
+
+---
+
 ## 🛠️ Development Workflow Best Practices
 
 ### Before Committing

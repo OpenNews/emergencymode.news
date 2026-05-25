@@ -484,7 +484,7 @@ body.parent-pageid-284 .entry-header {
 .big-button > a {
   border-radius: 16px;
   border-color: rgba(255, 255, 255, 0.2) !important;
-  padding: 36px 48px !important;
+  padding: 30px 30px !important;
   box-shadow:
     rgb(0, 0, 0) 0px 0px 0px 0px,
     rgba(0, 0, 0, 0.95) 0px 0px 0px 1px;
@@ -495,12 +495,15 @@ body.parent-pageid-284 .entry-header {
   transition-timing-function: var(--transition-timing);
 }
 .big-button > a > .material-symbols-outlined {
-  padding-bottom: 16px;
+  padding-bottom: 0px;
   width: 50px;
+}
+.big-button > a > .wp-element-button {
+  background-color: transparent !important;
+  padding: calc(0.667em + 2px) 0px;
 }
 .big-button > a > small {
   display: block;
-  padding-top: 16px !important;
 }
 .big-button:hover > a:hover {
   background-color: #ffffff30 !important;

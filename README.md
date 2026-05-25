@@ -379,28 +379,30 @@ Dependabot PRs can be auto-merged after CI passes, enabling frequent maintenance
 
 On every push to `main`, `.github/workflows/release.yml` executes:
 
-1. **Lint checks:** Runs `npm run lint` (Prettier + notebook cleanliness)
-2. **Version increment:** Computes next patch version tag (e.g., `v1.0.0` → `v1.0.1`)
-3. **Version sync:** Updates all version references via `scripts/sync-release-version.sh`:
+1. **Lint checks:** Runs `npm run lint` (Prettier, ESLint, shellcheck, notebook cleanliness)
+2. **Test execution:** Runs `npm run test:all` (JavaScript, PHP, shell script tests)
+3. **Version increment:** Computes next patch version tag (e.g., `v1.0.0` → `v1.0.1`)
+4. **Version sync:** Updates all version references via `scripts/sync-release-version.sh`:
    - `package.json` version
    - `pyproject.toml` version
    - Plugin PHP headers (`Version:` field)
    - Plugin PHP constants (`EMFN_*_PLUGIN_VERSION`)
    - Plugin `readme.txt` stable tags
    - Plugin `readme.txt` changelog entries
-4. **Commit sync:** Pushes version updates back to `main` as a bot commit
-5. **Build assets:** Creates plugin ZIP files via `scripts/build-release-assets.sh`
-6. **GitHub Release:** Publishes release with auto-generated notes and ZIP attachments
-7. **Tag updates:** Maintains floating `latest` and `vX` tags
+5. **Commit sync:** Pushes version updates back to `main` as a bot commit
+6. **Build assets:** Creates plugin ZIP files via `scripts/build-release-assets.sh`
+7. **GitHub Release:** Publishes release with auto-generated notes and ZIP attachments
+8. **Tag updates:** Maintains floating `latest` and `vX` tags
 
 **Infinite loop prevention:** The workflow skips when the latest commit is already a version sync, preventing recursive triggers.
 
 **Developer workflow benefits:**
 - Merge PR → automatic version bump and release
 - No manual version file editing
+- Tests run automatically before release
 - Consistent versioning across all files
 - Release notes auto-generated from commit history
-- Suitable for Dependabot auto-merge after testing
+- Safe for Dependabot auto-merge after CI passes
 
 ## Deployment
 

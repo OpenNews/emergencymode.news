@@ -8,7 +8,8 @@
     "ghcr.io/devcontainers/features/php:1": {
       "version": "8.3",
       "installComposer": true
-    }
+    },
+    "ghcr.io/devcontainers-contrib/features/shellcheck:1": {}
   },
   "updateRemoteUserUID": false,
   "customizations": {

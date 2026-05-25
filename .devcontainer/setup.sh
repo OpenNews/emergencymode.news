@@ -6,10 +6,23 @@ set -e
 # .sha256 assets in the same GitHub release tag.
 UV_VERSION="0.5.10"
 
-# Install GitHub CLI if needed
+# Install system packages (shellcheck, GitHub CLI) if needed
+NEEDS_APT_UPDATE=0
+if ! command -v shellcheck >/dev/null 2>&1; then
+  NEEDS_APT_UPDATE=1
+fi
 if ! command -v gh >/dev/null 2>&1; then
+  NEEDS_APT_UPDATE=1
+fi
+
+if [[ "$NEEDS_APT_UPDATE" -eq 1 ]]; then
   sudo apt-get update
-  sudo apt-get install -y gh
+  if ! command -v shellcheck >/dev/null 2>&1; then
+    sudo apt-get install -y shellcheck
+  fi
+  if ! command -v gh >/dev/null 2>&1; then
+    sudo apt-get install -y gh
+  fi
 fi
 
 # Install uv in user space if missing or version does not match UV_VERSION

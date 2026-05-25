@@ -76,6 +76,10 @@
   "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
 
   // PHP: point validator to the installed CLI executable
-  "php.validate.executablePath": "/usr/bin/php",
+  "php.validate.executablePath": "/usr/local/php/current/bin/php",
+
+  // PHP: include WordPress stubs for IntelliSense
+  "php.stubs": ["*", "wordpress"],
+
   "remote.autoForwardPortsFallback": 0
 }

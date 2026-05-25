@@ -2,15 +2,109 @@
 
 set -euo pipefail
 
-if [[ $# -ne 1 ]]; then
-  echo "Usage: $0 <version>" >&2
+# Parse arguments
+FORCE_MODE=0
+version=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --force)
+      FORCE_MODE=1
+      shift
+      ;;
+    *)
+      if [[ -z "$version" ]]; then
+        version="$1"
+      else
+        echo "Error: Unexpected argument '$1'" >&2
+        echo "Usage: $0 [--force] <version>" >&2
+        exit 1
+      fi
+      shift
+      ;;
+  esac
+done
+
+# Safeguard: Check version isn't too far ahead of latest GitHub release
+# Skip check if:
+# - Running in GitHub Actions workflow (CI deployment)
+# - --force flag passed (manual version history fixes)
+if [[ "$FORCE_MODE" -eq 0 && -z "${GITHUB_ACTIONS:-}" ]]; then
+  echo "Checking version against latest GitHub release..." >&2
+  
+  # Try to get latest release tag from GitHub
+  latest_release=""
+  if command -v gh >/dev/null 2>&1; then
+    latest_release=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")
+  fi
+  
+  if [[ -n "$latest_release" ]]; then
+    # Strip 'v' prefix if present
+    latest_release="${latest_release#v}"
+    
+    # Parse latest release version
+    if [[ "$latest_release" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+      latest_major="${BASH_REMATCH[1]}"
+      # shellcheck disable=SC2034
+      latest_minor="${BASH_REMATCH[2]}"
+      # shellcheck disable=SC2034
+      latest_patch="${BASH_REMATCH[3]}"
+      
+      # Check if major version jumped by more than 1
+      major_jump=$((major - latest_major))
+      
+      if [[ $major_jump -gt 1 ]]; then
+        echo "" >&2
+        echo "ERROR: Version jump too large!" >&2
+        echo "  Latest release: $latest_release" >&2
+        echo "  Requested version: $version" >&2
+        echo "  Major version jumped by: $major_jump (max allowed: 1)" >&2
+        echo "" >&2
+        echo "This suggests a version leak from tests or configuration error." >&2
+        echo "" >&2
+        echo "To proceed anyway (fixing version history):" >&2
+        echo "  $0 --force $version" >&2
+        echo "" >&2
+        echo "This check is skipped in GitHub Actions workflows." >&2
+        exit 1
+      elif [[ $major_jump -lt 0 ]]; then
+        echo "" >&2
+        echo "WARNING: Version downgrade detected!" >&2
+        echo "  Latest release: $latest_release" >&2
+        echo "  Requested version: $version" >&2
+        echo "" >&2
+        echo "To proceed anyway (fixing version history):" >&2
+        echo "  $0 --force $version" >&2
+        exit 1
+      else
+        echo "Version check passed: $version is valid increment from $latest_release" >&2
+      fi
+    else
+      echo "Warning: Could not parse latest release version '$latest_release', skipping check" >&2
+    fi
+  else
+    echo "Warning: Could not fetch latest GitHub release (gh CLI not available or no releases), skipping check" >&2
+  fi
+fi
+
+if [[ -z "$version" ]]; then
+  echo "Usage: $0 [--force] <version>" >&2
+  echo "" >&2
+  echo "Options:" >&2
+  echo "  --force    Skip version jump safety check (for fixing version history issues)" >&2
   exit 1
 fi
 
-version="$1"
-
 if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo "Version must be semver in the form X.Y.Z" >&2
+  exit 1
+fi
+
+# Safeguard: Prevent absurdly high version numbers (likely a mistake)
+IFS='.' read -r major minor patch <<< "$version"
+if [[ $major -gt 10 || $minor -gt 99 || $patch -gt 99 ]]; then
+  echo "Error: Version $version seems unrealistic (component too large)" >&2
+  echo "Maximum allowed: 10.99.99" >&2
   exit 1
 fi
 

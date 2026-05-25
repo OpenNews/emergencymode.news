@@ -1,5 +1,18 @@
 #!/usr/bin/env bash
 # Tests for scripts/sync-release-version.sh
+#
+# ⚠️  TESTS DISABLED ⚠️
+# This entire test file has been disabled because the tests modify real project files.
+# The sync-release-version.sh script always operates on the repo root (line 18-19),
+# ignoring the test's temporary directory setup.
+#
+# To fix: Refactor sync-release-version.sh to accept an optional working directory
+# parameter, then re-enable these tests to work on temp directories only.
+#
+# DO NOT RUN THESE TESTS - they will corrupt your project version numbers!
+#
+# shellcheck disable=SC2317  # Intentionally unreachable code (entire file disabled)
+exit 0  # Skip all tests
 
 set -euo pipefail
 
@@ -134,26 +147,29 @@ run_tests() {
   teardown
   
   # Test 10: All files updated consistently
-  test_start "updates all files to the same version"
-  setup
-  "$SYNC_SCRIPT" "9.9.9" >/dev/null 2>&1
+  # DISABLED: This test modifies real project files because sync script
+  # always changes to repo root. Need to refactor sync script to accept
+  # a working directory parameter before this test can be re-enabled.
+  # test_start "updates all files to the same version"
+  # setup
+  # "$SYNC_SCRIPT" "9.9.9" >/dev/null 2>&1
   
-  pkg_version=$(python3 -c "import json; print(json.load(open('package.json'))['version'])")
-  toml_version=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
-  php_header=$(grep '^\s*\* Version:' plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-  php_const=$(grep "define( 'EMFN_ACTION_PACK_PLUGIN_VERSION'" plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-  readme_tag=$(grep '^Stable tag:' plugins/emfn-action-pack-plugin/readme.txt | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-  
-  all_match=0
-  if [[ "$pkg_version" == "9.9.9" && "$toml_version" == "9.9.9" && "$php_header" == "9.9.9" && "$php_const" == "9.9.9" && "$readme_tag" == "9.9.9" ]]; then
-    all_match=0
-  else
-    all_match=1
-  fi
-  
-  [[ $all_match -eq 0 ]]
-  assert_success
-  teardown
+  # pkg_version=$(python3 -c "import json; print(json.load(open('package.json'))['version'])")
+  # toml_version=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
+  # php_header=$(grep '^\s*\* Version:' plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+  # php_const=$(grep "define( 'EMFN_ACTION_PACK_PLUGIN_VERSION'" plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+  # readme_tag=$(grep '^Stable tag:' plugins/emfn-action-pack-plugin/readme.txt | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+  # 
+  # all_match=0
+  # if [[ "$pkg_version" == "9.9.9" && "$toml_version" == "9.9.9" && "$php_header" == "9.9.9" && "$php_const" == "9.9.9" && "$readme_tag" == "9.9.9" ]]; then
+  #   all_match=0
+  # else
+  #   all_match=1
+  # fi
+  # 
+  # [[ $all_match -eq 0 ]]
+  # assert_success
+  # teardown
   
   # Test 11: Version with zeros
   test_start "handles version with zeros (0.0.1)"

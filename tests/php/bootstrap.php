@@ -135,5 +135,3 @@ global $_test_transients;
 $_test_transients = array();
 
 // Note: Plugin class is loaded by individual test files as needed
-
-echo "PHPUnit Bootstrap Complete\n";

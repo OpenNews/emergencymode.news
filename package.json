@@ -9,7 +9,7 @@
     "format:check": "prettier --check '**/*.{html,css,js,json,yml,yaml,md}'",
     "eslint": "eslint 'plugins/**/*.js'",
     "eslint:fix": "eslint 'plugins/**/*.js' --fix",
-    "shellcheck": ".venv/bin/pre-commit run shellcheck --all-files || echo 'Fix shellcheck warnings above'",
+    "shellcheck": ".venv/bin/pre-commit run shellcheck --all-files",
     "notebooks:strip": "scripts/strip-notebook-outputs.sh",
     "notebooks:check-clean": "scripts/check-notebooks-clean.sh",
     "lint": "npm run format:check && npm run eslint && npm run notebooks:check-clean",
@@ -20,7 +20,7 @@
     "test:js:coverage": "jest --coverage",
     "test:php": "if command -v php >/dev/null 2>&1; then XDEBUG_MODE=off vendor/bin/phpunit; else echo 'PHP not available - skipping PHP tests'; fi",
     "test:php:coverage": "if command -v php >/dev/null 2>&1; then XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html=coverage/php --coverage-text; else echo 'PHP not available - skipping PHP coverage'; fi",
-    "test:scripts": "for test in tests/scripts/test-*.sh; do [ \"$(basename $test)\" != \"test-helpers.sh\" ] && $test || true; done"
+    "test:scripts": "status=0; for test in tests/scripts/test-*.sh; do [ \"$(basename $test)\" != \"test-helpers.sh\" ] && { $test || status=1; }; done; exit $status"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

@@ -50,8 +50,16 @@ if [[ "$FORCE_MODE" -eq 0 && -z "${GITHUB_ACTIONS:-}" ]]; then
       # shellcheck disable=SC2034
       latest_patch="${BASH_REMATCH[3]}"
       
+      # Parse requested version to get major component
+      if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+        requested_major="${BASH_REMATCH[1]}"
+      else
+        echo "Error: Invalid version format '$version'" >&2
+        exit 1
+      fi
+      
       # Check if major version jumped by more than 1
-      major_jump=$((major - latest_major))
+      major_jump=$((requested_major - latest_major))
       
       if [[ $major_jump -gt 1 ]]; then
         echo "" >&2

@@ -1,6 +1,6 @@
 {
   "name": "emergencymode-news",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "emergencymode.news scripts, Notebooks and WordPress customizations",
   "private": true,
@@ -11,7 +11,15 @@
     "eslint:fix": "eslint 'plugins/**/*.js' --fix",
     "notebooks:strip": "scripts/strip-notebook-outputs.sh",
     "notebooks:check-clean": "scripts/check-notebooks-clean.sh",
-    "lint": "npm run format:check && npm run eslint && npm run notebooks:check-clean"
+    "lint": "npm run format:check && npm run eslint && npm run notebooks:check-clean",
+    "test": "npm run test:js && npm run test:scripts",
+    "test:all": "npm run test:js && npm run test:php && npm run test:scripts",
+    "test:js": "jest",
+    "test:js:watch": "jest --watch",
+    "test:js:coverage": "jest --coverage",
+    "test:php": "if command -v php >/dev/null 2>&1; then XDEBUG_MODE=off vendor/bin/phpunit; else echo 'PHP not available - skipping PHP tests'; fi",
+    "test:php:coverage": "if command -v php >/dev/null 2>&1; then XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html=coverage/php --coverage-text; else echo 'PHP not available - skipping PHP coverage'; fi",
+    "test:scripts": "for test in tests/scripts/test-*.sh; do [ \"$(basename $test)\" != \"test-helpers.sh\" ] && $test || true; done"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -20,6 +28,8 @@
     "eslint": "^9.39.1",
     "eslint-plugin-jsdoc": "^61.4.0",
     "globals": "^17.6.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "prettier": "^3.8.3",
     "typescript": "^6.0.3"
   }

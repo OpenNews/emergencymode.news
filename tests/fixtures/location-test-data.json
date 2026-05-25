@@ -1,0 +1,99 @@
+{
+  "validLocations": [
+    {
+      "name": "Atlanta, Georgia",
+      "locData": {
+        "county": "Fulton County",
+        "state": "Georgia",
+        "st": "GA",
+        "country": "US",
+        "fips": "13121"
+      }
+    },
+    {
+      "name": "Los Angeles, California",
+      "locData": {
+        "county": "Los Angeles County",
+        "state": "California",
+        "st": "CA",
+        "country": "US",
+        "fips": "06037"
+      }
+    },
+    {
+      "name": "Cook County, Illinois",
+      "locData": {
+        "county": "Cook County",
+        "state": "Illinois",
+        "st": "IL",
+        "country": "US",
+        "fips": "17031"
+      }
+    }
+  ],
+  "partialLocations": [
+    {
+      "name": "Missing county name",
+      "locData": {
+        "county": null,
+        "state": "Texas",
+        "st": "TX",
+        "country": "US",
+        "fips": "48201"
+      }
+    },
+    {
+      "name": "Missing state name",
+      "locData": {
+        "county": "Harris County",
+        "state": null,
+        "st": "TX",
+        "country": "US",
+        "fips": "48201"
+      }
+    },
+    {
+      "name": "Missing both names",
+      "locData": {
+        "county": null,
+        "state": null,
+        "st": "TX",
+        "country": "US",
+        "fips": "48201"
+      }
+    }
+  ],
+  "emptyLocation": {
+    "county": null,
+    "state": null,
+    "st": null,
+    "country": null,
+    "fips": null
+  },
+  "nriSampleData": [
+    {
+      "county_fips": "13121",
+      "state": "GA",
+      "county": "Fulton County",
+      "avln_risk_score": "0.00",
+      "cfld_risk_score": "12.34",
+      "cwav_risk_score": "0.00",
+      "drgt_risk_score": "45.67",
+      "erqk_risk_score": "8.90",
+      "hail_risk_score": "23.45",
+      "heat_risk_score": "56.78",
+      "hrcn_risk_score": "89.01",
+      "hwav_risk_score": "34.56",
+      "istm_risk_score": "67.89",
+      "lnds_risk_score": "12.34",
+      "ltng_risk_score": "45.67",
+      "rfld_risk_score": "78.90",
+      "swnd_risk_score": "91.23",
+      "trnd_risk_score": "87.65",
+      "tsun_risk_score": "43.21",
+      "vlcn_risk_score": "0.00",
+      "wfir_risk_score": "21.09",
+      "wntw_risk_score": "9.87"
+    }
+  ]
+}

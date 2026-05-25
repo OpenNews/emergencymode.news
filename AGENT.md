@@ -325,6 +325,321 @@ sudo apt-get install -y shellcheck  # Takes ~1-2 seconds
 
 ---
 
+### 13. Audit Constraints Before Writing Code (ROOT CAUSE of Most AI Bugs)
+
+**THE TRAP**: Writing code without first checking the execution environment's constraints, contracts, and dependencies.
+
+**The Pattern Across Multiple HIGH-Priority Bugs**:
+1. **Uninitialized variable bug** (`$major` used before parsed) → Didn't check bash `set -u` constraint
+2. **Exit code masking bug** (`|| echo`, `|| true`) → Didn't check CI's exit code contract
+3. **Output during tests bug** (`echo` in bootstrap) → Didn't check `phpunit.xml` strictness constraint
+
+**What I'm Missing**: A **pre-coding audit** of the execution environment:
+
+```
+BEFORE writing ANY code, check:
+1. ✅ Config files - What strictness settings exist?
+2. ✅ Contracts - What does the calling system expect?
+3. ✅ Dependencies - What must exist before this runs?
+4. ✅ Execution modes - What strict modes are enabled?
+```
+
+**Concrete Examples**:
+
+| Code Addition | Should Check First | Would Prevent |
+|---------------|-------------------|---------------|
+| Use `$major` in calculation | Is variable initialized above? `set -u` enabled? | Lesson #14 bug |
+| Add `\|\| echo 'msg'` | Will npm script be used in CI? Exit code contract? | Lesson #15 bug |
+| Add `echo "debug"` | Check phpunit.xml for `beStrictAboutOutputDuringTests` | Lesson #16 bug |
+| Call function `foo()` | Does function exist? Imported? Defined above? | Runtime errors |
+| Write to `/tmp/file` | Check permissions, disk space, cleanup? | Deployment bugs |
+| Use `command -v tool` | Is tool installed? In PATH? Fallback needed? | CI failures |
+
+**The Audit Checklist**:
+
+**1. Config Constraints** (files that enforce rules):
+```bash
+# Before adding code, grep for relevant configs:
+grep -r "beStrictAbout\|failOn\|strict" *.xml     # PHPUnit strictness
+head -5 scripts/*.sh                               # Check for set -euo pipefail
+grep "scripts" package.json                        # Are these used in CI?
+cat .github/workflows/*.yml                        # What runs in automation?
+```
+
+**2. Calling Contracts** (what parent systems expect):
+```bash
+# npm scripts used in CI?
+grep -A5 "npm run" .github/workflows/*.yml
+# → Exit codes MUST propagate (no || echo masking)
+
+# Script called by automation?
+grep "sync-release-version" .github/workflows/*.yml
+# → Must validate inputs, have safety checks
+
+# Test bootstrap file?
+ls -la tests/*/bootstrap.*
+# → No output allowed (check test config strictness)
+```
+
+**3. Dependency Prerequisites** (what must exist first):
+```bash
+# Before using $variable:
+grep "variable=" script.sh | head -20  # Is it defined above?
+
+# Before calling function():
+grep "^function_name()" *.sh           # Is it defined?
+grep "source.*helpers" *.sh            # Is it imported?
+
+# Before using command:
+which command || echo "not available"  # Is it installed?
+```
+
+**4. Execution Mode Strictness** (will crash on violations):
+```bash
+# Bash strict mode?
+grep "set -" scripts/*.sh
+# → set -u: uninitialized vars crash
+# → set -e: any error crashes
+# → set -o pipefail: pipeline failures crash
+
+# PHPUnit strict mode?
+grep "beStrict\|failOn" phpunit.xml
+# → Output, risky tests, warnings all = failures
+
+# ESLint/Prettier strict mode?
+grep "error" eslint.config.js
+# → console.log, formatting violations = errors
+```
+
+**Why This Matters**:
+- 🎯 **Catches bugs BEFORE writing code** (not after review/CI)
+- 🎯 **Works for any codebase** (universal pattern, not language-specific)
+- 🎯 **Prevents entire classes of bugs** (not just individual fixes)
+- 🎯 **Faster than trial-and-error** (5 min audit vs hours debugging)
+
+**Red Flags That You Skipped The Audit**:
+- ❌ Copilot review finds "uninitialized variable"
+- ❌ CI passes locally, fails in GitHub Actions
+- ❌ Tests pass, but marked as "risky"
+- ❌ Script works in development, crashes in production
+- ❌ Linter passes, pre-commit hook fails
+
+**The Fix: Pre-Coding Audit Template**:
+```bash
+# Before adding code to FILE at LINE:
+
+# 1. Check config constraints
+grep -r "strict\|fail" *.xml *.json .github/
+
+# 2. Check calling context
+grep -r "FILE\|LINE" package.json .github/workflows/
+
+# 3. Check dependencies exist
+grep "variable\|function\|command" FILE | head -50
+
+# 4. Check execution modes
+head -20 FILE  # Look for set -euo pipefail, imports, settings
+
+# 5. THEN write code that respects discovered constraints
+```
+
+**For This Codebase**:
+- ✅ All bash scripts use `set -euo pipefail` → Variables MUST be initialized
+- ✅ `phpunit.xml` has `beStrictAboutOutputDuringTests="true"` → Bootstrap MUST be silent
+- ✅ npm scripts used in `.github/workflows/release.yml` → Exit codes MUST propagate
+- ✅ Pre-commit runs different tools than `npm run lint` → Check BOTH before committing
+
+**Lesson**: AI agents (me included) write code in isolation without checking the execution environment's constraints. A 5-minute pre-coding audit of configs, contracts, dependencies, and strict modes prevents hours of debugging HIGH-priority bugs. **This is the root cause behind lessons #14, #15, and #16** - all would have been caught by checking configs first.
+
+---
+
+### 14. AI Agents Make Piecemeal Mistakes - Demand Full Context
+
+**THE TRAP**: Accepting AI-generated code (from agents OR Copilot reviews) without understanding execution flow leads to runtime bugs.
+
+**What Happened**:
+- Added version safeguard to `sync-release-version.sh`
+- Used variable `$major` in calculation: `major_jump=$((major - latest_major))`
+- But `$major` wasn't initialized yet - it gets parsed later with `IFS='.' read -r major minor patch`
+- With `set -u` (unset variable = error), script would crash on GitHub release check
+- Copilot PR review caught this as HIGH priority
+- But the bug was introduced by AI agent (me) making piecemeal changes without full context
+
+**Why This Happens**:
+- AI agents see code in chunks, not full execution flow
+- We suggest changes that look correct in isolation
+- We miss variable initialization order, execution paths, error handling
+- Copilot reviews also work on small context windows
+- Accepting either without testing creates bugs
+
+**How to Prevent**:
+1. **Never accept AI suggestions without reading the FULL function/script**
+2. **Trace variable initialization order** - where is it defined vs used?
+3. **Check for `set -u`, `set -e`, `set -o pipefail`** - strict mode will expose bugs
+4. **Run the code locally with test inputs** - don't just merge suggestions
+5. **If Copilot/agent makes a mistake once, they'll make it again** - add safeguards
+
+**Red Flags for AI-Generated Code**:
+- ❌ Using variables before they're defined
+- ❌ Missing error handling (no `|| exit 1`, no `set -e`)
+- ❌ Assuming functions/commands exist without checking
+- ❌ Hard-coded paths that won't work in all contexts
+- ❌ Missing input validation
+- ❌ Copy-pasted patterns without understanding WHY they work
+
+**Better Review Process**:
+1. Read the ENTIRE script/function, not just the diff
+2. Trace execution flow from top to bottom
+3. Check all variables are initialized before use
+4. Verify error modes are handled (`set -euo pipefail`)
+5. Test with edge cases (empty input, missing files, etc.)
+
+**For This Codebase**:
+- All bash scripts use `set -euo pipefail` (strict mode)
+- Uninitialized variables = instant crash
+- AI suggestions that miss this = production bugs
+- Always parse/validate inputs BEFORE using them in calculations
+
+**Lesson**: AI agents (including me) generate code without full execution context. Treat ALL AI suggestions as potentially buggy until you've read the full code path and tested it. Piecemeal changes waste more time than they save.
+
+---
+
+### 15. Exit Code Masking Breaks CI/CD
+
+**THE TRAP**: Using `|| echo 'message'` in npm scripts to make them "user-friendly" masks failures and breaks automation.
+
+**What Happened**:
+- Added npm script: `"shellcheck": ".venv/bin/pre-commit run shellcheck --all-files || echo 'Fix shellcheck warnings above'"`
+- Also found: `"test:scripts": "for test in tests/*.sh; do $test || true; done"`
+- Intent: show helpful message when shellcheck fails / keep running tests even if one fails
+- Reality: `|| echo` and `|| true` always exit 0, so failures are masked
+- Result: CI sees success even when commands fail
+
+**Why This Breaks**:
+```bash
+# Pattern 1: Helpful message masks failure
+command-that-fails || echo 'Helpful message'
+# Exit code: 0 (success!) even though command failed
+
+# Pattern 2: Continue-on-error masks failures
+for test in tests/*.sh; do $test || true; done
+# Exit code: 0 even if tests fail
+
+# The || operator runs the right side when left fails,
+# and the overall exit code is from the right side
+```
+
+**Impact**:
+- ❌ CI/CD doesn't detect failures
+- ❌ Pre-commit hooks appear to pass when they fail
+- ❌ Bugs slip through automated checks
+- ❌ Developers think tests passed when they didn't
+
+**The Fix**:
+```bash
+# Option 1: Let exit code propagate (preferred for single commands)
+"shellcheck": ".venv/bin/pre-commit run shellcheck --all-files"
+
+# Option 2: Show message AND exit with failure code
+"shellcheck": ".venv/bin/pre-commit run shellcheck --all-files || { echo 'Fix shellcheck warnings above'; exit 1; }"
+
+# Option 3: Capture failures in loops, exit non-zero at end
+"test:scripts": "status=0; for test in tests/*.sh; do $test || status=1; done; exit $status"
+
+# Option 4: Only mask specific expected failures (if/then/else)
+"test:php": "if command -v php >/dev/null; then phpunit; else echo 'PHP not available - skipping'; fi"
+```
+
+**When `|| echo` Is Acceptable**:
+- ✅ Informational commands that can't fail: `echo 'Starting tests...' || true`
+- ✅ Optional cleanup that shouldn't block: `rm -f /tmp/cache || true`
+- ✅ **Never** acceptable for validation/testing commands
+
+**Red Flags**:
+- ❌ `|| echo` after linters (eslint, shellcheck, prettier --check)
+- ❌ `|| echo` after test commands (jest, phpunit, pytest)
+- ❌ `|| echo` after build commands (webpack, vite, tsc)
+- ❌ `|| true` in test loops (masks individual test failures)
+- ❌ Any `|| command` where the command always succeeds
+
+**For This Codebase**:
+- npm scripts are used in CI (release.yml workflow)
+- Exit codes determine if release proceeds
+- Masking failures = shipping bugs to production
+- Pre-commit tools already provide good error messages
+
+**Lesson**: Exit codes are how programs communicate success/failure to automation. Using `|| echo` to make scripts "friendly" breaks this contract and defeats automated quality checks. Trust the tool's native error messages—they're usually good enough.
+
+---
+
+### 16. Debug Output Conflicts With Strict Test Settings
+
+**THE TRAP**: Adding helpful echo/print statements during development, then forgetting they conflict with strict quality settings.
+
+**What Happened**:
+- Added `echo "PHPUnit Bootstrap Complete\n";` to `tests/php/bootstrap.php`
+- Intent: confirm bootstrap loaded successfully during development
+- But phpunit.xml has `beStrictAboutOutputDuringTests="true"`
+- Output during tests = risky/failing tests (depending on PHPUnit version)
+
+**Why This Matters**:
+```php
+// bootstrap.php
+echo "PHPUnit Bootstrap Complete\n";  // ❌ Violates beStrictAboutOutputDuringTests
+
+// phpunit.xml
+beStrictAboutOutputDuringTests="true"  // Enforces clean output
+```
+
+**Impact**:
+- ⚠️ Tests may be marked as risky
+- ⚠️ CI may reject test runs
+- ⚠️ Debugging output clutters test output
+- ⚠️ Silent failures as strictness settings are ignored
+
+**Common Conflicts**:
+- PHPUnit: `beStrictAboutOutputDuringTests="true"` + echo/print/var_dump
+- Jest: `--silent` mode + console.log
+- pytest: `-W error` + print statements
+- ESLint: `no-console` rule + console.log
+- Git hooks: pre-commit checks + echo in scripts that run during commit
+
+**When Debug Output Is Acceptable**:
+- ✅ Guard behind env var: `if (getenv('DEBUG')) { echo ...; }`
+- ✅ Use proper logging: PHPUnit's `$this->expectOutputString()`
+- ✅ Debug mode flags: `if ($debug_mode) { ... }`
+- ✅ Removed before commit (caught by review)
+
+**Better Alternatives**:
+```php
+// Instead of echo in bootstrap:
+// 1. Trust PHPUnit's error messages (they're good)
+// 2. Use PHPUnit's built-in verbosity: phpunit -v
+// 3. Check coverage reports for what's loaded
+// 4. Add assertions in tests to verify setup
+
+// If you MUST debug:
+if (getenv('PHPUNIT_DEBUG')) {
+    error_log("Bootstrap loaded"); // Goes to stderr, not stdout
+}
+```
+
+**Red Flags**:
+- ❌ `echo`/`print` in test bootstrap files
+- ❌ `console.log` in production code when linter forbids it
+- ❌ `var_dump`/`print_r` anywhere in committed code
+- ❌ Debug comments like `// TODO: remove before commit`
+
+**For This Codebase**:
+- `phpunit.xml` has `beStrictAboutOutputDuringTests="true"`
+- `failOnRisky="true"` means any risky test = CI failure
+- Bootstrap file should be silent
+- PHPUnit provides enough output without our help
+
+**Lesson**: Development conveniences (debug echos, helpful messages) often conflict with strict quality settings added later. When you add strictness flags to configs (beStrictAboutOutputDuringTests, no-console, failOnWarning), audit the codebase for conflicting patterns. Better: avoid debug output in committed code altogether.
+
+---
+
 ## 🛠️ Development Workflow Best Practices
 
 ### Before Committing

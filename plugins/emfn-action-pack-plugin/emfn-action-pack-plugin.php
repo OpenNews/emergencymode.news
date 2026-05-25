@@ -78,7 +78,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'EMFN_ACTION_PACK_PLUGIN_VERSION', '9.9.9' );
+define( 'EMFN_ACTION_PACK_PLUGIN_VERSION', '0.2.0' );
 define( 'EMFN_ACTION_PACK_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'EMFN_ACTION_PACK_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 

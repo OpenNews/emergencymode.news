@@ -9,6 +9,7 @@
     "format:check": "prettier --check '**/*.{html,css,js,json,yml,yaml,md}'",
     "eslint": "eslint 'plugins/**/*.js'",
     "eslint:fix": "eslint 'plugins/**/*.js' --fix",
+    "shellcheck": ".venv/bin/pre-commit run shellcheck --all-files || echo 'Fix shellcheck warnings above'",
     "notebooks:strip": "scripts/strip-notebook-outputs.sh",
     "notebooks:check-clean": "scripts/check-notebooks-clean.sh",
     "lint": "npm run format:check && npm run eslint && npm run notebooks:check-clean",

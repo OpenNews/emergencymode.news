@@ -56,9 +56,23 @@ emergencymode.news/
 │   ├── build-release-assets.sh             # Builds plugin ZIPs
 │   ├── strip-notebook-outputs.sh           # Cleans notebook execution state
 │   └── check-notebooks-clean.sh            # Checks notebooks for cruft
-├── tests/                                  # Testing infrastructure (planned)
-│   ├── TESTING_PLAN.md                     # TBD testing strategy
-│   └── README.md                           # Quick start for future tests
+├── tests/                                  # Testing infrastructure
+│   ├── js/                                 # JavaScript tests (Jest)
+│   │   ├── setup.js                        # Test environment setup
+│   │   ├── action-pack/                    # Action Pack plugin tests
+│   │   └── lib/                            # Shared test utilities
+│   ├── php/                                # PHP tests (PHPUnit)
+│   │   ├── bootstrap.php                   # Test bootstrap with WordPress stubs
+│   │   └── action-pack/                    # Action Pack plugin tests
+│   ├── scripts/                            # Shell script tests
+│   │   ├── test-helpers.sh                 # Test framework helpers
+│   │   ├── test-build-assets.sh            # Build script tests
+│   │   └── test-version-bump.sh            # Version logic tests
+│   ├── fixtures/                           # Test data
+│   │   ├── payload-test-cases.json         # Action Pack encoding tests
+│   │   └── location-test-data.json         # Geolocation test data
+│   ├── TESTING_PLAN.md                     # Testing strategy
+│   └── README.md                           # Quick start for running tests
 ├── tmp/                                    # Temporary/scratch files (not deployed)
 │   ├── _tallCategories.csv
 │   └── ga.txt
@@ -72,9 +86,14 @@ emergencymode.news/
 │   └── templates/
 │       └── liteSitesFooter.html
 ├── .gitignore
-├── LICENSE
+├── AGENT.md                                # Agent guide: lessons learned, gotchas, best practices
+├── composer.json                           # PHP dependencies (PHPUnit, WordPress stubs)
+├── eslint.config.js                        # ESLint configuration
+├── jest.config.cjs                         # Jest test configuration
 ├── jsconfig.json                           # Editor & Type config 
-├── package.json                            # Code style consistency
+├── LICENSE
+├── package.json                            # npm dependencies & scripts
+├── phpunit.xml                             # PHPUnit configuration
 ├── pyproject.toml                          # Notebook dependencies
 └── README.md                               # This file
 ```
@@ -289,13 +308,29 @@ The plugin JavaScript uses JSDoc typing backed by `plugins/shared/emfn-types.d.t
 
 `jsconfig.json` scopes editor support to plugin JS and shared `.d.ts` files so the repo gets lightweight type assistance without a full TypeScript build.
 
-Node-side repo tooling is intentionally small:
+Node-side repo tooling:
 
-- `npm run format` runs Prettier across repo markdown, JSON, HTML, CSS, and JS.
-- `npm run format:check` verifies formatting.
-- `npm run notebooks:strip` strips notebook outputs.
-- `npm run notebooks:check-clean` verifies notebooks are in a clean committed state.
-- `npm run lint` runs formatting checks plus notebook cleanliness checks.
+**Formatting & Linting:**
+- `npm run format` — Prettier auto-fix for markdown, JSON, HTML, CSS, JS
+- `npm run format:check` — Verify formatting without changes
+- `npm run eslint` — Lint plugin JavaScript files
+- `npm run eslint:fix` — Auto-fix ESLint issues
+- `npm run shellcheck` — Lint all shell scripts
+- `npm run lint` — Run all checks (format, eslint, shellcheck, notebooks)
+
+**Testing:**
+- `npm test` — Run JavaScript and shell script tests
+- `npm run test:all` — Run all tests (JavaScript, PHP, shell scripts)
+- `npm run test:js` — Jest tests only
+- `npm run test:js:watch` — Jest in watch mode
+- `npm run test:js:coverage` — Jest with coverage report
+- `npm run test:php` — PHPUnit tests only
+- `npm run test:php:coverage` — PHPUnit with HTML coverage report
+- `npm run test:scripts` — Shell script tests only
+
+**Notebooks:**
+- `npm run notebooks:strip` — Strip notebook outputs
+- `npm run notebooks:check-clean` — Verify notebooks are clean
 
 #### Recommended notebook workflow
 
@@ -379,16 +414,81 @@ For plugin deployment:
 
 The devcontainer, notebooks, scripts, tests, and `tmp/` files are **not** deployed to WordPress.
 
-## 🛑 Testing (TODO)
+## Testing
 
-Automated testing infrastructure is planned but not yet implemented. See `tests/TESTING_PLAN.md` for:
+This repository includes comprehensive test coverage across JavaScript, PHP, and shell scripts.
 
-- Comprehensive testing strategy covering PHP, JavaScript, E2E, and notebooks
-- CI/CD integration approach
-- Implementation phases and effort estimates
-- Agentic AI development recommendations
+### Quick Start
 
-Testing will enable safe auto-merge of Dependabot PRs and provide confidence in automated releases.
+```bash
+# Run all tests
+npm run test:all
+
+# Run specific test suites
+npm run test:js          # JavaScript tests (Jest)
+npm run test:php         # PHP tests (PHPUnit)
+npm run test:scripts     # Shell script tests
+
+# Run with coverage
+npm run test:js:coverage      # Coverage in terminal
+npm run test:php:coverage     # HTML report in coverage/php/
+```
+
+### Test Infrastructure
+
+**JavaScript (Jest)**
+- Plugin JavaScript unit tests
+- JSDom environment for browser APIs
+- Coverage tracking enabled
+- Test files: `tests/js/**/*.test.js`
+
+**PHP (PHPUnit)**
+- WordPress plugin class tests
+- WordPress function stubs in `tests/php/bootstrap.php`
+- Strict mode enabled (fail on warnings)
+- Test files: `tests/php/**/*Test.php`
+
+**Shell Scripts**
+- Custom bash test framework (`tests/scripts/test-helpers.sh`)
+- Tests for build, version sync, and notebook scripts
+- Automatic test discovery (`test-*.sh` files)
+
+**Test Fixtures**
+- `tests/fixtures/payload-test-cases.json` — Action Pack encoding/decoding test cases
+- `tests/fixtures/location-test-data.json` — Geolocation resolution test data
+- `tests/fixtures/test-categories.csv` — Category mapping test data
+
+### Pre-commit Hooks
+
+Pre-commit hooks automatically run tests and linters:
+
+```bash
+# Install hooks (one-time setup)
+pre-commit install
+
+# Hooks will run on git commit:
+# - Prettier formatting
+# - Shellcheck linting
+# - ESLint on changed .js files
+# - Notebook output stripping
+# - Notebook cleanliness check
+```
+
+### Development Workflow
+
+Before committing changes:
+
+```bash
+# Run all checks (same as pre-commit hooks)
+npm run lint
+npm run shellcheck
+npm run test:all
+
+# Or run pre-commit manually
+pre-commit run --all-files
+```
+
+See [AGENT.md](AGENT.md) for lessons learned, common gotchas, and troubleshooting tips when working with the test infrastructure.
 
 ## Development Notes
 
@@ -402,16 +502,46 @@ Testing will enable safe auto-merge of Dependabot PRs and provide confidence in 
 ### Version Management
 
 - **Never manually edit version numbers** — the automated release workflow handles this
-- All version references are synced automatically on merge to `main`
+- All version references are synced automatically on merge to `main` via `scripts/sync-release-version.sh`
 - Plugin source files use both WordPress `Version:` headers and PHP constants
-- Both version indicators must match and are updated together by `scripts/sync-release-version.sh`
+- Both version indicators must match and are updated together
+
+**Version sync safeguards:**
+- Validates semver format (X.Y.Z)
+- Rejects unrealistic version components (> 10.99.99)
+- Checks against latest GitHub release (blocks major version jumps > 1)
+- Prevents version downgrades
+- Can bypass checks with `--force` flag (for fixing version history issues only)
+- Automatically skipped in CI workflows
+
+**Manual version sync** (for emergency fixes only):
+```bash
+# Normal usage
+./scripts/sync-release-version.sh 1.2.3
+
+# Force mode (bypasses GitHub release check)
+./scripts/sync-release-version.sh --force 1.2.3
+```
 
 ### Development Environment
 
-- Use the VS Code (or sibling editor) `devcontainer` for consistent Python/Node.js environment
+- Use the VS Code (or sibling editor) `devcontainer` for consistent Python/Node.js/PHP environment
 - WordPress core and third-party plugin versions are managed on the hosted Newspack environment
 - This repo stores EMFN custom code and supporting data-generation assets
-- Pre-commit hooks enforce notebook cleanliness (install with `pre-commit install`)
+- Pre-commit hooks enforce code quality, linting, and test cleanliness (install with `pre-commit install`)
+
+**Devcontainer includes:**
+- Python 3.13 (notebooks, pre-commit)
+- Node.js LTS (npm, jest, eslint, prettier)
+- PHP 8.3 with Composer (PHPUnit, WordPress stubs)
+- Shellcheck (script linting)
+- GitHub CLI (release automation)
+
+**Key configuration files:**
+- `.devcontainer/devcontainer.json` — Container features and VS Code extensions
+- `.devcontainer/setup.sh` — Post-create setup script
+- `.pre-commit-config.yaml` — Pre-commit hook configuration
+- `AGENT.md` — Lessons learned, gotchas, and troubleshooting guide
 
 ## Troubleshooting
 

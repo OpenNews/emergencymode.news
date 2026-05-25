@@ -15,7 +15,7 @@
  * @typedef {import("../../../shared/emfn-types").GFormSubmissionStartedData} GFormSubmissionStartedData
  */
 
-const version = "0.8.05"; // debugging versioning
+const version = "0.8.06"; // debugging versioning
 const riskThreshold = 85; // threshold for suggested risks
 const emfnWindow = /** @type {EmfnWindow} */ (window);
 
@@ -583,7 +583,12 @@ const RiskRenderer = {
       console.error("No high-risk hazards found for FIPS", resolvedFips);
     }
 
-    RiskRenderer.renderRiskList(riskElements.riskType, likelyHazards);
+    // Populate location fields with actual county and state
+    const { riskItem, riskRegion, riskType } = riskElements;
+    if (riskItem) riskItem.textContent = locData.county || "";
+    if (riskRegion) riskRegion.textContent = locData.state || "";
+
+    RiskRenderer.renderRiskList(riskType, likelyHazards);
   },
 };
 

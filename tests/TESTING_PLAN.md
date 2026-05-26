@@ -88,7 +88,7 @@ tests/
 
 **Setup:**
 - WordPress function stubs in `bootstrap.php`
-- PHPUnit 11.5 with strict mode
+- PHPUnit 10.5 with strict mode (`phpunit.xml` schema 10.5, `composer.json` ^10.5)
 - Xdebug 3.5.1 for coverage collection
 - Test extends production class via inheritance for protected method access
 
@@ -152,7 +152,6 @@ describe('CSV Data Parsing', () => {
   test('parses state CSV files for risk data')
   test('handles missing columns gracefully')
   test('caches parsed results')
-})
 })
 ```
 
@@ -240,13 +239,13 @@ test('actionPack URL parameter decoding', async ({ page }) => {
 ### 5. Notebook Reproducibility Tests \u23f3 **PLANNED**
 
 **test-reproducibility.py** (future)
-}
-
+```bash
 test_sync_pyproject_toml() {
   # Create temp pyproject.toml
   # Run sync script
   # Verify version updated
 }
+```
 
 test_sync_plugin_headers() {
   # Create temp plugin file

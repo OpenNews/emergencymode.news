@@ -78,15 +78,17 @@
 - No way to catch issues before committing
 
 **Why It Happened**:
-- `npm run lint` only runs: prettier, eslint (plugins/**), notebooks
+- `npm run lint` initially only ran: prettier, eslint (plugins/**), notebooks
 - `.pre-commit-config.yaml` runs: prettier, shellcheck, eslint (all .js), workflows, notebooks
 - Different file patterns, different tools
 
 **Solution Applied**:
 - Added `npm run shellcheck` that calls `.venv/bin/pre-commit run shellcheck --all-files`
-- Developers can now run shellcheck anytime without committing
+- Updated `npm run lint` to include shellcheck: `format:check && eslint && shellcheck && notebooks:check-clean`
+- Now developers can run shellcheck standalone OR as part of full lint check
+- `npm run lint` and pre-commit hooks are now in sync
 
-**Lesson**: Keep `npm run lint` and pre-commit hooks in sync. If a tool is in pre-commit, add it to npm scripts too.
+**Lesson**: Keep `npm run lint` and pre-commit hooks in sync. If a tool is in pre-commit, include it in the lint script too so developers and CI get consistent results.
 
 ---
 
@@ -325,7 +327,83 @@ sudo apt-get install -y shellcheck  # Takes ~1-2 seconds
 
 ---
 
-### 13. Audit Constraints Before Writing Code (ROOT CAUSE of Most AI Bugs)
+### 13. AI Agents Ignore Their Own Documentation (Including AGENT.md)
+
+**THE TRAP**: Writing documentation about mistakes, then immediately repeating those exact mistakes.
+
+**What Keeps Happening**:
+- Lesson #1 documents: "Test #10 used version `9.9.9`, corrupting entire project" + "NEVER re-enable these tests"
+- AI agent (me) then uses `9.9.9` to test version validation script
+- Result: Corrupted package.json, pyproject.toml, plugin files again
+- Pattern repeats despite explicit warnings in the same file being edited
+
+**Why This Happens**:
+- AI agents don't automatically re-read context files before taking actions
+- We see "test version validation" and pick a test value without checking constraints
+- Documentation exists but isn't consulted during code execution
+- Same agent that wrote the warning violates it minutes later
+
+**The Pattern**:
+1. Document "NEVER do X" in AGENT.md
+2. Later task requires testing related functionality
+3. Agent does X without checking AGENT.md first
+4. User: "Look at your damned agent.md"
+5. Agent: "Oh right, I wrote that warning"
+
+**Real Examples from This Codebase**:
+- ❌ AGENT.md says "Test #10 used version `9.9.9`, corrupting entire project"
+- ❌ Agent uses `9.9.9` to test version script
+- ❌ AGENT.md says "reject versions > 10.99.99"
+- ❌ Agent tests with `99.0.0` (would corrupt if safeguard failed)
+- ❌ AGENT.md says "NEVER re-enable these tests"
+- ❌ Agent considers how to test version sync script
+
+**Better Process**:
+```bash
+# BEFORE testing ANY functionality:
+1. grep -i "NEVER.*test" AGENT.md
+2. grep -i "9.9.9\|99.0.0\|version.*corrupt" AGENT.md
+3. Read "Critical Gotchas" section FIRST
+4. Use safe test values that don't match forbidden patterns
+
+# For version testing in this codebase:
+✅ Use: 0.2.1, 0.3.0, 1.0.0 (safe increments from 0.2.0)
+❌ NEVER: 9.9.9, 99.0.0, or anything > 10.99.99
+```
+
+**Safe Testing Patterns**:
+```bash
+# Check current version FIRST
+grep '"version"' package.json
+# Returns: "version": "0.2.0"
+
+# Then test with valid increments:
+./scripts/sync-release-version.sh 0.2.1  # ✅ Safe patch bump
+./scripts/sync-release-version.sh 0.3.0  # ✅ Safe minor bump  
+./scripts/sync-release-version.sh 1.0.0  # ✅ Safe major bump
+
+# NOT THIS:
+./scripts/sync-release-version.sh 9.9.9  # ❌ FORBIDDEN (documented in lesson #1)
+./scripts/sync-release-version.sh 99.0.0 # ❌ DANGEROUS (tests safeguard failure mode)
+```
+
+**Red Flags That You're About to Violate Your Own Docs**:
+- ❌ Using test values mentioned in "What Happened" sections
+- ❌ Testing with values explicitly called "corrupting" or "forbidden"
+- ❌ Not checking current state before choosing test inputs
+- ❌ Assuming safeguards will prevent damage (they might not in edge cases)
+
+**For This Codebase**:
+- Current version: 0.2.0 (check package.json before every version operation)
+- Safe test versions: 0.2.1, 0.3.0, 1.0.0
+- Forbidden versions: 9.9.9 (lesson #1), 99.0.0 (exceeds safeguard), anything > 10.99.99
+- Version sync script: ALWAYS check current version first, use safe increments
+
+**Lesson**: AI-generated documentation is useless if the AI doesn't consult it before acting. Before testing any functionality, grep AGENT.md for warnings about that functionality. "NEVER" means never - especially when testing the safeguards designed to prevent those scenarios. The irony of documenting mistakes then repeating them is not lost on anyone.
+
+---
+
+### 14. Audit Constraints Before Writing Code (ROOT CAUSE of Most AI Bugs)
 
 **THE TRAP**: Writing code without first checking the execution environment's constraints, contracts, and dependencies.
 
@@ -449,11 +527,11 @@ head -20 FILE  # Look for set -euo pipefail, imports, settings
 - ✅ npm scripts used in `.github/workflows/release.yml` → Exit codes MUST propagate
 - ✅ Pre-commit runs different tools than `npm run lint` → Check BOTH before committing
 
-**Lesson**: AI agents (me included) write code in isolation without checking the execution environment's constraints. A 5-minute pre-coding audit of configs, contracts, dependencies, and strict modes prevents hours of debugging HIGH-priority bugs. **This is the root cause behind lessons #14, #15, and #16** - all would have been caught by checking configs first.
+**Lesson**: AI agents (me included) write code in isolation without checking the execution environment's constraints. A 5-minute pre-coding audit of configs, contracts, dependencies, and strict modes prevents hours of debugging HIGH-priority bugs. **This is the root cause behind lessons #15, #16, and #17** - all would have been caught by checking configs first.
 
 ---
 
-### 14. AI Agents Make Piecemeal Mistakes - Demand Full Context
+### 15. AI Agents Make Piecemeal Mistakes - Demand Full Context
 
 **THE TRAP**: Accepting AI-generated code (from agents OR Copilot reviews) without understanding execution flow leads to runtime bugs.
 
@@ -504,7 +582,7 @@ head -20 FILE  # Look for set -euo pipefail, imports, settings
 
 ---
 
-### 15. Exit Code Masking Breaks CI/CD
+### 16. Exit Code Masking Breaks CI/CD
 
 **THE TRAP**: Using `|| echo 'message'` in npm scripts to make them "user-friendly" masks failures and breaks automation.
 
@@ -572,7 +650,7 @@ for test in tests/*.sh; do $test || true; done
 
 ---
 
-### 16. Debug Output Conflicts With Strict Test Settings
+### 17. Debug Output Conflicts With Strict Test Settings
 
 **THE TRAP**: Adding helpful echo/print statements during development, then forgetting they conflict with strict quality settings.
 
@@ -646,8 +724,7 @@ if (getenv('PHPUNIT_DEBUG')) {
 
 ```bash
 # Run all checks locally (same as pre-commit hooks)
-npm run lint           # prettier, eslint (plugins/**), notebooks
-npm run shellcheck     # shellcheck on all .sh files
+npm run lint           # prettier, eslint, shellcheck, notebooks
 npm run test:all       # js, php, shell tests
 
 # Version sync with safety checks

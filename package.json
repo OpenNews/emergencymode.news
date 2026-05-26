@@ -12,7 +12,7 @@
     "shellcheck": ".venv/bin/pre-commit run shellcheck --all-files",
     "notebooks:strip": "scripts/strip-notebook-outputs.sh",
     "notebooks:check-clean": "scripts/check-notebooks-clean.sh",
-    "lint": "npm run format:check && npm run eslint && npm run notebooks:check-clean",
+    "lint": "npm run format:check && npm run eslint && npm run shellcheck && npm run notebooks:check-clean",
     "test": "npm run test:js && npm run test:scripts",
     "test:all": "npm run test:js && npm run test:php && npm run test:scripts",
     "test:js": "jest",

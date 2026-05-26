@@ -25,6 +25,29 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Validate version argument before any checks
+if [[ -z "$version" ]]; then
+  echo "Usage: $0 [--force] <version>" >&2
+  echo "" >&2
+  echo "Options:" >&2
+  echo "  --force    Skip version jump safety check (for fixing version history issues)" >&2
+  exit 1
+fi
+
+if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Error: Version must be semver in the form X.Y.Z" >&2
+  echo "Example: $0 1.2.3" >&2
+  exit 1
+fi
+
+# Safeguard: Prevent absurdly high version numbers (likely a mistake)
+IFS='.' read -r major minor patch <<< "$version"
+if [[ $major -gt 10 || $minor -gt 99 || $patch -gt 99 ]]; then
+  echo "Error: Version $version seems unrealistic (component too large)" >&2
+  echo "Maximum allowed: 10.99.99" >&2
+  exit 1
+fi
+
 # Safeguard: Check version isn't too far ahead of latest GitHub release
 # Skip check if:
 # - Running in GitHub Actions workflow (CI deployment)
@@ -50,13 +73,9 @@ if [[ "$FORCE_MODE" -eq 0 && -z "${GITHUB_ACTIONS:-}" ]]; then
       # shellcheck disable=SC2034
       latest_patch="${BASH_REMATCH[3]}"
       
-      # Parse requested version to get major component
-      if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-        requested_major="${BASH_REMATCH[1]}"
-      else
-        echo "Error: Invalid version format '$version'" >&2
-        exit 1
-      fi
+      # Parse requested version to get major component (format already validated above)
+      [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]
+      requested_major="${BASH_REMATCH[1]}"
       
       # Check if major version jumped by more than 1
       major_jump=$((requested_major - latest_major))
@@ -93,27 +112,6 @@ if [[ "$FORCE_MODE" -eq 0 && -z "${GITHUB_ACTIONS:-}" ]]; then
   else
     echo "Warning: Could not fetch latest GitHub release (gh CLI not available or no releases), skipping check" >&2
   fi
-fi
-
-if [[ -z "$version" ]]; then
-  echo "Usage: $0 [--force] <version>" >&2
-  echo "" >&2
-  echo "Options:" >&2
-  echo "  --force    Skip version jump safety check (for fixing version history issues)" >&2
-  exit 1
-fi
-
-if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Version must be semver in the form X.Y.Z" >&2
-  exit 1
-fi
-
-# Safeguard: Prevent absurdly high version numbers (likely a mistake)
-IFS='.' read -r major minor patch <<< "$version"
-if [[ $major -gt 10 || $minor -gt 99 || $patch -gt 99 ]]; then
-  echo "Error: Version $version seems unrealistic (component too large)" >&2
-  echo "Maximum allowed: 10.99.99" >&2
-  exit 1
 fi
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"

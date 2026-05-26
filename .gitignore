@@ -44,6 +44,12 @@ __pycache__/
 .venv/
 venv/
 
+# PHP testing
+.phpunit.cache/
+
+# Test coverage reports
+coverage/
+
 # ZIP of plugin
 emfn-action-pack-plugin.zip
 emfn-rich-search-plugin.zip

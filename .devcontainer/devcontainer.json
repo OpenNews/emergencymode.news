@@ -4,6 +4,10 @@
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "lts"
+    },
+    "ghcr.io/devcontainers/features/php:1": {
+      "version": "8.3",
+      "installComposer": true
     }
   },
   "updateRemoteUserUID": false,
@@ -11,10 +15,21 @@
     "vscode": {
       "extensions": [
         "ms-python.python",
+        "ms-python.autopep8",
         "ms-toolsai.jupyter",
+        "ms-toolsai.jupyter-keymap",
         "ms-toolsai.jupyter-renderers",
+        "ms-toolsai.vscode-jupyter-cell-tags",
         "ms-toolsai.vscode-jupyter-slideshow",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "orta.vscode-jest",
+        "redhat.vscode-yaml",
+        "devsense.phptools-vscode",
+        "devsense.intelli-php-vscode",
+        "devsense.composer-php-vscode",
+        "devsense.profiler-php-vscode",
+        "dbaeumer.vscode-eslint",
+        "github.vscode-pull-request-github"
       ],
       "settings": {
         "python.defaultInterpreterPath": ".venv/bin/python"

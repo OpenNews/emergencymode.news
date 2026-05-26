@@ -15,7 +15,7 @@
  * @typedef {import("../../../shared/emfn-types").GFormSubmissionStartedData} GFormSubmissionStartedData
  */
 
-const version = "0.8.06"; // debugging versioning
+const version = "0.8.07"; // debugging versioning
 const riskThreshold = 85; // threshold for suggested risks
 const emfnWindow = /** @type {EmfnWindow} */ (window);
 
@@ -956,15 +956,10 @@ const SubmissionHashing = {
  *   or script load events
  */
 
-/**
- * Run if there's an assessment section, form, or a `?mode=` param (NOT on results page)
- * @type {HTMLElement | null}
- */
-const assessmentSection = document.querySelector("section.assessment");
 const hasForm = !!document.querySelector(gravityForm);
+const isActionPage = window.location.pathname.includes("action");
 const hasModeParam = (new URLSearchParams(window.location.search).get("mode") ?? "").trim() !== "";
-
-if (assessmentSection || hasForm || hasModeParam) {
+if (isActionPage && hasForm && hasModeParam) {
   console.info("EMFN Action Pack Plugin active", version);
 
   SubmissionHashing.initializeSubmissionHandling();

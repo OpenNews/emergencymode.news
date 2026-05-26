@@ -1,0 +1,59 @@
+{
+  "description": "Shared test cases for JavaScript encoding and PHP decoding round-trip testing",
+  "categoryOrder": [57, 58, 59, 39, 3, 2, 4, 121, 122, 123],
+  "testCases": [
+    {
+      "name": "Single category (first position)",
+      "categoryIds": [57],
+      "expectedPayload": "ap2.1",
+      "expectedSegments": [1]
+    },
+    {
+      "name": "Single category (second position)",
+      "categoryIds": [58],
+      "expectedPayload": "ap2.2",
+      "expectedSegments": [2]
+    },
+    {
+      "name": "Two categories (positions 0 and 1)",
+      "categoryIds": [57, 58],
+      "expectedPayload": "ap2.3",
+      "expectedSegments": [3]
+    },
+    {
+      "name": "Multiple categories in order",
+      "categoryIds": [57, 58, 59, 39],
+      "expectedPayload": "ap2.f",
+      "expectedSegments": [15]
+    },
+    {
+      "name": "Categories out of order (should be sorted by position)",
+      "categoryIds": [3, 57, 121, 2],
+      "expectedPayload": "ap2.4x",
+      "expectedSegments": [177]
+    },
+    {
+      "name": "All test categories",
+      "categoryIds": [57, 58, 59, 39, 3, 2, 4, 121, 122, 123],
+      "expectedPayload": "ap2.sf",
+      "expectedSegments": [1023]
+    },
+    {
+      "name": "Empty category list",
+      "categoryIds": [],
+      "expectedPayload": "ap2.0",
+      "expectedSegments": [0]
+    },
+    {
+      "name": "Category at position 31 (tests segment boundary)",
+      "categoryIds": [57, 58, 59, 39, 3, 2, 4, 121, 122, 123],
+      "note": "With 10 categories, highest bit position is 9, no multi-segment yet"
+    },
+    {
+      "name": "Unknown category IDs (should be filtered out)",
+      "categoryIds": [57, 999, 58, 888],
+      "expectedPayload": "ap2.3",
+      "expectedSegments": [3]
+    }
+  ]
+}

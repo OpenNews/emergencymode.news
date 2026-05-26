@@ -415,6 +415,8 @@ class EMFN_Action_Pack_Plugin {
      * @param array<string, string> $clauses SQL clauses.
      * @param WP_Query              $query Query instance.
      * @return array<string, string>
+     * 
+     * @global wpdb $wpdb WordPress database abstraction object.
      */
     public function apply_action_pack_category_scoring( $clauses, $query ) {
         global $wpdb;
@@ -776,7 +778,7 @@ class EMFN_Action_Pack_Plugin {
      * @param string $payload Action Pack payload with prefix
      * @return array<int, int>|null Array of WordPress term IDs
      */
-    private function decode_action_pack_bitmask_payload( $payload ) {
+    protected function decode_action_pack_bitmask_payload( $payload ) {
         // strip the format prefix so only the encoded bitmask segments remain
         $encoded_payload = substr( $payload, strlen( self::ACTION_PACK_PAYLOAD_PREFIX ) );
 

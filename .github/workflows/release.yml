@@ -31,14 +31,29 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          tools: composer
+
       - name: Install uv
         run: pip install uv
 
-      - name: Install dependencies
+      - name: Install Node dependencies
         run: npm ci
+
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Install Python dependencies
+        run: uv sync
 
       - name: Run lint
         run: npm run lint
+
+      - name: Run tests
+        run: npm run test:all
 
       - name: Get next version
         id: version

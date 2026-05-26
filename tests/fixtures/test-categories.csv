@@ -1,0 +1,11 @@
+answerID,used,category,manualRank,catID
+mode-before,TRUE,Before,2,57
+mode-during,TRUE,During,2,58
+mode-after,TRUE,After,2,59
+disasterType-drought,TRUE,Drought,5,39
+disasterType-flooding,TRUE,Flooding,5,3
+disasterType-hurricane,TRUE,Hurricanes/ tropical storms,5,2
+disasterType-wildfires,TRUE,Wildfires,5,4
+size-1,TRUE,Solo operator,5,121
+size-5,TRUE,Small newsroom,3,122
+size-10,TRUE,Medium newsroom,3,123

@@ -57,17 +57,17 @@ class EMFN_Site_Styles_Plugin {
 
 		// Enqueue compiled CSS
 		wp_enqueue_style(
-			'emfn-site-styles',
-			EMFN_SITE_STYLES_PLUGIN_URL . 'assets/css/emfn-site-styles.css',
+			'emfn-site-styles-plugin',
+			EMFN_SITE_STYLES_PLUGIN_URL . 'assets/css/emfn-site-styles-plugin.css',
 			array(),
 			EMFN_SITE_STYLES_PLUGIN_VERSION
 		);
 
 		// Enqueue JavaScript (if needed for animations, etc.)
-		if ( file_exists( EMFN_SITE_STYLES_PLUGIN_DIR . 'assets/js/emfn-site-styles.js' ) ) {
+		if ( file_exists( EMFN_SITE_STYLES_PLUGIN_DIR . 'assets/js/emfn-site-styles-plugin.js' ) ) {
 			wp_enqueue_script(
-				'emfn-site-styles',
-				EMFN_SITE_STYLES_PLUGIN_URL . 'assets/js/emfn-site-styles.js',
+				'emfn-site-styles-plugin',
+				EMFN_SITE_STYLES_PLUGIN_URL . 'assets/js/emfn-site-styles-plugin.js',
 				array(),
 				EMFN_SITE_STYLES_PLUGIN_VERSION,
 				true

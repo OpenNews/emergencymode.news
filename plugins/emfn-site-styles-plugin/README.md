@@ -17,7 +17,7 @@ plugins/emfn-site-styles-plugin/
 │   └── class-emfn-site-styles-plugin.php # Main plugin class (singleton)
 ├── assets/
 │   ├── css/
-│   │   └── emfn-site-styles.css         # Generated/built CSS (gitignored)
+│   │   └── emfn-site-styles-plugin.css  # Generated/built CSS (gitignored)
 │   ├── scss/
 │   │   ├── main.scss                     # Main SASS entry point
 │   │   ├── _variables.scss               # SASS variables (colors, breakpoints)
@@ -38,7 +38,7 @@ plugins/emfn-site-styles-plugin/
 │   │       ├── _faq.scss                 # Yoast FAQ styling
 │   │       └── _facetwp.scss             # FacetWP search results
 │   └── js/
-│       └── emfn-site-styles.js          # Optional JS (hero animation, etc.)
+│       └── emfn-site-styles-plugin.js   # Optional JS (hero animation, etc.)
 └── languages/                            # I18n folder (standard WP)
 ```
 
@@ -98,8 +98,8 @@ npm run build
 ### Generated Files
 
 The build process generates:
-- `assets/css/emfn-site-styles.css` - Compiled CSS (gitignored)
-- `assets/css/emfn-site-styles.css.map` - Source maps for dev (gitignored)
+- `assets/css/emfn-site-styles-plugin.css` - Compiled CSS (gitignored)
+- `assets/css/emfn-site-styles-plugin.css.map` - Source maps for dev (gitignored)
 
 **These files are excluded from version control** but must be built before deployment.
 
@@ -112,7 +112,7 @@ The build process generates:
 
 2. **Edit SASS files** in `assets/scss/` or `assets/scss/components/`
 
-3. **Changes auto-compile** to `assets/css/emfn-site-styles.css`
+3. **Changes auto-compile** to `assets/css/emfn-site-styles-plugin.css`
 
 4. **Refresh browser** to see changes (WordPress auto-loads latest version via `EMFN_SITE_STYLES_PLUGIN_VERSION`)
 

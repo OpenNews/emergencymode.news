@@ -1,10 +1,10 @@
 # WordPress Data for Google Sheets
 
-Pull live WordPress data directly into Google Sheets for creating pivot tables, dashboards, and reports.
+Pull live WordPress data directly into Google Sheets for creating pivot tables, dashboards and reports.
 
 ## What This Does
 
-This Google Apps Script connects your Google Sheets to the EmergencyMode.news WordPress site, letting you fetch categories, tags, pages, and posts data using simple formulas—just like `=SUM()` or `=VLOOKUP()`.
+This Google Apps Script connects your Google Sheets to the EmergencyMode.news WordPress site, letting you fetch categories, tags, pages and posts data using simple formulas—just like `=SUM()` or `=VLOOKUP()`.
 
 ## Setup
 
@@ -135,7 +135,7 @@ Fetch WordPress posts.
 Generic function for advanced usage.
 
 **Parameters:**
-- `endpoint`: Must be `"categories"`, `"tags"`, `"pages"`, or `"posts"`
+- `endpoint`: Must be `"categories"`, `"tags"`, `"pages"` or `"posts"`
 - `filter` (optional): Filter value
 - `fields` (optional): Comma-separated field list
 - `includeHeaders` (optional): Set to `TRUE` to include header row (default: `FALSE`)
@@ -310,7 +310,7 @@ Then use pivot tables to group by month/year or create trend charts.
 ## Troubleshooting
 
 **"Invalid endpoint" error**  
-Only `categories`, `tags`, `pages`, and `posts` are supported.
+Only `categories`, `tags`, `pages` and `posts` are supported.
 
 **No data appears**  
 Check that the filter value exists. Try without a filter first: `=getCategories()`

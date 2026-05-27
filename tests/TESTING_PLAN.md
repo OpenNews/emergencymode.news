@@ -4,7 +4,7 @@
 
 **Status: Core Infrastructure Implemented ✅**
 
-This document describes the comprehensive testing strategy for WordPress plugins, release automation, and data analysis notebooks. The foundation (PHP unit tests, JavaScript tests, shell script tests, and CI integration) is complete and operational. E2E and notebook testing remain as future enhancements.
+This document describes the comprehensive testing strategy for WordPress plugins, release automation and data analysis notebooks. The foundation (PHP unit tests, JavaScript tests, shell script tests and CI integration) is complete and operational. E2E and notebook testing remain as future enhancements.
 
 **Currently Implemented:**
 - ✅ PHP unit tests (PHPUnit) for Action Pack payload decoding
@@ -49,8 +49,8 @@ tests/
     ├── README.md
     ├── test-helpers.sh          # Test framework functions
     ├── test-build-assets.sh     # Build script validation
-    ├── test-sync-version.sh     # Version sync tests (DISABLED)
-    └── test-version-bump.sh     # Version bump logic tests
+    ├── test-sync-version.sh     # Version bump logic tests (20 tests)
+    └── test-version-bump.sh     # Version bump integration tests
 ```
 
 **Future Additions:**
@@ -181,15 +181,16 @@ describe('Geolocation Resolution', () => {
 - ✅ Checks ZIP excludes development files
 - ✅ All shellcheck warnings fixed
 
-**test-version-bump.sh** — Version logic
-- ✅ Tests major/minor/patch version increment detection
+**test-sync-version.sh** — Version bump logic
+- ✅ Tests major/minor/patch version increment detection (20 tests)
 - ✅ Validates commit message keyword matching
-- ✅ Bash parameter expansion (no sed dependencies)
+- ✅ Tests skip ci detection and tag filtering
+- ✅ Uses temporary git repositories (safe for CI)
+- ✅ Bash regex parsing (no sed dependencies)
 
-**test-sync-version.sh** — **DISABLED**
-- ⚠️ Tests modify real project files (unsafe for CI)
-- ⚠️ Contains exit 0 to prevent execution
-- ⚠️ Needs refactoring to use temp directories before re-enabling
+**test-version-bump.sh** — Version bump integration
+- ✅ Tests version bump workflow integration
+- ✅ Validates semantic versioning rules
 
 **Running Script Tests:**
 ```bash
@@ -373,7 +374,7 @@ jobs:
       - run: npm run lint  # Prettier, ESLint, shellcheck, notebooks
       
       # Testing
-      - run: npm run test:all  # JavaScript, PHP, and shell script tests
+      - run: npm run test:all  # JavaScript, PHP and shell script tests
       
       # ... version bump, build, release steps follow
 ```

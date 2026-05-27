@@ -18,7 +18,7 @@ This directory contains development utilities and resources that support the Eme
 Files in this directory are:
 - ✅ Tracked in GitHub for version control
 - ✅ Ignored by WordPress deployment (not synced to the site)
-- ✅ Available for development, documentation, and reference
+- ✅ Available for development, documentation and reference
 
 ## WordPress Sync
 

@@ -19,7 +19,7 @@ This lightweight plugin provides custom styling for the Emergency Mode website (
 * Site-wide custom styles compiled from organized SASS components
 * Responsive design with mobile and tablet breakpoints
 * Category-specific color coding for content organization
-* Custom components for Action Pack, hero sections, FAQs, and more
+* Custom components for Action Pack, hero sections, FAQs and more
 * No complex PHP logic - only asset enqueuing
 * Built with modern SASS workflows
 

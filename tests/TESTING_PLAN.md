@@ -72,19 +72,19 @@ tests/
 
 ## Test Categories
 
-### 1. PHP Unit Tests (PHPUnit) \u2705 **IMPLEMENTED**
+### 1. PHP Unit Tests (PHPUnit) ✅ **IMPLEMENTED**
 
 **Current Implementation:**
 
-**PayloadDecodingTest.php** \u2014 15 tests, 26 assertions
-- \u2705 Decodes single category at position zero
-- \u2705 Decodes multiple categories from single segment
-- \u2705 Decodes categories across multiple segments
-- \u2705 Handles malformed payloads gracefully
-- \u2705 Round-trip encoding/decoding validation
-- \u2705 Category order preservation by manualRank
-- \u2705 Base36 decoding validation
-- \u2705 Tests actual production plugin class (not test doubles)
+**PayloadDecodingTest.php** — 15 tests, 26 assertions
+- ✅ Decodes single category at position zero
+- ✅ Decodes multiple categories from single segment
+- ✅ Decodes categories across multiple segments
+- ✅ Handles malformed payloads gracefully
+- ✅ Round-trip encoding/decoding validation
+- ✅ Category order preservation by manualRank
+- ✅ Base36 decoding validation
+- ✅ Tests actual production plugin class (not test doubles)
 
 **Setup:**
 - WordPress function stubs in `bootstrap.php`
@@ -117,25 +117,25 @@ The following tests are planned but not yet implemented:
 - Localized data includes correct CSV URL
 - Version constant matches header
 
-### 2. JavaScript Unit Tests (Jest) \u2705 **IMPLEMENTED**
+### 2. JavaScript Unit Tests (Jest) ✅ **IMPLEMENTED**
 
 **Current Implementation:**
 
-**payload-encoding.test.js** \u2014 13 tests
-- \u2705 Encodes single category to ap2 format
-- \u2705 Encodes multiple categories in rank order
-- \u2705 Splits into multiple segments when needed
-- \u2705 Handles empty category lists
-- \u2705 Preserves category order by manualRank
-- \u2705 Base36 encoding validation
-- \u2705 Round-trip with PHP decoder compatibility
+**payload-encoding.test.js** — 13 tests
+- ✅ Encodes single category to ap2 format
+- ✅ Encodes multiple categories in rank order
+- ✅ Splits into multiple segments when needed
+- ✅ Handles empty category lists
+- ✅ Preserves category order by manualRank
+- ✅ Base36 encoding validation
+- ✅ Round-trip with PHP decoder compatibility
 
-**risk-rendering.test.js** \u2014 9 tests
-- \u2705 Parses county FIPS from location data
-- \u2705 Filters hazards by risk threshold
-- \u2705 Renders hazard labels correctly
-- \u2705 Handles missing risk data gracefully
-- \u2705 Maps FEMA hazard codes to labels
+**risk-rendering.test.js** — 9 tests
+- ✅ Parses county FIPS from location data
+- ✅ Filters hazards by risk threshold
+- ✅ Renders hazard labels correctly
+- ✅ Handles missing risk data gracefully
+- ✅ Maps FEMA hazard codes to labels
 
 **Setup:**
 - Jest 29.7.0 with jsdom environment
@@ -166,37 +166,37 @@ describe('Geolocation Resolution', () => {
 })
 ```
 
-### 3. Shell Script Tests \u2705 **IMPLEMENTED**
+### 3. Shell Script Tests ✅ **IMPLEMENTED**
 
 **Current Implementation:**
 
-**test-helpers.sh** \u2014 Test framework
-- \u2705 Assertion functions (assert_success, assert_failure, assert_equals, assert_contains)
-- \u2705 Test result tracking and reporting
-- \u2705 Colored output for pass/fail
+**test-helpers.sh** — Test framework
+- ✅ Assertion functions (assert_success, assert_failure, assert_equals, assert_contains)
+- ✅ Test result tracking and reporting
+- ✅ Colored output for pass/fail
 
-**test-build-assets.sh** \u2014 Build validation
-- \u2705 Verifies plugin ZIP creation
-- \u2705 Validates ZIP contains required files
-- \u2705 Checks ZIP excludes development files
-- \u2705 All shellcheck warnings fixed
+**test-build-assets.sh** — Build validation
+- ✅ Verifies plugin ZIP creation
+- ✅ Validates ZIP contains required files
+- ✅ Checks ZIP excludes development files
+- ✅ All shellcheck warnings fixed
 
-**test-version-bump.sh** \u2014 Version logic
-- \u2705 Tests major/minor/patch version increment detection
-- \u2705 Validates commit message keyword matching
-- \u2705 Bash parameter expansion (no sed dependencies)
+**test-version-bump.sh** — Version logic
+- ✅ Tests major/minor/patch version increment detection
+- ✅ Validates commit message keyword matching
+- ✅ Bash parameter expansion (no sed dependencies)
 
-**test-sync-version.sh** \u2014 **DISABLED**
-- \u26a0\ufe0f Tests modify real project files (unsafe for CI)
-- \u26a0\ufe0f Contains exit 0 to prevent execution
-- \u26a0\ufe0f Needs refactoring to use temp directories before re-enabling
+**test-sync-version.sh** — **DISABLED**
+- ⚠️ Tests modify real project files (unsafe for CI)
+- ⚠️ Contains exit 0 to prevent execution
+- ⚠️ Needs refactoring to use temp directories before re-enabling
 
 **Running Script Tests:**
 ```bash
 npm run test:scripts  # Runs all enabled script tests
 ```
 
-### 4. End-to-End Tests (Playwright) \u23f3 **PLANNED**
+### 4. End-to-End Tests (Playwright) ⏳ **PLANNED**
 
 **Setup Requirements:**
 - Playwright
@@ -236,7 +236,7 @@ test('actionPack URL parameter decoding', async ({ page }) => {
 })
 ```
 
-### 5. Notebook Reproducibility Tests \u23f3 **PLANNED**
+### 5. Notebook Reproducibility Tests ⏳ **PLANNED**
 
 **test-reproducibility.py** (future)
 ```bash
@@ -314,7 +314,7 @@ def test_csv_column_schema():
 
 ## Test Data Management
 
-### Fixtures Location \u2705 **IMPLEMENTED**
+### Fixtures Location ✅ **IMPLEMENTED**
 - CSV test data: `tests/fixtures/test-categories.csv`
 - Mock API responses: `tests/fixtures/location-test-data.json`
 - Payload test cases: `tests/fixtures/payload-test-cases.json`
@@ -324,7 +324,7 @@ def test_csv_column_schema():
 - Anonymize any user-submitted form data
 - Version control small fixtures, gitignore large datasets
 
-## WordPress Coding Standards \u23f3 **FUTURE**
+## WordPress Coding Standards ⏳ **FUTURE**
 
 **Setup Requirements:**
 - PHP_CodeSniffer
@@ -349,7 +349,7 @@ def test_csv_column_schema():
 </ruleset>
 ```
 
-## CI/CD Integration \u2705 **IMPLEMENTED**
+## CI/CD Integration ✅ **IMPLEMENTED**
 
 ### Current Integration (.github/workflows/release.yml)
 
@@ -378,7 +378,7 @@ jobs:
       # ... version bump, build, release steps follow
 ```
 
-**Status:** All tests run automatically before every release to `main` \u2705
+**Status:** All tests run automatically before every release to `main` ✅
 
 ### Future: Dedicated Test Workflow (.github/workflows/test.yml)
 
@@ -434,7 +434,7 @@ jobs:
   # E2E and notebook tests would go here when implemented
 ```
 
-## Package.json Scripts \u2705 **IMPLEMENTED**
+## Package.json Scripts ✅ **IMPLEMENTED**
 
 Current [package.json](../package.json) scripts:
 
@@ -483,7 +483,7 @@ Current [package.json](../package.json) scripts:
 }
 ```
 
-## pyproject.toml Updates \u2705 **IMPLEMENTED**
+## pyproject.toml Updates ✅ **IMPLEMENTED**
 
 Current [pyproject.toml](../pyproject.toml):
 
@@ -585,19 +585,19 @@ python_files = ["test_*.py"]
 
 ## Open Questions
 
-**Answered \u2705:**
-1. \u2705 **Test infrastructure:** Implemented with Jest, PHPUnit, bash test framework
-2. \u2705 **PHP test approach:** Using WordPress function stubs, not full WP environment
-3. \u2705 **Coverage tools:** Xdebug for PHP, Jest built-in for JavaScript
-4. \u2705 **CI integration:** Tests run in release workflow before every deployment
-5. \u2705 **Version safeguards:** Implemented to prevent version chaos from tests
+**Answered ✅:**
+1. ✅ **Test infrastructure:** Implemented with Jest, PHPUnit, bash test framework
+2. ✅ **PHP test approach:** Using WordPress function stubs, not full WP environment
+3. ✅ **Coverage tools:** Xdebug for PHP, Jest built-in for JavaScript
+4. ✅ **CI integration:** Tests run in release workflow before every deployment
+5. ✅ **Version safeguards:** Implemented to prevent version chaos from tests
 
 **Remaining (for future E2E/integration work):**
-1. \u23f3 Should E2E tests mock Google Places API or use real keys in CI?
-2. \u23f3 How to test FCC API without hitting actual endpoint (rate limits)?
-3. \u23f3 Test against multiple WordPress versions (6.3, 6.4, 6.5+)?
-4. \u23f3 Visual regression testing for risk display UI?
-5. \u23f3 Load testing for CSV parsing with many requests?
+1. ⏳ Should E2E tests mock Google Places API or use real keys in CI?
+2. ⏳ How to test FCC API without hitting actual endpoint (rate limits)?
+3. ⏳ Test against multiple WordPress versions (6.3, 6.4, 6.5+)?
+4. ⏳ Visual regression testing for risk display UI?
+5. ⏳ Load testing for CSV parsing with many requests?
 
 ## Implementation Summary
 
@@ -609,13 +609,13 @@ This testing plan was successfully implemented using agentic AI assistance (prim
 
 | Category | Status | Files Created | Tests Written |
 |----------|--------|---------------|---------------|
-| Test Infrastructure | \u2705 Complete | 8 | N/A |
-| PHP Tests | \u2705 Phase 1 | 2 | 15 tests |
-| JavaScript Tests | \u2705 Phase 1 | 4 | 22 tests |
-| E2E Tests | \u23f3 Planned | 0 | 0 |
-| Script Tests | \u2705 Complete | 4 | ~30 assertions |
-| Notebook Tests | \u23f3 Planned | 0 | 0 |
-| CI/CD Config | \u2705 Integrated | Modified 1 | N/A |
+| Test Infrastructure | ✅ Complete | 8 | N/A |
+| PHP Tests | ✅ Phase 1 | 2 | 15 tests |
+| JavaScript Tests | ✅ Phase 1 | 4 | 22 tests |
+| E2E Tests | ⏳ Planned | 0 | 0 |
+| Script Tests | ✅ Complete | 4 | ~30 assertions |
+| Notebook Tests | ⏳ Planned | 0 | 0 |
+| CI/CD Config | ✅ Integrated | Modified 1 | N/A |
 | **Total** | **60% Complete** | **18** | **67 tests** |
 
 **Key Learnings:**
@@ -773,36 +773,6 @@ and verifies the redirect URL contains an actionPack parameter."
 
 **Savings: 55-65%** in direct costs, **60-70%** in calendar time
 
-### AI Tool Recommendations
-
-**Best for This Project:**
-
-1. **GitHub Copilot + Workspace** (⭐⭐⭐⭐⭐)
-   - Excellent at test boilerplate
-   - GitHub integration simplifies PR workflow
-   - Good WordPress/PHP context
-
-2. **Cursor Composer** (⭐⭐⭐⭐⭐)
-   - Multi-file refactoring strong
-   - Can read existing plugin code for context
-   - Fast iteration on test failures
-
-3. **Claude Code + MCP** (⭐⭐⭐⭐)
-   - Best at understanding complex logic
-   - Can reason about test coverage gaps
-   - Slower but higher quality for tricky tests
-
-4. **Windsurf** (⭐⭐⭐⭐)
-   - Good for E2E test generation
-   - Understands web flows well
-   - Strong at debugging flaky tests
-
-**Recommended Workflow:**
-- **Infrastructure setup:** Cursor Composer (multi-file creation)
-- **Unit tests:** GitHub Copilot (inline generation)
-- **E2E tests:** Claude (reasoning about flows)
-- **Debugging:** Cursor + Claude (error analysis)
-
 ### Human Review Checkpoints
 
 **Critical Review Points (Cannot Skip):**
@@ -878,11 +848,3 @@ and verifies the redirect URL contains an actionPack parameter."
 - Day 5: CI integration + fix failures
 
 **Buffer:** 1-3 days for debugging, flaky test fixes, documentation
-
-## References
-
-- [WordPress Plugin Unit Tests](https://make.wordpress.org/cli/handbook/plugin-unit-tests/)
-- [Jest Documentation](https://jestjs.io/docs/getting-started)
-- [Playwright Best Practices](https://playwright.dev/docs/best-practices)
-- [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
-- [WordPress Coding Standards](https://developer.wordpress.org/coding-standards/)

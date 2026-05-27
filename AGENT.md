@@ -306,7 +306,7 @@ sudo apt-get install -y shellcheck  # Takes ~1-2 seconds
 - But then realized the best solution was simpler: `apt-get install shellcheck`
 
 **Why This Matters**:
-- Devcontainer features can be unmaintained, deprecated, or moved to new registries
+- Devcontainer features can be unmaintained, deprecated or moved to new registries
 - Package managers change over time (contrib → extra → ???)
 - Simple solutions (apt-get) often outlast complex ones (custom features)
 - No need to track registry migrations when using system packages
@@ -368,7 +368,7 @@ sudo apt-get install -y shellcheck  # Takes ~1-2 seconds
 
 # For version testing in this codebase:
 ✅ Use: 0.2.1, 0.3.0, 1.0.0 (safe increments from 0.2.0)
-❌ NEVER: 9.9.9, 99.0.0, or anything > 10.99.99
+❌ NEVER: 9.9.9, 99.0.0 or anything > 10.99.99
 ```
 
 **Safe Testing Patterns**:
@@ -405,7 +405,7 @@ grep '"version"' package.json
 
 ### 14. Audit Constraints Before Writing Code (ROOT CAUSE of Most AI Bugs)
 
-**THE TRAP**: Writing code without first checking the execution environment's constraints, contracts, and dependencies.
+**THE TRAP**: Writing code without first checking the execution environment's constraints, contracts and dependencies.
 
 **The Pattern Across Multiple HIGH-Priority Bugs**:
 1. **Uninitialized variable bug** (`$major` used before parsed) → Didn't check bash `set -u` constraint
@@ -527,7 +527,7 @@ head -20 FILE  # Look for set -euo pipefail, imports, settings
 - ✅ npm scripts used in `.github/workflows/release.yml` → Exit codes MUST propagate
 - ✅ Pre-commit runs different tools than `npm run lint` → Check BOTH before committing
 
-**Lesson**: AI agents (me included) write code in isolation without checking the execution environment's constraints. A 5-minute pre-coding audit of configs, contracts, dependencies, and strict modes prevents hours of debugging HIGH-priority bugs. **This is the root cause behind lessons #15, #16, and #17** - all would have been caught by checking configs first.
+**Lesson**: AI agents (me included) write code in isolation without checking the execution environment's constraints. A 5-minute pre-coding audit of configs, contracts, dependencies and strict modes prevents hours of debugging HIGH-priority bugs. **This is the root cause behind lessons #15, #16 and #17** - all would have been caught by checking configs first.
 
 ---
 

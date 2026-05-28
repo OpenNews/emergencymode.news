@@ -15,7 +15,7 @@
  * @typedef {import("../../../shared/emfn-types").GFormSubmissionStartedData} GFormSubmissionStartedData
  */
 
-const version = "0.8.07"; // debugging versioning
+const version = "0.8.08"; // debugging versioning
 const riskThreshold = 85; // threshold for suggested risks
 const emfnWindow = /** @type {EmfnWindow} */ (window);
 
@@ -510,7 +510,7 @@ const RiskRenderer = {
    */
   renderRiskList(riskType, likelyHazards) {
     riskType.textContent = likelyHazards.length
-      ? `FEMA's top hazards: ${likelyHazards.join(", ")}`
+      ? `FEMA’s top hazards: ${likelyHazards.join(", ")}`
       : "No high risk for any specific hazards based on our data.";
   },
 

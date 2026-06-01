@@ -23,7 +23,7 @@
     "test:scripts": "status=0; for test in tests/scripts/test-*.sh; do [ \"$(basename $test)\" != \"test-helpers.sh\" ] && { $test || status=1; }; done; exit $status"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
+    "@eslint/js": "^10.0.1",
     "@typescript-eslint/eslint-plugin": "^8.60.0",
     "@typescript-eslint/parser": "^8.59.4",
     "eslint": "^10.4.1",

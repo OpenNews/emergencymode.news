@@ -337,7 +337,7 @@ test_multiple_notebooks() {
 </ruleset>
 ```
 
-### Package.json Scripts**
+### Package.json Scripts
 
 **Future Additions (when E2E tests implemented):**
 ```json

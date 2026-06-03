@@ -4,7 +4,7 @@ Tags: styles, css, newspack, custom-styles
 Requires at least: 6.3
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 0.0.1
+Stable tag: 0.1.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 

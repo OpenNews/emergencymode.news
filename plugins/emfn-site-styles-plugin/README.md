@@ -17,7 +17,7 @@ plugins/emfn-site-styles-plugin/
 │   └── class-emfn-site-styles-plugin.php # Main plugin class (singleton)
 ├── assets/
 │   ├── css/
-│   │   └── emfn-site-styles-plugin.css  # Generated/built CSS (gitignored)
+│   │   └── emfn-site-styles-plugin.css  # Current CSS (tracked in repo; may become generated later)
 │   ├── scss/
 │   │   ├── main.scss                     # Main SASS entry point
 │   │   ├── _variables.scss               # SASS variables (colors, breakpoints)

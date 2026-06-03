@@ -410,6 +410,15 @@ jobs:
       matrix: ${{ steps.versions.outputs.matrix }}
     
     steps:
+      - name: Validate RELEASE_TOKEN
+        run: |
+          if [[ -z "${{ secrets.RELEASE_TOKEN }}" ]]; then
+            echo "::error::RELEASE_TOKEN secret is not configured"
+            echo "This token is required to bypass branch protection when committing version changes."
+            echo "Please configure RELEASE_TOKEN in repository secrets."
+            exit 1
+          fi
+      
       # ... setup, tests, detect, matrix steps ...
   
   release-plugins:
@@ -423,7 +432,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
       
       - name: Sync plugin version
         run: |
@@ -530,6 +539,18 @@ jobs:
 
 ---
 
+## Prerequisites
+
+Before implementing this plan:
+
+- [x] `RELEASE_TOKEN` secret configured in repository (has bypass permissions for branch protection)
+- [ ] Branch protection rules configured on `main` branch
+- [ ] Verify `RELEASE_TOKEN` is from GitHub App or admin PAT with bypass permissions
+
+**Note**: Issue #21 tracks the branch protection setup.
+
+---
+
 ## Rollout Checklist
 
 - [ ] Remove version from package.json
@@ -576,6 +597,8 @@ jobs:
 | No way to track "repo state" | Use commit SHAs and plugin tags; if needed, can add later |
 | Parallel commits causing tag conflicts | Use git pull --rebase and retry logic |
 | Silent skips when no plugins change | Log clearly when skipping release |
+| RELEASE_TOKEN deleted/missing | Validate token exists early in workflow with clear error message |
+| Branch protection blocks commits | RELEASE_TOKEN must have bypass permissions (see Prerequisites) |
 
 ---
 

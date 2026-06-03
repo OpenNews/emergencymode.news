@@ -397,7 +397,7 @@ python_files = ["test_*.py"]
 
 **For Future E2E/Integration Tests:**
 1. Should E2E tests mock Google Places API or use real keys in CI?
-    * [TF] mock, no live keys; Gravity Forms is is the way
+    * [TF] mock, no live keys; Gravity Forms is the way
 2. How to test FCC API without hitting actual endpoint (rate limits)?
     * [TF] worth mocking; it's not complex
 3. Test against multiple WordPress versions (6.3, 6.4, 6.5+)?

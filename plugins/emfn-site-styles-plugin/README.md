@@ -77,9 +77,7 @@ plugins/emfn-site-styles-plugin/
 npm install
 ```
 
-This installs `sass` as a dev dependency (already in `package.json`).
-
-### Build Commands
+SASS build commands are not wired up in this repo yet (no `sass` devDependency and no `build:styles*` scripts in `package.json`). The commands below are a proposed workflow once that wiring is added:
 
 ```bash
 # Development build (expanded, with source maps)

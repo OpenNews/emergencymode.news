@@ -14,7 +14,8 @@ const emfnWindow = /** @type {EmfnWindow} */ (window);
  * - TK things ot do
  */
 
-const isEMFN = window.location.host.includes("emergencymode");
-if (isEMFN) {
+const isEMFNHost = window.location.host.includes("emergencymode");
+const isDebug = new URLSearchParams(window.location.search).get("emfnDebug") === "true";
+if (isEMFNHost && isDebug) {
   console.info("EMFN Styles JS active", version, emfnWindow);
 }

@@ -1,6 +1,5 @@
 {
   "name": "emergencymode-news",
-  "version": "0.3.1",
   "type": "module",
   "description": "emergencymode.news scripts, Notebooks and WordPress customizations",
   "private": true,

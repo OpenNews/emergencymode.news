@@ -140,9 +140,11 @@ The build process generates:
 
 ## Version Management
 
-Update version in **both** files when releasing:
-1. `emfn-site-styles-plugin.php` - Plugin header and constant
-2. `package.json` - Version field
+Version is managed in the plugin PHP file only:
+1. `emfn-site-styles-plugin.php` - Plugin header (`Version:`) and constant (`EMFN_SITE_STYLES_PLUGIN_VERSION`)
+2. `readme.txt` - Stable tag
+
+Versions are automatically synced by the release workflow.
 
 ## Migration from Legacy CSS
 

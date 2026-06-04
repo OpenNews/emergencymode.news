@@ -178,7 +178,7 @@ run_tests() {
   assert_equals "v1.0.2" "$LATEST"
   teardown
   
-  # Test 19: No tags exist (should use package.json version)
+  # Test 19: No tags exist (workflow uses default 0.1.0)
   test_start "no tags: empty tag list"
   setup
   LATEST=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || echo "")

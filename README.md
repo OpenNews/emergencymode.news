@@ -394,8 +394,6 @@ On every push to `main`, `.github/workflows/release.yml` executes:
 2. **Test execution:** Runs `npm run test:all` (JavaScript, PHP, shell script tests)
 3. **Version increment:** Computes next patch version tag (e.g., `v1.0.0` → `v1.0.1`)
 4. **Version sync:** Updates all version references via `scripts/sync-release-version.sh`:
-   - `package.json` version
-   - `pyproject.toml` version
    - Plugin PHP headers (`Version:` field)
    - Plugin PHP constants (`EMFN_*_PLUGIN_VERSION`)
    - Plugin `readme.txt` stable tags

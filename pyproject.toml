@@ -1,7 +1,6 @@
 [project]
 name = "emergencymode-disaster-risk"
 description = "Disaster risk projection data analysis for Emergency Mode News"
-version = "0.3.1"
 requires-python = ">=3.13"
 dependencies = [
     "jupyterlab~=4.5",

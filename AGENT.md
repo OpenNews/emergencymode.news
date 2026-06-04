@@ -13,9 +13,9 @@
 **What Happened**:
 - Test creates temp directory with setup()
 - But `scripts/sync-release-version.sh` always runs `cd "$repo_root"` (line 18-19)
-- Every test execution overwrites real package.json, pyproject.toml, plugin PHP files
+- Every test execution overwrites real plugin PHP files
 - Test #10 used version `9.9.9`, corrupting entire project
-- Versions appeared everywhere: package.json, pyproject.toml, PHP header, PHP constant, readme.txt, lockfiles
+- Versions appeared in: PHP header, PHP constant, readme.txt, lockfiles
 
 **Solution Applied**:
 - Disabled entire test file with `exit 0` and warning comment
@@ -262,14 +262,14 @@ sudo apt-get install -y shellcheck  # Takes ~1-2 seconds
 
 ### 10. WordPress Plugin Version Management
 
-**THE TRAP**: Version numbers scattered across 5+ files, easy to get inconsistent.
+**THE TRAP**: Version numbers scattered across multiple files per plugin, easy to get inconsistent.
 
-**Files That Must Stay in Sync**:
-1. `package.json` → `"version": "X.Y.Z"`
-2. `pyproject.toml` → `version = "X.Y.Z"`
-3. `plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php` → Header: `Version: X.Y.Z`
-4. `plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php` → Constant: `EMFN_ACTION_PACK_PLUGIN_VERSION`
-5. `plugins/emfn-action-pack-plugin/readme.txt` → `Stable tag: X.Y.Z`
+**Files That Must Stay in Sync** (per plugin):
+1. `plugins/{plugin-name}/{plugin-name}.php` → Header: `Version: X.Y.Z`
+2. `plugins/{plugin-name}/{plugin-name}.php` → Constant: `{PLUGIN}_VERSION`
+3. `plugins/{plugin-name}/readme.txt` → `Stable tag: X.Y.Z`
+
+**Note**: package.json and pyproject.toml no longer have version fields (removed per multi-plugin release plan)
 
 **Solution Applied**:
 - Created `scripts/sync-release-version.sh <version>` to update all files atomically
@@ -394,7 +394,7 @@ grep '"version"' package.json
 - ❌ Assuming safeguards will prevent damage (they might not in edge cases)
 
 **For This Codebase**:
-- Current version: 0.2.0 (check package.json before every version operation)
+- Current versions: Check plugin PHP files or git tags (e.g., `action-pack/v0.3.1`)
 - Safe test versions: 0.2.1, 0.3.0, 1.0.0
 - Forbidden versions: 9.9.9 (lesson #1), 99.0.0 (exceeds safeguard), anything > 10.99.99
 - Version sync script: ALWAYS check current version first, use safe increments
@@ -769,7 +769,7 @@ npm run test:scripts         # All test-*.sh files
 ./scripts/sync-release-version.sh --force 1.2.3
 
 # Verify consistency
-grep -E 'version|Version' package.json pyproject.toml plugins/*/emfn-action-pack-plugin.php plugins/*/readme.txt
+grep -E 'version|Version' plugins/*/emfn-action-pack-plugin.php plugins/*/readme.txt
 ```
 
 ---

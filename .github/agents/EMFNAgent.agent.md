@@ -13,7 +13,7 @@ You are an expert WordPress plugin developer specializing in the Emergency Mode 
 - **Plugin structure**: Main PHP file with header → `includes/class-{plugin-name}.php` → single hook registration in constructor
 - **Asset enqueuing**: Use `wp_enqueue_scripts` hook with version constants for cache busting
 - **Newspack compatibility**: NO child themes allowed—all customizations via plugins
-- **Version management**: Sync version numbers across `{plugin}.php` header, PHP constant and `package.json`
+- **Version management**: Sync version numbers across `{plugin}.php` header, PHP constant and `readme.txt` stable tag
 
 ### SASS Build System
 - **Component organization**: Break CSS into logical partials in `assets/scss/components/`
@@ -105,7 +105,7 @@ private function __construct() {
 ## Related Files
 
 When working on plugins, check:
-- `package.json` - Build scripts and version
+- `package.json` - Build scripts and dependencies (no version field)
 - `.gitignore` - Ensure built assets are ignored
 - `tests/` - PHP and JS test coverage
 - `composer.json` - PHP dependencies and autoloading

@@ -1,6 +1,6 @@
 /*
  * EMFN style overrides 
- * ⏰ ONLY OCCASIONALLY, _MANUALLY_ BACKED UP TO GITHUB! ⏰ 
+ * ⏰ MANUALLY BACKED UP TO GITHUB! ⏰ 
  *
  * Enqueued after the main theme stylesheet, so these styles will take 
  * precedence over the default styles provided by the theme. 
@@ -29,11 +29,6 @@ body {
   font-family: "Roboto Slab", serif;
 }
 
-/* wide-site helper*/
-.max-width {
-  max-width: 800px !important;
-}
-
 /* Show Breadcrumbs only on Archive pages*/
 .site-breadcrumb {
   display: none !important;
@@ -55,6 +50,20 @@ body.author .site-breadcrumb {
 /* restyle border on blockquotes */
 .h-stk .entry-content [id] {
   border-color: #b7b4af;
+}
+
+/* for all Posts body copy, control internal hyperlink color*/
+.type-post.post .entry-content .wp-block-paragraph a:link {
+  color: var(--newspack-theme-color-primary);
+}
+
+.type-post.post .entry-content a:active,
+.type-post.post .entry-content a:hover {
+  color: var(--newspack-theme-color-primary-variation);
+}
+
+.type-post.post .entry-content a:visited {
+  color: var(--newspack-theme-color-secondary-against-white);
 }
 
 /* convert all horizontal rules to rounded-corner style */
@@ -322,8 +331,30 @@ body.parent-pageid-284 .entry-header {
   box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
   color: var(--newspack-theme-color-primary);
   margin-top: 2em;
-  padding: 14px 18px;
+  padding: 8px 18px;
 }
+.emfn-content-cards.wpnbha.has-more-button button:hover {
+  background-color: #e8e8e8;
+  border-color: #666;
+}
+
+/** ********* MORE BUTTONS ********** 
+ * styles for the "More"-like buttons that appear 
+ * - at the end of the Content Loops on HP and Action Pack
+ * - in the Facet Everything search results in Resources Library
+ */
+.facetwp-facet-load_more .facetwp-per-page-select,
+.emfn-content-cards.wpnbha.has-more-button button {
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #888;
+  box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
+  color: var(--newspack-theme-color-primary);
+  font-size: var(--newspack-theme-font-size-sm);
+  font-weight: 700;
+}
+
+.facetwp-facet-load_more .facetwp-per-page-select:hover,
 .emfn-content-cards.wpnbha.has-more-button button:hover {
   background-color: #e8e8e8;
   border-color: #666;
@@ -472,58 +503,6 @@ body.parent-pageid-284 .entry-header {
   margin-top: -5px;
   float: left;
   margin-right: 5px;
-}
-
-/** ********** BIG BUTTONS ********** 
- * larger CTA buttons with symbols, used on the homepage to lead into 
- * the Gravity Forms quiz
- */
-.big-buttons {
-  gap: 24px;
-}
-.big-button > a {
-  border-radius: 16px;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  padding: 30px 30px !important;
-  box-shadow:
-    rgb(0, 0, 0) 0px 0px 0px 0px,
-    rgba(0, 0, 0, 0.95) 0px 0px 0px 1px;
-  max-width: 250px;
-  scale: 1;
-  transition-duration: 0.3s;
-  transition-property: var(--broad-transition);
-  transition-timing-function: var(--transition-timing);
-}
-.big-button > a > .material-symbols-outlined {
-  padding-bottom: 0px;
-  width: 50px;
-}
-.big-button > a > .wp-element-button {
-  background-color: transparent !important;
-  padding: calc(0.667em + 2px) 0px;
-}
-.big-button > a > small {
-  display: block;
-}
-.big-button:hover > a:hover {
-  background-color: #ffffff30 !important;
-  scale: 1.05;
-  transition-duration: 0.3s;
-  transition-property: var(--broad-transition);
-  transition-timing-function: var(--transition-timing);
-}
-/* `during` orange variant */
-.big-button.alert-orange > a {
-  background-color: rgba(218, 70, 45, 0.3) !important;
-  box-shadow:
-    rgb(0, 0, 0) 0px 0px 0px 0px,
-    rgb(0, 0, 0) 0px 0px 0px 0px,
-    rgb(27, 34, 50) 0px 0px 0px 2px,
-    oklab(0.596448 0.159356 0.104125 / 0.2) 0px 0px 0px 4px,
-    rgb(0, 0, 0) 0px 0px 0px 0px;
-}
-.big-button.alert-orange:hover > a:hover {
-  background-color: rgba(218, 70, 45, 0.36) !important;
 }
 
 /** ********** HERO ********** 
@@ -683,6 +662,10 @@ body.parent-pageid-284 .entry-header {
 .facetwp-facet-search .facetwp-input-wrap {
   width: 100% !important;
   display: block !important;
+}
+
+.facetwp-icon {
+  padding: 0px 10px;
 }
 
 /* Category pills border top */

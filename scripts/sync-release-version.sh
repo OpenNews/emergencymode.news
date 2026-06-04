@@ -149,8 +149,5 @@ update_toml_version() {
   perl -0pi -e "s/(^version = \")[0-9]+\.[0-9]+\.[0-9]+(\")/\${1}$version\${2}/m;" "$file_path"
 }
 
-update_json_version "package.json"
-update_toml_version "pyproject.toml"
-
 update_php_plugin_version "plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php" "EMFN_ACTION_PACK_PLUGIN_VERSION"
 update_readme_stable_tag "plugins/emfn-action-pack-plugin/readme.txt"

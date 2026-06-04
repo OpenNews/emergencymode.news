@@ -13,9 +13,9 @@
 **What Happened**:
 - Test creates temp directory with setup()
 - But `scripts/sync-release-version.sh` always runs `cd "$repo_root"` (line 18-19)
-- Every test execution overwrites real package.json, pyproject.toml, plugin PHP files
+- Every test execution overwrites real plugin PHP files
 - Test #10 used version `9.9.9`, corrupting entire project
-- Versions appeared everywhere: package.json, pyproject.toml, PHP header, PHP constant, readme.txt, lockfiles
+- Versions appeared in: PHP header, PHP constant, readme.txt, lockfiles
 
 **Solution Applied**:
 - Disabled entire test file with `exit 0` and warning comment
@@ -262,14 +262,14 @@ sudo apt-get install -y shellcheck  # Takes ~1-2 seconds
 
 ### 10. WordPress Plugin Version Management
 
-**THE TRAP**: Version numbers scattered across 5+ files, easy to get inconsistent.
+**THE TRAP**: Version numbers scattered across multiple files per plugin, easy to get inconsistent.
 
-**Files That Must Stay in Sync**:
-1. `package.json` → `"version": "X.Y.Z"`
-2. `pyproject.toml` → `version = "X.Y.Z"`
-3. `plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php` → Header: `Version: X.Y.Z`
-4. `plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php` → Constant: `EMFN_ACTION_PACK_PLUGIN_VERSION`
-5. `plugins/emfn-action-pack-plugin/readme.txt` → `Stable tag: X.Y.Z`
+**Files That Must Stay in Sync** (per plugin):
+1. `plugins/{plugin-name}/{plugin-name}.php` → Header: `Version: X.Y.Z`
+2. `plugins/{plugin-name}/{plugin-name}.php` → Constant: `{PLUGIN}_VERSION`
+3. `plugins/{plugin-name}/readme.txt` → `Stable tag: X.Y.Z`
+
+**Note**: package.json and pyproject.toml no longer have version fields (removed per multi-plugin release plan)
 
 **Solution Applied**:
 - Created `scripts/sync-release-version.sh <version>` to update all files atomically
@@ -306,7 +306,7 @@ sudo apt-get install -y shellcheck  # Takes ~1-2 seconds
 - But then realized the best solution was simpler: `apt-get install shellcheck`
 
 **Why This Matters**:
-- Devcontainer features can be unmaintained, deprecated, or moved to new registries
+- Devcontainer features can be unmaintained, deprecated or moved to new registries
 - Package managers change over time (contrib → extra → ???)
 - Simple solutions (apt-get) often outlast complex ones (custom features)
 - No need to track registry migrations when using system packages
@@ -368,7 +368,7 @@ sudo apt-get install -y shellcheck  # Takes ~1-2 seconds
 
 # For version testing in this codebase:
 ✅ Use: 0.2.1, 0.3.0, 1.0.0 (safe increments from 0.2.0)
-❌ NEVER: 9.9.9, 99.0.0, or anything > 10.99.99
+❌ NEVER: 9.9.9, 99.0.0 or anything > 10.99.99
 ```
 
 **Safe Testing Patterns**:
@@ -394,7 +394,7 @@ grep '"version"' package.json
 - ❌ Assuming safeguards will prevent damage (they might not in edge cases)
 
 **For This Codebase**:
-- Current version: 0.2.0 (check package.json before every version operation)
+- Current versions: Check plugin PHP files or git tags (e.g., `action-pack/v0.3.1`)
 - Safe test versions: 0.2.1, 0.3.0, 1.0.0
 - Forbidden versions: 9.9.9 (lesson #1), 99.0.0 (exceeds safeguard), anything > 10.99.99
 - Version sync script: ALWAYS check current version first, use safe increments
@@ -405,7 +405,7 @@ grep '"version"' package.json
 
 ### 14. Audit Constraints Before Writing Code (ROOT CAUSE of Most AI Bugs)
 
-**THE TRAP**: Writing code without first checking the execution environment's constraints, contracts, and dependencies.
+**THE TRAP**: Writing code without first checking the execution environment's constraints, contracts and dependencies.
 
 **The Pattern Across Multiple HIGH-Priority Bugs**:
 1. **Uninitialized variable bug** (`$major` used before parsed) → Didn't check bash `set -u` constraint
@@ -527,7 +527,7 @@ head -20 FILE  # Look for set -euo pipefail, imports, settings
 - ✅ npm scripts used in `.github/workflows/release.yml` → Exit codes MUST propagate
 - ✅ Pre-commit runs different tools than `npm run lint` → Check BOTH before committing
 
-**Lesson**: AI agents (me included) write code in isolation without checking the execution environment's constraints. A 5-minute pre-coding audit of configs, contracts, dependencies, and strict modes prevents hours of debugging HIGH-priority bugs. **This is the root cause behind lessons #15, #16, and #17** - all would have been caught by checking configs first.
+**Lesson**: AI agents (me included) write code in isolation without checking the execution environment's constraints. A 5-minute pre-coding audit of configs, contracts, dependencies and strict modes prevents hours of debugging HIGH-priority bugs. **This is the root cause behind lessons #15, #16 and #17** - all would have been caught by checking configs first.
 
 ---
 
@@ -718,6 +718,72 @@ if (getenv('PHPUNIT_DEBUG')) {
 
 ---
 
+### 18. Check for Errors Proactively, Don't Wait for CI to Fail
+
+**THE TRAP**: Not running `get_errors()` or validation checks before committing, then discovering errors only when CI fails.
+
+**What Happened**:
+- CI failed with TOML parse error: `pyproject.toml` missing required `project.version` field
+- Error message: "TOML parse error at line 1, column 1... `project.version` field is neither set nor present in `project.dynamic` list"
+- AI agent (me) didn't check for errors proactively
+- User had to point out: "errors. You should have found these."
+
+**Why This Happens**:
+- AI agents focus on implementing features without validating the full workspace
+- `get_errors()` tool exists but isn't used proactively
+- We assume code is correct until proven otherwise
+- CI catches what should have been caught during development
+
+**Impact**:
+- ⏰ Wasted time waiting for CI to run
+- 🔄 Extra commit to fix validation errors
+- 😤 User frustration at preventable errors
+- 📉 Reduced confidence in AI assistance
+
+**Common Validation Errors to Catch Early**:
+- **pyproject.toml**: Missing `project.version` when using `[project]` table
+- **package.json**: Invalid semver, missing required fields
+- **composer.json**: Schema validation failures
+- **YAML files**: Indentation errors, invalid syntax
+- **TypeScript/ESLint**: Type errors, linting violations
+- **PHP**: Parse errors, undefined functions
+
+**The Fix: Proactive Error Checking**:
+```bash
+# BEFORE making changes:
+get_errors()  # Check current error state
+
+# AFTER making changes:
+get_errors()  # Validate changes didn't introduce errors
+get_errors(["/path/to/changed/file"])  # Focus on specific files
+
+# When working on config files:
+get_errors()  # Always validate after editing pyproject.toml, package.json, etc.
+```
+
+**Red Flags That You Skipped Error Checking**:
+- ❌ CI fails with validation errors on first run
+- ❌ User reports errors you could have found
+- ❌ Making changes to config files without validation
+- ❌ "Should be fine" assumptions without verification
+
+**For This Codebase**:
+- `pyproject.toml` requires `project.version` field (even though it's meaningless for this project)
+- Added comment: `version = "0.1.0" # Required by TOML spec but meaningless for this project`
+- All package files have schema requirements
+- Always check errors after editing configuration
+
+**Better Workflow**:
+1. **Start**: Run `get_errors()` to understand current state
+2. **Change**: Make your edits
+3. **Validate**: Run `get_errors()` to catch issues immediately
+4. **Test**: Run relevant test suites
+5. **Commit**: Trust but verify with pre-commit hooks
+
+**Lesson**: Proactive error checking is part of the AI agent's responsibility. Don't make users discover validation errors that CI will catch—find them yourself with `get_errors()` before committing. This is especially critical for configuration files (pyproject.toml, package.json, composer.json, YAML configs) that have schema requirements.
+
+---
+
 ## 🛠️ Development Workflow Best Practices
 
 ### Before Committing
@@ -769,7 +835,7 @@ npm run test:scripts         # All test-*.sh files
 ./scripts/sync-release-version.sh --force 1.2.3
 
 # Verify consistency
-grep -E 'version|Version' package.json pyproject.toml plugins/*/emfn-action-pack-plugin.php plugins/*/readme.txt
+grep -E 'version|Version' plugins/*/emfn-action-pack-plugin.php plugins/*/readme.txt
 ```
 
 ---
@@ -821,6 +887,7 @@ grep -E 'version|Version' package.json pyproject.toml plugins/*/emfn-action-pack
 6. **Never add devcontainer features for simple binaries** - Use apt-get instead
 7. **Never test test doubles exclusively** - Test real production classes for coverage
 8. **Never assume npm run lint === pre-commit** - They run different file patterns
+9. **Never skip `get_errors()` after editing config files** - CI will catch what you miss
 
 ---
 
@@ -861,5 +928,5 @@ SKIP=shellcheck git commit
 
 ---
 
-**Last Updated**: May 25, 2026  
-**Lessons Learned From**: Setting up complete test infrastructure, fixing pre-commit hooks, eliminating PHPUnit deprecations, debugging version number corruption, optimizing devcontainer setup
+**Last Updated**: June 4, 2026  
+**Lessons Learned From**: Setting up complete test infrastructure, fixing pre-commit hooks, eliminating PHPUnit deprecations, debugging version number corruption, optimizing devcontainer setup, proactive error validation

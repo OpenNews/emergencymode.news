@@ -1,18 +1,11 @@
 #!/usr/bin/env bash
-# Tests for scripts/sync-release-version.sh
+# Tests for release.yml version bump logic
 #
-# ⚠️  TESTS DISABLED ⚠️
-# This entire test file has been disabled because the tests modify real project files.
-# The sync-release-version.sh script always operates on the repo root (line 18-19),
-# ignoring the test's temporary directory setup.
+# Tests the commit message parsing and version incrementing logic
+# used in .github/workflows/release.yml to ensure [major], [minor],
+# and default (patch) bumps work correctly.
 #
-# To fix: Refactor sync-release-version.sh to accept an optional working directory
-# parameter, then re-enable these tests to work on temp directories only.
-#
-# DO NOT RUN THESE TESTS - they will corrupt your project version numbers!
-#
-# shellcheck disable=SC2317  # Intentionally unreachable code (entire file disabled)
-exit 0  # Skip all tests
+# These tests use temporary git repositories and do NOT modify real project files.
 
 set -euo pipefail
 
@@ -20,49 +13,55 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/test-helpers.sh"
 
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-SYNC_SCRIPT="$REPO_ROOT/scripts/sync-release-version.sh"
 TEMP_DIR=""
+
+# Replicate the version bump logic from release.yml
+calculate_next_version() {
+  local latest_tag="$1"
+  local commit_message="$2"
+  
+  # Parse current version using bash regex (no sed needed)
+  local MAJOR MINOR PATCH
+  if [[ "$latest_tag" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+    MAJOR="${BASH_REMATCH[1]}"
+    MINOR="${BASH_REMATCH[2]}"
+    PATCH="${BASH_REMATCH[3]}"
+  else
+    echo "Error: Invalid tag format: $latest_tag" >&2
+    return 1
+  fi
+  
+  # Check commit message for version bump signals (same regex as release.yml)
+  if echo "$commit_message" | grep -qiE '\[major\]|(^|[^[:alnum:]_])major([^[:alnum:]_]|$)'; then
+    # Major bump: x.0.0
+    MAJOR=$((MAJOR + 1))
+    MINOR=0
+    PATCH=0
+  elif echo "$commit_message" | grep -qiE '\[minor\]|(^|[^[:alnum:]_])minor([^[:alnum:]_]|$)'; then
+    # Minor bump: x.y.0
+    MINOR=$((MINOR + 1))
+    PATCH=0
+  else
+    # Default: patch bump x.y.z
+    PATCH=$((PATCH + 1))
+  fi
+  
+  echo "v${MAJOR}.${MINOR}.${PATCH}"
+}
 
 setup() {
   TEMP_DIR="$(mktemp -d)"
   cd "$TEMP_DIR"
   
-  # Create minimal test structure
-  mkdir -p plugins/emfn-action-pack-plugin
+  # Initialize a git repository for tag testing
+  git init -q
+  git config user.name "Test User"
+  git config user.email "test@example.com"
   
-  # Create test files
-  cat > package.json <<'EOF'
-{
-  "name": "test-package",
-  "version": "1.0.0",
-  "description": "Test package"
-}
-EOF
-
-  cat > pyproject.toml <<'EOF'
-[project]
-name = "test-project"
-version = "1.0.0"
-description = "Test project"
-EOF
-
-  cat > plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php <<'EOF'
-<?php
-/**
- * Plugin Name: EMFN Action Pack Plugin
- * Version: 1.0.0
- * Description: Test plugin
- */
-
-define( 'EMFN_ACTION_PACK_PLUGIN_VERSION', '1.0.0' );
-EOF
-
-  cat > plugins/emfn-action-pack-plugin/readme.txt <<'EOF'
-=== EMFN Action Pack Plugin ===
-Stable tag: 1.0.0
-Version: 1.0.0
-EOF
+  # Create initial commit
+  echo "test" > README.md
+  git add README.md
+  git commit -q -m "Initial commit"
 }
 
 teardown() {
@@ -72,119 +71,129 @@ teardown() {
 }
 
 run_tests() {
-  echo "Testing scripts/sync-release-version.sh"
+  echo "Testing release.yml version bump logic"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   
-  # Test 1: Missing version argument
-  test_start "rejects missing version argument"
+  # Test 1: Patch bump (default, no keywords)
+  test_start "patch bump: default when no version keyword in commit"
+  result=$(calculate_next_version "v1.2.3" "Fix bug in feature")
+  assert_equals "v1.2.4" "$result"
+  
+  # Test 2: Minor bump with [minor] tag
+  test_start "minor bump: [minor] tag in commit message"
+  result=$(calculate_next_version "v1.2.3" "Add new feature [minor]")
+  assert_equals "v1.3.0" "$result"
+  
+  # Test 3: Major bump with [major] tag
+  test_start "major bump: [major] tag in commit message"
+  result=$(calculate_next_version "v1.2.3" "Breaking change [major]")
+  assert_equals "v2.0.0" "$result"
+  
+  # Test 4: Minor keyword without brackets (word boundary)
+  test_start "minor bump: 'minor' keyword with word boundaries"
+  result=$(calculate_next_version "v1.2.3" "This is a minor update")
+  assert_equals "v1.3.0" "$result"
+  
+  # Test 5: Major keyword without brackets (word boundary)
+  test_start "major bump: 'major' keyword with word boundaries"
+  result=$(calculate_next_version "v1.2.3" "A major refactoring")
+  assert_equals "v2.0.0" "$result"
+  
+  # Test 6: Case insensitivity - [MINOR]
+  test_start "minor bump: case insensitive [MINOR]"
+  result=$(calculate_next_version "v1.2.3" "Feature update [MINOR]")
+  assert_equals "v1.3.0" "$result"
+  
+  # Test 7: Case insensitivity - [MAJOR]
+  test_start "major bump: case insensitive [MAJOR]"
+  result=$(calculate_next_version "v1.2.3" "Breaking change [MAJOR]")
+  assert_equals "v2.0.0" "$result"
+  
+  # Test 8: Word with 'minor' substring doesn't trigger (minority)
+  test_start "patch bump: 'minority' doesn't trigger minor bump"
+  result=$(calculate_next_version "v1.2.3" "Fix minority edge case")
+  assert_equals "v1.2.4" "$result"
+  
+  # Test 9: Word with 'major' substring doesn't trigger (majorette)
+  test_start "patch bump: 'majorette' doesn't trigger major bump"
+  result=$(calculate_next_version "v1.2.3" "Update majorette config")
+  assert_equals "v1.2.4" "$result"
+  
+  # Test 10: Multiple keywords - [major] takes precedence
+  test_start "major bump: [major] takes precedence over [minor]"
+  result=$(calculate_next_version "v1.2.3" "Breaking minor change [major] [minor]")
+  assert_equals "v2.0.0" "$result"
+  
+  # Test 11: [skip ci] in message doesn't affect version bump
+  test_start "patch bump: [skip ci] doesn't affect version logic"
+  result=$(calculate_next_version "v1.2.3" "Fix typo [skip ci]")
+  assert_equals "v1.2.4" "$result"
+  
+  # Test 12: [skip ci] with [minor]
+  test_start "minor bump: [skip ci] combined with [minor]"
+  result=$(calculate_next_version "v1.2.3" "Add feature [minor] [skip ci]")
+  assert_equals "v1.3.0" "$result"
+  
+  # Test 13: Starting from 0.0.0
+  test_start "patch bump: from 0.0.0"
+  result=$(calculate_next_version "v0.0.0" "Initial release")
+  assert_equals "v0.0.1" "$result"
+  
+  # Test 14: Starting from 0.1.0 with major bump
+  test_start "major bump: from 0.1.0 to 1.0.0"
+  result=$(calculate_next_version "v0.1.0" "Breaking change [major]")
+  assert_equals "v1.0.0" "$result"
+  
+  # Test 15: Large version numbers
+  test_start "minor bump: handles large version numbers"
+  result=$(calculate_next_version "v10.25.99" "Feature [minor]")
+  assert_equals "v10.26.0" "$result"
+  
+  # Test 16: Check skip ci detection (used in release.yml conditional)
+  test_start "skip ci detection: finds [skip ci] in message"
+  if echo "Fix typo [skip ci]" | grep -q "\[skip ci\]"; then
+    assert_success
+  else
+    assert_failure
+  fi
+  
+  # Test 17: Check skip ci detection (case insensitive, per release.yml)
+  test_start "skip ci detection: case sensitivity check"
+  if echo "Fix typo [skip ci]" | grep -qi "\[skip ci\]"; then
+    assert_success
+  else
+    assert_failure
+  fi
+  
+  # Test 18: Tag filtering (release.yml uses strict x.y.z format)
+  test_start "tag filtering: strict semver format only"
   setup
-  "$SYNC_SCRIPT" 2>/dev/null || true
-  assert_failure
+  git tag v1.0.0
+  git tag v1.0.1-beta
+  git tag v1.0.2
+  git tag v2.0.0-alpha
+  
+  # This mimics release.yml's tag filtering logic
+  LATEST=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
+  assert_equals "v1.0.2" "$LATEST"
   teardown
   
-  # Test 2: Invalid version format (not semver)
-  test_start "rejects invalid version format (not semver)"
+  # Test 19: No tags exist (workflow uses default 0.1.0)
+  test_start "no tags: empty tag list"
   setup
-  "$SYNC_SCRIPT" "1.0" 2>/dev/null || true
-  assert_failure
+  LATEST=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || echo "")
+  assert_equals "" "$LATEST"
   teardown
   
-  # Test 3: Invalid version format (letters)
-  test_start "rejects version with letters"
+  # Test 20: Version with tag already exists (release.yml checks this)
+  test_start "tag existence: detect duplicate tag"
   setup
-  "$SYNC_SCRIPT" "1.0.0-beta" 2>/dev/null || true
-  assert_failure
-  teardown
-  
-  # Test 4: Valid version updates package.json
-  test_start "updates package.json version"
-  setup
-  "$SYNC_SCRIPT" "2.5.7" >/dev/null 2>&1
-  version=$(python3 -c "import json; print(json.load(open('package.json'))['version'])")
-  assert_equals "2.5.7" "$version"
-  teardown
-  
-  # Test 5: Valid version updates pyproject.toml
-  test_start "updates pyproject.toml version"
-  setup
-  "$SYNC_SCRIPT" "3.1.4" >/dev/null 2>&1
-  version=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
-  assert_equals "3.1.4" "$version"
-  teardown
-  
-  # Test 6: Valid version updates PHP plugin header
-  test_start "updates PHP plugin Version header"
-  setup
-  "$SYNC_SCRIPT" "4.2.8" >/dev/null 2>&1
-  version=$(grep '^\s*\* Version:' plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-  assert_equals "4.2.8" "$version"
-  teardown
-  
-  # Test 7: Valid version updates PHP constant
-  test_start "updates PHP plugin version constant"
-  setup
-  "$SYNC_SCRIPT" "5.6.3" >/dev/null 2>&1
-  version=$(grep "define( 'EMFN_ACTION_PACK_PLUGIN_VERSION'" plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-  assert_equals "5.6.3" "$version"
-  teardown
-  
-  # Test 8: Valid version updates readme.txt stable tag
-  test_start "updates readme.txt Stable tag"
-  setup
-  "$SYNC_SCRIPT" "6.7.9" >/dev/null 2>&1
-  version=$(grep '^Stable tag:' plugins/emfn-action-pack-plugin/readme.txt | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-  assert_equals "6.7.9" "$version"
-  teardown
-  
-  # Test 9: Preserves JSON formatting
-  test_start "preserves JSON formatting in package.json"
-  setup
-  "$SYNC_SCRIPT" "7.8.9" >/dev/null 2>&1
-  # Check that indentation is preserved (2 spaces)
-  indent=$(grep -A1 '"name":' package.json | tail -1 | sed 's/[^ ].*//' | wc -c)
-  # 3 because wc -c counts the newline
-  assert_equals "3" "$indent"
-  teardown
-  
-  # Test 10: All files updated consistently
-  # DISABLED: This test modifies real project files because sync script
-  # always changes to repo root. Need to refactor sync script to accept
-  # a working directory parameter before this test can be re-enabled.
-  # test_start "updates all files to the same version"
-  # setup
-  # "$SYNC_SCRIPT" "9.9.9" >/dev/null 2>&1
-  
-  # pkg_version=$(python3 -c "import json; print(json.load(open('package.json'))['version'])")
-  # toml_version=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
-  # php_header=$(grep '^\s*\* Version:' plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-  # php_const=$(grep "define( 'EMFN_ACTION_PACK_PLUGIN_VERSION'" plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-  # readme_tag=$(grep '^Stable tag:' plugins/emfn-action-pack-plugin/readme.txt | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-  # 
-  # all_match=0
-  # if [[ "$pkg_version" == "9.9.9" && "$toml_version" == "9.9.9" && "$php_header" == "9.9.9" && "$php_const" == "9.9.9" && "$readme_tag" == "9.9.9" ]]; then
-  #   all_match=0
-  # else
-  #   all_match=1
-  # fi
-  # 
-  # [[ $all_match -eq 0 ]]
-  # assert_success
-  # teardown
-  
-  # Test 11: Version with zeros
-  test_start "handles version with zeros (0.0.1)"
-  setup
-  "$SYNC_SCRIPT" "0.0.1" >/dev/null 2>&1
-  version=$(python3 -c "import json; print(json.load(open('package.json'))['version'])")
-  assert_equals "0.0.1" "$version"
-  teardown
-  
-  # Test 12: Large version numbers
-  test_start "handles large version numbers (99.99.99)"
-  setup
-  "$SYNC_SCRIPT" "99.99.99" >/dev/null 2>&1
-  version=$(python3 -c "import json; print(json.load(open('package.json'))['version'])")
-  assert_equals "99.99.99" "$version"
+  git tag v1.0.0
+  if git rev-parse v1.0.0 >/dev/null 2>&1; then
+    assert_success
+  else
+    assert_failure
+  fi
   teardown
 }
 

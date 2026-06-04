@@ -63,15 +63,11 @@ jobs:
           # Get latest semver tag (strict x.y.z format only, no suffixes)
           LATEST=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
 
-          # If no tags exist yet, derive the starting version from package.json
+          # If no tags exist yet, start from 0.1.0
           if [[ -z "$LATEST" ]]; then
-            VERSION=$(node -p "require('./package.json').version")
-            if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-              echo "ERROR: package.json version '$VERSION' is not a valid x.y.z semver version"
-              exit 1
-            fi
+            VERSION="0.1.0"
             TAG="v${VERSION}"
-            echo "No existing tags, starting from package.json version: $VERSION"
+            echo "No existing tags, starting from default version: $VERSION"
           else
             # Parse current version (strip everything after the digits)
             MAJOR=$(echo "$LATEST" | sed 's/v\([0-9]*\)\..*/\1/')
@@ -120,13 +116,13 @@ jobs:
         run: uv lock
 
       - name: Format updated files
-        run: npx prettier --write package.json package-lock.json
+        run: npx prettier --write package-lock.json
 
       - name: Commit version changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json pyproject.toml uv.lock \
+          git add package-lock.json uv.lock \
             plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php \
             plugins/emfn-action-pack-plugin/readme.txt
 

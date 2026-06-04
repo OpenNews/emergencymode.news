@@ -140,7 +140,7 @@ Server-side PHP debug output only appears when `emfnDebug=true` **and** the curr
 
 **What Gets Logged:**
 - **Client-side JS (browser console):** Form values, category mappings, encoded payloads
-- **Server-side PHP (footer `<script>`):** Payload presence signal, decoded term IDs, and CSS class-based block filters
+- **Server-side PHP (footer `<script>`):** Payload presence signal, decoded term IDs and CSS class-based block filters
 
 **Where to Look:**
 - Open browser DevTools Console (F12)
@@ -343,7 +343,7 @@ uv sync
 uv run jupyter lab
 ```
 
-Python dependencies currently live in `pyproject.toml` and include `jupyterlab`, `pandas`, `requests`, `numpy`, `ipykernel`, and `tqdm`.
+Python dependencies currently live in `pyproject.toml` and include `jupyterlab`, `pandas`, `requests`, `numpy`, `ipykernel` and `tqdm`.
 
 #### Prevent Notebook Output In Git
 
@@ -394,8 +394,6 @@ On every push to `main`, `.github/workflows/release.yml` executes:
 2. **Test execution:** Runs `npm run test:all` (JavaScript, PHP, shell script tests)
 3. **Version increment:** Computes next patch version tag (e.g., `v1.0.0` → `v1.0.1`)
 4. **Version sync:** Updates all version references via `scripts/sync-release-version.sh`:
-   - `package.json` version
-   - `pyproject.toml` version
    - Plugin PHP headers (`Version:` field)
    - Plugin PHP constants (`EMFN_*_PLUGIN_VERSION`)
    - Plugin `readme.txt` stable tags
@@ -425,11 +423,11 @@ For plugin deployment:
 2. Download plugin ZIP from the newly generated (and successfully vetted and created) GitHub Release
 3. Install WordPress Admin and activate, overriding the prior plugin if necessary
 
-The devcontainer, notebooks, scripts, tests, and `tmp/` files are **not** deployed to WordPress.
+The devcontainer, notebooks, scripts, tests and `tmp/` files are **not** deployed to WordPress.
 
 ## Testing
 
-This repository includes comprehensive test coverage across JavaScript, PHP, and shell scripts.
+This repository includes comprehensive test coverage across JavaScript, PHP and shell scripts.
 
 ### Quick Start
 
@@ -463,7 +461,7 @@ npm run test:php:coverage     # HTML report in coverage/php/
 
 **Shell Scripts**
 - Custom bash test framework (`tests/scripts/test-helpers.sh`)
-- Tests for build, version sync, and notebook scripts
+- Tests for build, version sync and notebook scripts
 - Automatic test discovery (`test-*.sh` files)
 
 **Test Fixtures**
@@ -501,14 +499,14 @@ npm run test:all
 pre-commit run --all-files
 ```
 
-See [AGENT.md](AGENT.md) for lessons learned, common gotchas, and troubleshooting tips when working with the test infrastructure.
+See [AGENT.md](AGENT.md) for lessons learned, common gotchas and troubleshooting tips when working with the test infrastructure.
 
 ## Development Notes
 
 ### Coding Standards
 
 - Follow WordPress coding standards: https://developer.wordpress.org/coding-standards/
-- Prefix custom functions, classes, and hooks with `emfn_` to reduce conflicts
+- Prefix custom functions, classes and hooks with `emfn_` to reduce conflicts
 - Use phpDoc comments for WordPress plugin headers and function documentation
 - JavaScript uses JSDoc typing backed by `plugins/shared/emfn-types.d.ts`
 
@@ -541,7 +539,7 @@ See [AGENT.md](AGENT.md) for lessons learned, common gotchas, and troubleshootin
 - Use the VS Code (or sibling editor) `devcontainer` for consistent Python/Node.js/PHP environment
 - WordPress core and third-party plugin versions are managed on the hosted Newspack environment
 - This repo stores EMFN custom code and supporting data-generation assets
-- Pre-commit hooks enforce code quality, linting, and test cleanliness (install with `pre-commit install`)
+- Pre-commit hooks enforce code quality, linting and test cleanliness (install with `pre-commit install`)
 
 **Devcontainer includes:**
 - Python 3.13 (notebooks, pre-commit)
@@ -554,7 +552,7 @@ See [AGENT.md](AGENT.md) for lessons learned, common gotchas, and troubleshootin
 - `.devcontainer/devcontainer.json` — Container features and VS Code extensions
 - `.devcontainer/setup.sh` — Post-create setup script
 - `.pre-commit-config.yaml` — Pre-commit hook configuration
-- `AGENT.md` — Lessons learned, gotchas, and troubleshooting guide
+- `AGENT.md` — Lessons learned, gotchas and troubleshooting guide
 
 ## Troubleshooting
 

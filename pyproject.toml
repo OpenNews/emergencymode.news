@@ -1,7 +1,7 @@
 [project]
 name = "emergencymode-disaster-risk"
+version = "0.1.0"  # Required by TOML spec but meaningless for this project
 description = "Disaster risk projection data analysis for Emergency Mode News"
-version = "0.3.1"
 requires-python = ">=3.13"
 dependencies = [
     "jupyterlab~=4.5",

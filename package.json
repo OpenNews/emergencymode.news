@@ -1,6 +1,5 @@
 {
   "name": "emergencymode-news",
-  "version": "0.3.1",
   "type": "module",
   "description": "emergencymode.news scripts, Notebooks and WordPress customizations",
   "private": true,
@@ -23,14 +22,14 @@
     "test:scripts": "status=0; for test in tests/scripts/test-*.sh; do [ \"$(basename $test)\" != \"test-helpers.sh\" ] && { $test || status=1; }; done; exit $status"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
-    "@typescript-eslint/eslint-plugin": "^8.59.4",
-    "@typescript-eslint/parser": "^8.59.4",
-    "eslint": "^9.39.1",
-    "eslint-plugin-jsdoc": "^61.4.0",
+    "@eslint/js": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.60.0",
+    "@typescript-eslint/parser": "^8.60.0",
+    "eslint": "^10.4.1",
+    "eslint-plugin-jsdoc": "^63.0.1",
     "globals": "^17.6.0",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1",
     "prettier": "^3.8.3",
     "typescript": "^6.0.3"
   }

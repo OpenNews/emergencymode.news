@@ -718,6 +718,72 @@ if (getenv('PHPUNIT_DEBUG')) {
 
 ---
 
+### 18. Check for Errors Proactively, Don't Wait for CI to Fail
+
+**THE TRAP**: Not running `get_errors()` or validation checks before committing, then discovering errors only when CI fails.
+
+**What Happened**:
+- CI failed with TOML parse error: `pyproject.toml` missing required `project.version` field
+- Error message: "TOML parse error at line 1, column 1... `project.version` field is neither set nor present in `project.dynamic` list"
+- AI agent (me) didn't check for errors proactively
+- User had to point out: "errors. You should have found these."
+
+**Why This Happens**:
+- AI agents focus on implementing features without validating the full workspace
+- `get_errors()` tool exists but isn't used proactively
+- We assume code is correct until proven otherwise
+- CI catches what should have been caught during development
+
+**Impact**:
+- ⏰ Wasted time waiting for CI to run
+- 🔄 Extra commit to fix validation errors
+- 😤 User frustration at preventable errors
+- 📉 Reduced confidence in AI assistance
+
+**Common Validation Errors to Catch Early**:
+- **pyproject.toml**: Missing `project.version` when using `[project]` table
+- **package.json**: Invalid semver, missing required fields
+- **composer.json**: Schema validation failures
+- **YAML files**: Indentation errors, invalid syntax
+- **TypeScript/ESLint**: Type errors, linting violations
+- **PHP**: Parse errors, undefined functions
+
+**The Fix: Proactive Error Checking**:
+```bash
+# BEFORE making changes:
+get_errors()  # Check current error state
+
+# AFTER making changes:
+get_errors()  # Validate changes didn't introduce errors
+get_errors(["/path/to/changed/file"])  # Focus on specific files
+
+# When working on config files:
+get_errors()  # Always validate after editing pyproject.toml, package.json, etc.
+```
+
+**Red Flags That You Skipped Error Checking**:
+- ❌ CI fails with validation errors on first run
+- ❌ User reports errors you could have found
+- ❌ Making changes to config files without validation
+- ❌ "Should be fine" assumptions without verification
+
+**For This Codebase**:
+- `pyproject.toml` requires `project.version` field (even though it's meaningless for this project)
+- Added comment: `version = "0.1.0" # Required by TOML spec but meaningless for this project`
+- All package files have schema requirements
+- Always check errors after editing configuration
+
+**Better Workflow**:
+1. **Start**: Run `get_errors()` to understand current state
+2. **Change**: Make your edits
+3. **Validate**: Run `get_errors()` to catch issues immediately
+4. **Test**: Run relevant test suites
+5. **Commit**: Trust but verify with pre-commit hooks
+
+**Lesson**: Proactive error checking is part of the AI agent's responsibility. Don't make users discover validation errors that CI will catch—find them yourself with `get_errors()` before committing. This is especially critical for configuration files (pyproject.toml, package.json, composer.json, YAML configs) that have schema requirements.
+
+---
+
 ## 🛠️ Development Workflow Best Practices
 
 ### Before Committing
@@ -821,6 +887,7 @@ grep -E 'version|Version' plugins/*/emfn-action-pack-plugin.php plugins/*/readme
 6. **Never add devcontainer features for simple binaries** - Use apt-get instead
 7. **Never test test doubles exclusively** - Test real production classes for coverage
 8. **Never assume npm run lint === pre-commit** - They run different file patterns
+9. **Never skip `get_errors()` after editing config files** - CI will catch what you miss
 
 ---
 
@@ -861,5 +928,5 @@ SKIP=shellcheck git commit
 
 ---
 
-**Last Updated**: May 25, 2026  
-**Lessons Learned From**: Setting up complete test infrastructure, fixing pre-commit hooks, eliminating PHPUnit deprecations, debugging version number corruption, optimizing devcontainer setup
+**Last Updated**: June 4, 2026  
+**Lessons Learned From**: Setting up complete test infrastructure, fixing pre-commit hooks, eliminating PHPUnit deprecations, debugging version number corruption, optimizing devcontainer setup, proactive error validation

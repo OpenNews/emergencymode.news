@@ -1,55 +1,38 @@
 /*
- * EMFN style overrides 
- * ⏰ MANUALLY BACKED UP TO GITHUB! ⏰ 
+ * EMFN style overrides
  *
  * Enqueued after the main theme stylesheet, so these styles will take 
  * precedence over the default styles provided by the theme. 
  * But you may still need `!important` to fight long selectors or third-party plugin CSS
  */
 
-/*custom bkg*/
-body {
-  background-color: rgb(249, 248, 246);
-}
-
-/*custom header*/
-.h-sb header#masthead {
-  backdrop-filter: blur(12px);
-  background-color: rgba(249, 248, 246, 0.75) !important;
-  background-color: oklab(0.978916 0.00032109 0.00292373 / 0.8);
-}
-.h-sb header#masthead .middle-header-contain {
-  background-color: transparent !important;
+:root {
+  --emfn-header-footer: #efece7;
+  --emfn-action-pack-mint: #eefdf2;
+  --emfn-action-pack-green: #009966;
+  --emfn-action-pack-visited: #00724c;
 }
 
 /* site title*/
 .site-title a {
-  color: #c1503d !important;
+  color: var(--newspack-primary-color) !important;
   font-size: 1rem;
-  font-family: "Roboto Slab", serif;
+  font-family: var(--newspack-theme-font-body);
+  text-transform: uppercase;
 }
 
 /* Show Breadcrumbs only on Archive pages*/
-.site-breadcrumb {
+.site-breadcrumb,
+body.author .site-breadcrumb {
   display: none !important;
 }
 body.archive .site-breadcrumb {
   display: inherit !important;
 }
 
-/* Hide breadcrumb on author archive pages specifically */
-body.author .site-breadcrumb {
-  display: none !important;
-}
-
 /*capitalize By in all normal bylines*/
 .entry-meta .byline:not(.sponsor-byline) > span {
   text-transform: capitalize;
-}
-
-/* restyle border on blockquotes */
-.h-stk .entry-content [id] {
-  border-color: #b7b4af;
 }
 
 /* for all Posts body copy, control internal hyperlink color*/
@@ -82,26 +65,26 @@ figure.emfn-table.wp-block-table > table {
   max-width: 80% !important;
 }
 figure.emfn-table.wp-block-table thead {
-  border-color: #b7b4af;
+  border-color: var(--newspack-listings--grey-medium);
 }
 figure.emfn-table.wp-block-table thead th {
   border: none;
 }
 figure.emfn-table.wp-block-table tbody tr:not(:last-of-type) {
-  border: 1px solid #b7b4af;
+  border: 1px solid var(--newspack-listings--grey-medium);
   border-width: 1px 0px;
 }
 figure.emfn-table.wp-block-table tbody td {
   border-width: 0px;
 }
 figure.emfn-table.wp-block-table.is-style-stripes tbody tr:nth-child(odd) {
-  background-color: #efece7;
+  background-color: #f1f1f1;
 }
 
 /* apply our styles to Details blocks*/
 .wp-block-details {
   border-width: 0px;
-  border-bottom: 1px solid #b7b4af;
+  border-bottom: 1px solid var(--newspack-listings--grey-medium);
   display: block;
   width: 100%;
   margin-bottom: 32px !important;
@@ -124,14 +107,12 @@ figure.emfn-table.wp-block-table.is-style-stripes tbody tr:nth-child(odd) {
 body.home .site-breadcrumb {
   display: none !important;
 }
-
 /* Content - Breadcrumbs */
 @media (min-width: 782px) {
   .site-breadcrumb {
     margin: 1.5rem 0 0.25rem;
   }
 }
-
 .site-breadcrumb .wrapper > span {
   color: var(--newspack-theme-color-text-main);
   display: flex;
@@ -140,21 +121,9 @@ body.home .site-breadcrumb {
   font-size: 14px;
   gap: 0.5em;
 }
-
 .site-breadcrumb .breadcrumb_last {
   font-weight: bold;
   border-bottom: 2px solid var(--newspack-theme-color-secondary);
-}
-
-/*hide search bar in header*/
-body.home .header-search-contain {
-  display: none !important;
-}
-
-/*hide >4 categories on Post pages (9 = 4, because hidden commas) */
-/* Newspack's 'only show Yoast primary category' flag SHOULD drive this, but if it is turned off this is a catch-all */
-.cat-links > :nth-child(n + 9) {
-  display: none;
 }
 
 /*left-align logo*/
@@ -174,8 +143,8 @@ body.home .header-search-contain {
 
 /*convert nav3/tertiary to our style of button*/
 .site-header .nav3 li a {
-  background-color: #c1503d !important;
-  color: #fff !important;
+  background-color: var(--newspack-primary-color) !important;
+  color: var(--newspack-primary-contrast-color) !important;
   border-radius: 32px;
   padding: 6px 24px;
   text-align: center;
@@ -202,10 +171,10 @@ body.home .header-search-contain {
  */
 /* action items*/
 .action-item {
-  background-color: oklab(0.98 -0.02 0.01);
+  background-color: var(--emfn-action-pack-mint);
   border-radius: 16px;
   padding: 20px;
-  color: #009966;
+  color: var(--emfn-action-pack-green);
   list-style: none;
   margin: 0px;
 }
@@ -215,7 +184,7 @@ body.home .header-search-contain {
 .action-item a,
 .action-item a:link,
 .action-item a:visited {
-  color: #00724c;
+  color: var(--emfn-action-pack-visited);
 }
 .action-item li.template {
   display: flex;
@@ -241,41 +210,52 @@ body.parent-pageid-284 .entry-header {
 
 /*Content Loop adjustments*/
 .emfn-content-cards.wpnbha .article-section-title {
-  border-bottom: 1px solid #e3e1dd;
+  border-bottom: 1px solid var(--newspack-theme-color-border-light);
 }
+/* this may not apply to anything? */
 .archive article.entry .entry-content > * {
-  border-top: 1px solid #e3e1dd;
+  border-top: 1px solid var(--newspack-theme-color-border-light);
   padding-top: 0px;
   margin-top: 0px;
 }
 .emfn-content-cards.wpnbha article,
 .archive article.entry {
   padding: 24px 36px 20px 36px;
-  background-color: #fff;
+  background-color: var(--newspack-primary-contrast-color);
   border-radius: 24px;
-  border: 1px solid #e2e2e2;
+  border: 1px solid var(--newspack-theme-color-border-light);
   box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
 }
 
 /* Republishable Card Peach */
+:root {
+  --republishable-peach: #fff7ed;
+  --republishable-peach-border: #ffd7a8;
+}
 .emfn-content-cards.wpnbha article.category-republishable {
-  background-color: #fff7ed;
-  border: 1px solid #ffd7a8;
+  background-color: var(--republishable-peach);
+  border: 1px solid var(--republishable-peach-border);
 }
 .emfn-content-cards.wpnbha article.category-republishable .entry-wrapper .entry-meta {
-  border-top-color: #ffd7a8;
+  border-top-color: var(--republishable-peach-border);
 }
 /* Republishable Category link */
 .emfn-content-cards.wpnbha article.category-republishable .cat-links a {
-  color: #9f2d00;
-  border: 1px solid #ffd7a8;
-  background-color: #efece750;
+  display: none;
+}
+/* Republishable Card byline */
+.emfn-content-cards.wpnbha article.category-republishable .entry-wrapper .entry-meta .byline {
+  color: var(--newspack-theme-color-secondary-variation-against-white);
+}
+/* Republishable card byline links need to be a bit darker for accessibility */
+.emfn-content-cards.wpnbha article.category-republishable .entry-wrapper .entry-meta .byline a {
+  color: var(--newspack-theme-color-primary-variation-against-white);
 }
 
 /*all Card Categories*/
 .emfn-content-cards.wpnbha .cat-links a {
-  background-color: #fff;
-  border: 1px solid #ccc;
+  background-color: var(--newspack-primary-contrast-color);
+  border: 1px solid var(--newspack-ui-color-neutral-40);
   color: var(--newspack-theme-color-text-light);
   gap: 0em 1em;
   display: inline-block;
@@ -285,9 +265,9 @@ body.parent-pageid-284 .entry-header {
 }
 .emfn-content-cards.wpnbha .cat-links a:hover,
 .emfn-content-cards.wpnbha .cat-links a:link:hover {
-  border-color: #999;
+  border-color: var(--newspack-ui-color-neutral-50);
   color: var(--newspack-theme-color-text-medium);
-  background-color: #efece790;
+  background-color: var(--newspack-primary-contrast-color);
   text-decoration-color: var(--newspack-theme-color-text-medium);
 }
 .emfn-content-cards.wpnbha .entry-sponsors {
@@ -300,7 +280,7 @@ body.parent-pageid-284 .entry-header {
 /*Card bylines*/
 .emfn-content-cards.wpnbha .entry-wrapper .entry-meta {
   color: var(--newspack-theme-color-text-light);
-  border-top: 1px solid #efece7;
+  border-top: 1px solid var(--newspack-theme-color-border-light);
   gap: 0.5em 0.25em;
   margin-top: 12px;
   padding-top: 12px;
@@ -320,22 +300,22 @@ body.parent-pageid-284 .entry-header {
   padding: 6px 0px;
 }
 .single:not(.has-large-featured-image) .entry-header {
-  border-bottom-color: #ccc;
+  border-bottom-color: var(--newspack-ui-color-neutral-40);
 }
 
 /* Content Loop load-more button */
 .emfn-content-cards.wpnbha.has-more-button button {
-  background-color: #fff;
+  background-color: var(--newspack-primary-contrast-color);
   border-radius: 8px;
-  border: 1px solid #888;
+  border: 1px solid var(--newspack-ui-color-neutral-50);
   box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
   color: var(--newspack-theme-color-primary);
   margin-top: 2em;
   padding: 8px 18px;
 }
 .emfn-content-cards.wpnbha.has-more-button button:hover {
-  background-color: #e8e8e8;
-  border-color: #666;
+  background-color: var(--newspack-ui-color-neutral-10);
+  border-color: var(--newspack-theme-color-secondary);
 }
 
 /** ********* MORE BUTTONS ********** 
@@ -345,9 +325,9 @@ body.parent-pageid-284 .entry-header {
  */
 .facetwp-facet-load_more .facetwp-per-page-select,
 .emfn-content-cards.wpnbha.has-more-button button {
-  background-color: #fff;
+  background-color: var(--newspack-primary-contrast-color);
   border-radius: 8px;
-  border: 1px solid #888;
+  border: 1px solid var(--newspack-ui-color-neutral-50);
   box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
   color: var(--newspack-theme-color-primary);
   font-size: var(--newspack-theme-font-size-sm);
@@ -356,8 +336,8 @@ body.parent-pageid-284 .entry-header {
 
 .facetwp-facet-load_more .facetwp-per-page-select:hover,
 .emfn-content-cards.wpnbha.has-more-button button:hover {
-  background-color: #e8e8e8;
-  border-color: #666;
+  background-color: var(--newspack-ui-color-neutral-30);
+  border-color: var(--newspack-theme-color-secondary);
 }
 
 /** ********** SPONSOR & CATEGORY LABELS ********** 
@@ -371,26 +351,31 @@ body.parent-pageid-284 .entry-header {
   display: none;
 }
 
-/* alter non-Card Category labels */
+/* all Category labels */
 .cat-links a {
-  color: #fff;
+  color: var(--newspack-primary-contrast-color);
   text-transform: none;
   border: 1px solid var(--newspack-theme-color-primary-darken-10);
   background-color: var(--newspack-theme-color-primary);
   display: inline-block;
-  padding: 6px 12px;
+  padding: 6px 12px !important;
   border-radius: 8px;
   margin-bottom: 10px;
   text-decoration: none;
+  transition: all 0.15s ease-in-out;
 }
-.cat-links a:hover {
-  background-color: var(--newspack-theme-color-primary-darken-10);
+/* featured media - white text on black */
+@media only screen and (min-width: 782px) {
+  .featured-image-beside .cat-links a {
+    padding: inherit;
+  }
 }
 
 /* alter non-Card Tags */
 .tags-links a {
-  border: 1px solid #ccc;
-  background-color: #fff;
+  border: 1px solid var(--newspack-ui-color-neutral-40);
+  background-color: var(--newspack-ui-color-neutral-5) !important;
+  color: var(--newspack-theme-color-primary-variation-against-white) !important;
   padding: 10px 15px;
   border-radius: 8px;
   line-height: 1em;
@@ -398,7 +383,16 @@ body.parent-pageid-284 .entry-header {
   box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
 }
 .tags-links a:hover {
-  border-color: #999;
+  border-color: var(--newspack-ui-color-neutral-50) !important;
+  background-color: var(--newspack-ui-color-neutral-10) !important;
+}
+
+/* make Sponsor logos a circle */
+.wpnbha .sponsor-logos img {
+  border-radius: 50%;
+  object-fit: cover;
+  width: 40px;
+  height: 40px;
 }
 
 /** 
@@ -407,7 +401,7 @@ body.parent-pageid-284 .entry-header {
  */
 /* all Resource pills & Timing category group*/
 .emfn-content-cards.wpnbha.show-category .cat-links a[href] {
-  --cat-color: #f1f1f1;
+  --cat-color: var(--newspack-ui-color-neutral-5);
   background-color: var(--cat-color);
   border: 1px solid color-mix(in srgb, var(--cat-color), black 15%);
   color: color-mix(in srgb, var(--cat-color), black 66%);
@@ -429,47 +423,6 @@ body.parent-pageid-284 .entry-header {
 /* Newsroom Condition category group*/
 .emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/newsroom-condition/"] {
   --cat-color: #e7b4e0;
-}
-
-/** ********** JETPACK AI SEARCH ********** 
- * styles overrides for Jetpack AI search box and results
- * -
- */
-/*Jetpack AI search*/
-.emfn-ai-search {
-  min-height: 50px;
-  width: 100%;
-}
-.emfn-ai-search .jetpack-ai-chat-question-wrapper,
-.emfn-ai-search .jetpack-ai-chat-question-input {
-  margin: 0px !important;
-}
-.emfn-ai-search input[type="text"],
-.emfn-ai-search button[type="button"] {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
-  color: var(--newspack-theme-color-primary);
-  padding: 14px 18px;
-  border: 1px solid #888;
-  color: #c1503d;
-  height: 50px !important;
-}
-.emfn-ai-search input[type="text"]:focus {
-  background-color: #fff;
-  border-color: #c1503d;
-  box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
-}
-.emfn-ai-search button[type="button"]:hover,
-.emfn-ai-search button[type="button"]:active,
-.emfn-ai-search button[type="button"]:focus {
-  background-color: #e8e8e8;
-  box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px;
-  border-color: #777;
-  color: #c1503d;
-}
-.emfn-ai-search .jetpack-ai-chat-copy-button {
-  padding: 0px 10px;
 }
 
 /** ********** SYMBOLS FONT ********** 
@@ -522,7 +475,7 @@ body.parent-pageid-284 .entry-header {
   position: relative;
   height: 1.3em; /* reserves space for one line */
   text-align: center;
-  color: #c1503d;
+  color: var(--newspack-primary-color);
 }
 
 .emfn-word {
@@ -530,7 +483,7 @@ body.parent-pageid-284 .entry-header {
   left: 0;
   right: 0;
   text-align: center;
-  color: #c1503d;
+  color: var(--newspack-primary-color);
   opacity: 0;
   pointer-events: none;
   /* no transition on inactive words — instant hide */
@@ -549,8 +502,6 @@ body.parent-pageid-284 .entry-header {
 }
 
 .schema-faq .schema-faq-section .schema-faq-question:before {
-  /* 	content: "Q. ";
-	content: "ⓘ "; */
   content: "🛈 ";
   color: var(--newspack-theme-color-primary) !important;
   font-size: var(--newspack-theme-font-size-md);
@@ -570,8 +521,8 @@ body.parent-pageid-284 .entry-header {
   background-color: transparent;
 }
 .emfn-tabs.wp-block-newspack-tabs .tab-item.is-active {
-  background-color: #fff;
-  border: 1px solid #e8e8e8;
+  background-color: var(--newspack-primary-contrast-color);
+  border: 1px solid var(--newspack-ui-color-neutral-30);
 }
 
 /** ********** FACETWP CARDS ********** 
@@ -585,9 +536,9 @@ body.parent-pageid-284 .entry-header {
   }
 }
 .fwpl-result {
-  background-color: #fff !important;
+  background-color: var(--newspack-primary-contrast-color) !important;
   border-radius: 24px !important;
-  border: 1px solid #e2e2e2 !important;
+  border: 1px solid var(--newspack-theme-color-border-light) !important;
   box-shadow: rgba(0, 0, 0, 0.03) 0px 0px 6px 2px !important;
   padding: 24px 36px 20px 36px !important;
   margin-bottom: 1rem !important;
@@ -597,7 +548,7 @@ body.parent-pageid-284 .entry-header {
 .fwpl-item.el-ywvhp a {
   font-size: 1.2em !important;
   font-weight: 700 !important;
-  color: #1b2232 !important;
+  color: var(--newspack-secondary-color) !important;
   text-decoration: none !important;
   font-family: var(--newspack-theme-font-heading) !important;
 }
@@ -630,7 +581,7 @@ body.parent-pageid-284 .entry-header {
 }
 
 .fwpl-btn {
-  color: #1b2232 !important;
+  color: var(--newspack-secondary-color) !important;
   text-decoration: underline !important;
   font-size: 0.9em !important;
 }
@@ -645,17 +596,17 @@ body.parent-pageid-284 .entry-header {
 
 /* Search bar */
 .facetwp-search {
-  border: 1px solid #ccc !important;
+  border: 1px solid var(--newspack-ui-color-neutral-40) !important;
   border-radius: 8px !important;
   padding: 10px 16px !important;
   font-size: var(--newspack-theme-font-size-sm) !important;
   width: 100% !important;
-  background-color: #fff !important;
+  background-color: var(--newspack-primary-contrast-color) !important;
   color: var(--newspack-theme-color-text-main) !important;
 }
 
 .facetwp-search:focus {
-  border-color: #1b2232 !important;
+  border-color: var(--newspack-secondary-color) !important;
   outline: none !important;
 }
 
@@ -670,7 +621,7 @@ body.parent-pageid-284 .entry-header {
 
 /* Category pills border top */
 .fwpl-item.el-lvcwxa {
-  border-top: 1px solid #efece7 !important;
+  border-top: 1px solid var(--emfn-header-footer) !important;
   padding-top: 12px !important;
   margin-top: 12px !important;
   font-size: 0 !important;
@@ -680,11 +631,17 @@ body.parent-pageid-284 .entry-header {
   font-size: 14px !important;
 }
 
+/* Facet's pagination drop-down */
+.facetwp-facet-load_more .facetwp-per-page-select {
+  padding: 4px 16px;
+  appearance: base-select;
+}
+
 /* Default pills */
 .fwpl-term a {
-  background-color: #f1f1f1 !important;
-  border: 1px solid #d9d9d9 !important;
-  color: #515151 !important;
+  background-color: var(--newspack-ui-color-neutral-5) !important;
+  border: 1px solid var(--newspack-ui-color-neutral-50) !important;
+  color: var(--newspack-ui-color-neutral-60) !important;
   display: inline-block !important;
   padding: 6px 12px !important;
   border-radius: 8px !important;
@@ -694,8 +651,8 @@ body.parent-pageid-284 .entry-header {
 }
 
 .fwpl-term a:hover {
-  border-color: #999 !important;
-  background-color: #e8e8e8 !important;
+  border-color: var(--newspack-ui-color-neutral-50) !important;
+  background-color: var(--newspack-ui-color-neutral-30) !important;
 }
 
 /** 
@@ -703,32 +660,40 @@ body.parent-pageid-284 .entry-header {
  * used tetradic colors off https://www.colorhexa.com/e7bbb4
  */
 /* all Resource pills & Timing category group*/
-.emfn-content-cards.wpnbha.show-category .cat-links a[href],
+.cat-links a[href],
 .fwpl-term a[href] {
-  --cat-color: #f1f1f1;
+  --cat-color: var(--newspack-ui-color-neutral-5);
   background-color: var(--cat-color) !important;
   border: 1px solid color-mix(in srgb, var(--cat-color), black 15%) !important;
   color: color-mix(in srgb, var(--cat-color), black 66%) !important;
+  transition: all 0.15s ease-in-out;
+}
+.cat-links a[href]:hover,
+.fwpl-term a[href]:hover,
+.cat-links a[href]:active,
+.fwpl-term a[href]:active {
+  background-color: color-mix(in srgb, var(--cat-color), black 10%) !important;
+  border-color: color-mix(in srgb, var(--cat-color), black 20%) !important;
 }
 
 /* Disaster category group*/
-.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/disasters/"],
+.cat-links a[href*="resources/disasters/"],
 .fwpl-term a[href*="/resources/disasters/"] {
   --cat-color: #e7bbb4;
 }
 
 /* Operational Challenge category group*/
-.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/challenge/"],
+.cat-links a[href*="resources/challenge/"],
 .fwpl-term a[href*="/resources/challenge/"] {
   --cat-color: #b4e7bb;
 }
 /* Type category group*/
-.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/type/"],
+.cat-links a[href*="resources/type/"],
 .fwpl-term a[href*="/resources/type/"] {
   --cat-color: #b4e0e7;
 }
 /* Newsroom Condition category group*/
-.emfn-content-cards.wpnbha.show-category .cat-links a[href*="resources/newsroom-condition/"],
+.cat-links a[href*="resources/newsroom-condition/"],
 .fwpl-term a[href*="/resources/newsroom-condition/"] {
   --cat-color: #e7b4e0;
 }

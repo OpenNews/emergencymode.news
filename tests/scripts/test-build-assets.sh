@@ -116,6 +116,36 @@ run_tests() {
   [[ -d "$REPO_ROOT/$test_dir" ]]
   assert_success
   rm -rf "$REPO_ROOT/test-build-$$"
+  
+  # Test 13: --plugin flag builds single plugin
+  test_start "--plugin flag builds only specified plugin"
+  local test_dir="test-dist-$$"
+  (cd "$REPO_ROOT" && rm -rf "$test_dir" && "$BUILD_SCRIPT" --plugin emfn-action-pack-plugin "1.0.0" "$test_dir" >/dev/null 2>&1)
+  assert_file_exists "$REPO_ROOT/$test_dir/emfn-action-pack-plugin-1.0.0.zip"
+  [[ ! -f "$REPO_ROOT/$test_dir/emfn-site-styles-plugin-1.0.0.zip" ]]
+  assert_success
+  rm -rf "${REPO_ROOT:?}/$test_dir"
+  
+  # Test 14: --plugin flag with site-styles plugin
+  test_start "--plugin flag works with site-styles plugin"
+  local test_dir="test-dist-$$"
+  (cd "$REPO_ROOT" && rm -rf "$test_dir" && "$BUILD_SCRIPT" --plugin emfn-site-styles-plugin "2.0.0" "$test_dir" >/dev/null 2>&1)
+  assert_file_exists "$REPO_ROOT/$test_dir/emfn-site-styles-plugin-2.0.0.zip"
+  [[ ! -f "$REPO_ROOT/$test_dir/emfn-action-pack-plugin-2.0.0.zip" ]]
+  assert_success
+  rm -rf "${REPO_ROOT:?}/$test_dir"
+  
+  # Test 15: --plugin flag rejects invalid plugin
+  test_start "--plugin flag rejects invalid plugin name"
+  (cd "$REPO_ROOT" && "$BUILD_SCRIPT" --plugin nonexistent-plugin "1.0.0" "dist" 2>/dev/null) && exit_code=$? || exit_code=$?
+  [[ $exit_code -ne 0 ]]
+  assert_success
+  
+  # Test 16: --plugin flag requires plugin name argument
+  test_start "--plugin flag requires plugin name"
+  (cd "$REPO_ROOT" && "$BUILD_SCRIPT" --plugin 2>/dev/null) && exit_code=$? || exit_code=$?
+  [[ $exit_code -ne 0 ]]
+  assert_success
 }
 
 # Run the tests

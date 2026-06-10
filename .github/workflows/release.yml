@@ -13,13 +13,25 @@ jobs:
   release:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message || '', '[skip ci]')
+    outputs:
+      changed_plugins: ${{ steps.detect.outputs.changed_plugins }}
+      matrix: ${{ steps.versions.outputs.matrix }}
 
     steps:
+      - name: Validate RELEASE_TOKEN
+        run: |
+          if [[ -z "${{ secrets.RELEASE_TOKEN }}" ]]; then
+            echo "::error::RELEASE_TOKEN secret is not configured"
+            echo "This token is required to bypass branch protection when committing version changes."
+            echo "Please configure RELEASE_TOKEN in repository secrets."
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -55,103 +67,98 @@ jobs:
       - name: Run tests
         run: npm run test:all
 
-      - name: Get next version
-        id: version
+      - name: Detect changed plugins
+        id: detect
+        run: |
+          changed_plugins=$(./scripts/detect-plugin-changes.sh origin/main)
+          echo "changed_plugins=$changed_plugins" >> "$GITHUB_OUTPUT"
+
+          if [[ -z "$changed_plugins" ]]; then
+            echo "No plugin changes detected - skipping release"
+          else
+            echo "Changed plugins: $changed_plugins"
+          fi
+
+      - name: Generate plugin version matrix
+        id: versions
+        if: steps.detect.outputs.changed_plugins != ''
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          # Get latest semver tag (strict x.y.z format only, no suffixes)
-          LATEST=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
+          # For each changed plugin:
+          # 1. Get latest plugin-specific tag (e.g., action-pack/v0.3.1)
+          # 2. Calculate next version using commit message keywords
+          # 3. Output JSON array for matrix strategy
 
-          # If no tags exist yet, start from 0.1.0
-          if [[ -z "$LATEST" ]]; then
-            VERSION="0.1.0"
-            TAG="v${VERSION}"
-            echo "No existing tags, starting from default version: $VERSION"
-          else
-            # Parse current version (strip everything after the digits)
-            MAJOR=$(echo "$LATEST" | sed 's/v\([0-9]*\)\..*/\1/')
-            MINOR=$(echo "$LATEST" | sed 's/v[0-9]*\.\([0-9]*\)\..*/\1/')
-            PATCH=$(echo "$LATEST" | sed 's/v[0-9]*\.[0-9]*\.\([0-9]*\).*/\1/')
-            
-            # Check commit message for version bump signals (via env var to avoid injection)
-            if echo "$COMMIT_MESSAGE" | grep -qiE '\[major\]|(^|[^[:alnum:]_])major([^[:alnum:]_]|$)'; then
-              # Major bump: x.0.0
-              MAJOR=$((MAJOR + 1))
-              MINOR=0
-              PATCH=0
-              BUMP_TYPE="major"
-            elif echo "$COMMIT_MESSAGE" | grep -qiE '\[minor\]|(^|[^[:alnum:]_])minor([^[:alnum:]_]|$)'; then
-              # Minor bump: x.y.0
-              MINOR=$((MINOR + 1))
-              PATCH=0
-              BUMP_TYPE="minor"
-            else
-              # Default: patch bump x.y.z
-              PATCH=$((PATCH + 1))
-              BUMP_TYPE="patch"
-            fi
-            
-            VERSION="${MAJOR}.${MINOR}.${PATCH}"
-            TAG="v${VERSION}"
-            echo "Bumping $BUMP_TYPE version from $LATEST to $TAG"
-          fi
+          matrix_json=$(./scripts/generate-version-matrix.sh \
+            "${{ steps.detect.outputs.changed_plugins }}" \
+            "$COMMIT_MESSAGE")
 
-          # Validate tag doesn't already exist
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "ERROR: Tag $TAG already exists!"
-            exit 1
-          fi
+          echo "matrix=$matrix_json" >> "$GITHUB_OUTPUT"
+          echo "Plugin release matrix:"
+          echo "$matrix_json" | jq '.'
 
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  release-plugins:
+    needs: release
+    if: needs.release.outputs.changed_plugins != ''
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.release.outputs.matrix) }}
 
-      - name: Sync version files
-        run: ./scripts/sync-release-version.sh "${{ steps.version.outputs.version }}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Sync plugin version
+        run: |
+          ./scripts/sync-release-version.sh \
+            --plugin ${{ matrix.plugin.name }} \
+            ${{ matrix.plugin.next_version }}
 
       - name: Update package-lock.json
-        run: npm install --package-lock-only
+        run: |
+          npm install --package-lock-only
+          npx prettier --write package-lock.json
 
       - name: Update uv.lock
-        run: uv lock
-
-      - name: Format updated files
-        run: npx prettier --write package-lock.json
+        run: |
+          if command -v uv >/dev/null 2>&1; then
+            pip install uv
+            uv lock
+          fi
 
       - name: Commit version changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json uv.lock \
-            plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php \
-            plugins/emfn-action-pack-plugin/readme.txt
+
+          # Add plugin files and lock files
+          git add plugins/${{ matrix.plugin.name }}/ package-lock.json uv.lock || true
 
           # Only commit and push if there are actual changes
           if ! git diff --cached --quiet; then
-            git commit -m "chore: Release ${{ steps.version.outputs.version }} [skip ci]"
+            git commit -m "chore(${{ matrix.plugin.slug }}): Release ${{ matrix.plugin.next_version }} [skip ci]"
             git pull --rebase origin main
             git push
           else
             echo "No version changes to commit"
           fi
 
-      - name: Build release assets
-        run: ./scripts/build-release-assets.sh "${{ steps.version.outputs.version }}" dist
+      - name: Build plugin ZIP
+        run: |
+          ./scripts/build-release-assets.sh \
+            --plugin ${{ matrix.plugin.name }} \
+            ${{ matrix.plugin.next_version }} \
+            dist
 
-      - name: Create GitHub Release
+      - name: Create plugin release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          generate_release_notes: true
-          make_latest: true
+          tag_name: ${{ matrix.plugin.tag }}
+          name: "${{ matrix.plugin.slug }} ${{ matrix.plugin.next_version }}"
+          body: "Release for ${{ matrix.plugin.name }}"
           files: |
-            dist/*.zip
-
-      - name: Update floating latest and major tags
-        run: |
-          TAG="${{ steps.version.outputs.tag }}"
-          MAJOR=$(echo "$TAG" | sed 's/v\([0-9]*\).*/\1/')
-          git tag -f latest
-          git push origin latest --force
-          git tag -f "v${MAJOR}"
-          git push origin "v${MAJOR}" --force
+            dist/${{ matrix.plugin.name }}-${{ matrix.plugin.next_version }}.zip

@@ -4,6 +4,7 @@ set -euo pipefail
 
 # Parse arguments
 FORCE_MODE=0
+PLUGIN_NAME=""
 version=""
 
 while [[ $# -gt 0 ]]; do
@@ -12,12 +13,20 @@ while [[ $# -gt 0 ]]; do
       FORCE_MODE=1
       shift
       ;;
+    --plugin)
+      if [[ -z "${2:-}" ]]; then
+        echo "Error: --plugin requires a plugin name argument" >&2
+        exit 1
+      fi
+      PLUGIN_NAME="$2"
+      shift 2
+      ;;
     *)
       if [[ -z "$version" ]]; then
         version="$1"
       else
         echo "Error: Unexpected argument '$1'" >&2
-        echo "Usage: $0 [--force] <version>" >&2
+        echo "Usage: $0 [--force] [--plugin <name>] <version>" >&2
         exit 1
       fi
       shift
@@ -27,10 +36,15 @@ done
 
 # Validate version argument before any checks
 if [[ -z "$version" ]]; then
-  echo "Usage: $0 [--force] <version>" >&2
+  echo "Usage: $0 [--force] [--plugin <name>] <version>" >&2
   echo "" >&2
   echo "Options:" >&2
-  echo "  --force    Skip version jump safety check (for fixing version history issues)" >&2
+  echo "  --force           Skip version jump safety check (for fixing version history issues)" >&2
+  echo "  --plugin <name>   Only update specified plugin (e.g., emfn-action-pack-plugin)" >&2
+  echo "" >&2
+  echo "Examples:" >&2
+  echo "  $0 --plugin emfn-action-pack-plugin 0.3.2" >&2
+  echo "  $0 --plugin emfn-site-styles-plugin 0.1.1" >&2
   exit 1
 fi
 
@@ -52,7 +66,8 @@ fi
 # Skip check if:
 # - Running in GitHub Actions workflow (CI deployment)
 # - --force flag passed (manual version history fixes)
-if [[ "$FORCE_MODE" -eq 0 && -z "${GITHUB_ACTIONS:-}" ]]; then
+# - --plugin flag specified (plugin-specific releases use plugin tags, not repo releases)
+if [[ "$FORCE_MODE" -eq 0 && -z "${GITHUB_ACTIONS:-}" && -z "$PLUGIN_NAME" ]]; then
   echo "Checking version against latest GitHub release..." >&2
   
   # Try to get latest release tag from GitHub
@@ -129,25 +144,45 @@ update_readme_stable_tag() {
   perl -0pi -e "s/(Stable tag:\s+)[0-9]+\.[0-9]+\.[0-9]+/\${1}$version/;" "$file_path"
 }
 
-update_json_version() {
-  local file_path="$1"
-  python3 - "$file_path" "$version" <<'PY'
-from pathlib import Path
-import json
-import sys
+# Plugin-specific version constants mapping
+declare -A PLUGIN_CONSTANTS=(
+  ["emfn-action-pack-plugin"]="EMFN_ACTION_PACK_PLUGIN_VERSION"
+  ["emfn-site-styles-plugin"]="EMFN_SITE_STYLES_PLUGIN_VERSION"
+)
 
-file_path = Path(sys.argv[1])
-version = sys.argv[2]
-data = json.loads(file_path.read_text())
-data['version'] = version
-file_path.write_text(json.dumps(data, indent=2) + '\n')
-PY
-}
-
-update_toml_version() {
-  local file_path="$1"
-  perl -0pi -e "s/(^version = \")[0-9]+\.[0-9]+\.[0-9]+(\")/\${1}$version\${2}/m;" "$file_path"
-}
-
-update_php_plugin_version "plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php" "EMFN_ACTION_PACK_PLUGIN_VERSION"
-update_readme_stable_tag "plugins/emfn-action-pack-plugin/readme.txt"
+# Update plugin files based on --plugin flag
+if [[ -n "$PLUGIN_NAME" ]]; then
+  # Plugin-specific mode: only update specified plugin
+  
+  # Validate plugin exists
+  if [[ ! -d "plugins/$PLUGIN_NAME" ]]; then
+    echo "Error: Plugin directory not found: plugins/$PLUGIN_NAME" >&2
+    exit 1
+  fi
+  
+  # Get version constant for this plugin
+  version_constant="${PLUGIN_CONSTANTS[$PLUGIN_NAME]:-}"
+  if [[ -z "$version_constant" ]]; then
+    echo "Error: Unknown plugin '$PLUGIN_NAME' - no version constant defined" >&2
+    echo "Known plugins: ${!PLUGIN_CONSTANTS[*]}" >&2
+    exit 1
+  fi
+  
+  echo "Updating $PLUGIN_NAME to version $version..." >&2
+  update_php_plugin_version "plugins/$PLUGIN_NAME/$PLUGIN_NAME.php" "$version_constant"
+  update_readme_stable_tag "plugins/$PLUGIN_NAME/readme.txt"
+  echo "✓ Updated $PLUGIN_NAME" >&2
+else
+  # Legacy mode: update all plugins (for backwards compatibility)
+  echo "Warning: No --plugin flag specified. This mode updates all plugins to the same version." >&2
+  echo "For independent plugin releases, use: $0 --plugin <name> <version>" >&2
+  echo "" >&2
+  
+  update_php_plugin_version "plugins/emfn-action-pack-plugin/emfn-action-pack-plugin.php" "EMFN_ACTION_PACK_PLUGIN_VERSION"
+  update_readme_stable_tag "plugins/emfn-action-pack-plugin/readme.txt"
+  
+  update_php_plugin_version "plugins/emfn-site-styles-plugin/emfn-site-styles-plugin.php" "EMFN_SITE_STYLES_PLUGIN_VERSION"
+  update_readme_stable_tag "plugins/emfn-site-styles-plugin/readme.txt"
+  
+  echo "✓ Updated all plugins" >&2
+fi

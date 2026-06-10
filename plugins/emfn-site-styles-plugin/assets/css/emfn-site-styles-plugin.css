@@ -13,18 +13,6 @@
   --emfn-action-pack-visited: #00724c;
 }
 
-/*custom header*/
-.h-sb header#masthead {
-  backdrop-filter: blur(10px);
-  background-color: color-mix(
-    var(--newspack-header-color),
-    var(--emfn-background-color) 33%
-  ) !important;
-}
-.h-sb header#masthead .middle-header-contain {
-  background-color: transparent !important;
-}
-
 /* site title*/
 .site-title a {
   color: var(--newspack-primary-color) !important;
@@ -90,7 +78,7 @@ figure.emfn-table.wp-block-table tbody td {
   border-width: 0px;
 }
 figure.emfn-table.wp-block-table.is-style-stripes tbody tr:nth-child(odd) {
-  background-color: ff1f1f1;
+  background-color: #f1f1f1;
 }
 
 /* apply our styles to Details blocks*/
@@ -646,9 +634,6 @@ body.parent-pageid-284 .entry-header {
 /* Facet's pagination drop-down */
 .facetwp-facet-load_more .facetwp-per-page-select {
   padding: 4px 16px;
-}
-select,
-::picker(select) {
   appearance: base-select;
 }
 

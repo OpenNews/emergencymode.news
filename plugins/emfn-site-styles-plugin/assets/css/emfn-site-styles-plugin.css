@@ -249,7 +249,7 @@ body.parent-pageid-284 .entry-header {
 }
 /* Republishable card byline links need to be a bit darker for accessibility */
 .emfn-content-cards.wpnbha article.category-republishable .entry-wrapper .entry-meta .byline a {
-  color: var(--newspack-theme-color-primary-variation-against-white);
+  color: color-mix(in srgb, var(--newspack-theme-color-primary-against-white) 80%, black);
 }
 
 /*all Card Categories*/
@@ -456,42 +456,6 @@ body.parent-pageid-284 .entry-header {
   margin-top: -5px;
   float: left;
   margin-right: 5px;
-}
-
-/** ********** HERO ********** 
- * homepage hero styles, including the big headline and the "disaster" word animation
- */
-#emfn-hero-h1 {
-  font-size: clamp(2.25rem, 5vw, 3.5rem);
-  line-height: 1.2;
-  text-align: center;
-  margin: 0;
-  text-wrap: balance;
-  overflow-wrap: balance;
-}
-
-#emfn-disaster-wrap {
-  display: block;
-  position: relative;
-  height: 1.3em; /* reserves space for one line */
-  text-align: center;
-  color: var(--newspack-primary-color);
-}
-
-.emfn-word {
-  position: absolute;
-  left: 0;
-  right: 0;
-  text-align: center;
-  color: var(--newspack-primary-color);
-  opacity: 0;
-  pointer-events: none;
-  /* no transition on inactive words — instant hide */
-}
-
-.emfn-word.emfn-active {
-  opacity: 1;
-  /* no transition here either — clean cut, no crossfade */
 }
 
 /** ********** YOAST FAQ ********** 

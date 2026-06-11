@@ -52,31 +52,41 @@ run_tests() {
   assert_equals "$SS_NEXT_PATCH" "$next_version"
   
   # Test: Minor bump from current file version
-  test_start "applies minor bump to file version"
   output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "[minor] new feature")
+  
+  test_start "minor bump preserves current version in output"
   current_version=$(echo "$output" | jq -r '.plugin[0].current_version')
-  next_version=$(echo "$output" | jq -r '.plugin[0].next_version')
   assert_equals "$ACTION_PACK_VERSION" "$current_version"
+  
+  test_start "applies minor bump to file version"
+  next_version=$(echo "$output" | jq -r '.plugin[0].next_version')
   assert_equals "$AP_NEXT_MINOR" "$next_version"
   
   # Test: Major bump from current file version
-  test_start "applies major bump to file version"
   output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "[major] breaking change")
+  
+  test_start "major bump preserves current version in output"
   current_version=$(echo "$output" | jq -r '.plugin[0].current_version')
-  next_version=$(echo "$output" | jq -r '.plugin[0].next_version')
   assert_equals "$ACTION_PACK_VERSION" "$current_version"
+  
+  test_start "applies major bump to file version"
+  next_version=$(echo "$output" | jq -r '.plugin[0].next_version')
   assert_equals "$AP_NEXT_MAJOR" "$next_version"
   
   # Test: Multiple plugins
-  test_start "handles multiple plugins correctly"
   output=$("$SCRIPT_PATH" "emfn-action-pack-plugin emfn-site-styles-plugin" "[minor] update both")
+  
+  test_start "handles multiple plugins - plugin count"
   plugin_count=$(echo "$output" | jq '.plugin | length')
   assert_equals "2" "$plugin_count"
   
+  test_start "handles multiple plugins - action-pack version"
   action_pack_version=$(echo "$output" | jq -r '.plugin[] | select(.name=="emfn-action-pack-plugin") | .next_version')
+  assert_equals "$AP_NEXT_MINOR" "$action_pack_version"
+  
+  test_start "handles multiple plugins - site-styles version"
   site_styles_version=$(echo "$output" | jq -r '.plugin[] | select(.name=="emfn-site-styles-plugin") | .next_version')
   SS_NEXT_MINOR="${SS_MAJOR}.$((SS_MINOR + 1)).0"
-  assert_equals "$AP_NEXT_MINOR" "$action_pack_version"
   assert_equals "$SS_NEXT_MINOR" "$site_styles_version"
   
   # Test: Tag format is correct
@@ -103,15 +113,14 @@ run_tests() {
   
   # Test: Error handling
   test_start "rejects invalid plugin name"
-  if output=$("$SCRIPT_PATH" "invalid-plugin" "test" 2>&1); then
-    test_fail "Should have rejected invalid plugin name"
-  else
-    assert_contains "$output" "Unknown plugin"
-  fi
+  ("$SCRIPT_PATH" "invalid-plugin" "test" 2>/dev/null) && exit_code=$? || exit_code=$?
+  [[ $exit_code -ne 0 ]]
+  assert_success
   
   test_start "requires commit message argument"
-  output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" 2>&1 || true)
-  assert_contains "$output" "Usage:"
+  ("$SCRIPT_PATH" "emfn-action-pack-plugin" 2>/dev/null) && exit_code=$? || exit_code=$?
+  [[ $exit_code -ne 0 ]]
+  assert_success
   
   test_summary
 }

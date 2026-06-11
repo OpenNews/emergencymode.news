@@ -784,6 +784,77 @@ get_errors()  # Always validate after editing pyproject.toml, package.json, etc.
 
 ---
 
+### 19. Always Validate Git References Before Using Them
+
+**THE TRAP**: Using Git references like `HEAD~1` without verifying they exist, causing workflow failures.
+
+**What Happened**:
+- Release workflow uses `HEAD~1` as fallback for force pushes or workflow_dispatch
+- `HEAD~1` doesn't exist for:
+  - First commit in repository (no parent)
+  - Shallow clones with depth=1
+  - Rewritten history
+- `detect-plugin-changes.sh` would fail the entire release job with "fatal: bad revision 'HEAD~1'"
+
+**Why This Happens**:
+- Git references are not guaranteed to exist
+- `HEAD~1` assumes there's at least one parent commit
+- `github.event.before` can be all zeros (0000...) for force pushes
+- Workflow logic assumes safe defaults without validation
+
+**The Pattern to Use**:
+```bash
+# WRONG: Assume reference exists
+base_ref="HEAD~1"
+git diff "$base_ref"..HEAD  # Will fail if HEAD~1 doesn't exist
+
+# RIGHT: Validate reference, use safe fallback
+base_ref="HEAD~1"
+if ! git rev-parse --verify "$base_ref" >/dev/null 2>&1; then
+  echo "::warning::Reference $base_ref does not exist, comparing against empty tree"
+  base_ref="4b825dc642cb6eb9a060e54bf8d69288fbee4904"  # Git's empty tree SHA
+fi
+git diff "$base_ref"..HEAD  # Now safe
+```
+
+**Safe Fallbacks**:
+- **Empty tree SHA**: `4b825dc642cb6eb9a060e54bf8d69288fbee4904`
+  - Special Git object representing empty repository
+  - Always exists, even in brand new repos
+  - Perfect for "compare against nothing" scenarios
+- **Alternative**: `git diff-tree --no-commit-id --name-only -r HEAD`
+  - Shows all files in current commit
+  - Works even for first commit
+  - But doesn't show "changes" - shows "all files"
+
+**For GitHub Actions**:
+```yaml
+# Check github.event.before for edge cases
+base_ref="${{ github.event.before }}"
+if [[ "$base_ref" =~ ^0+$ ]]; then
+  base_ref="HEAD~1"
+fi
+
+# Validate before using
+if ! git rev-parse --verify "$base_ref" >/dev/null 2>&1; then
+  base_ref="4b825dc642cb6eb9a060e54bf8d69288fbee4904"  # Empty tree
+fi
+
+# Now safe to use
+git diff "$base_ref"..HEAD
+```
+
+**Other Risky References**:
+- `origin/main` - Might not be fetched in shallow clone
+- `main` - Might not exist if branch is named `master`
+- `HEAD^` / `HEAD~1` - Fails for first commit
+- Tag names - Might not exist in all repositories
+- Branch names - Might have been deleted/renamed
+
+**Lesson**: Never assume Git references exist. Always validate with `git rev-parse --verify` before using them in scripts or workflows. Use Git's empty tree SHA (`4b825dc642cb6eb9a060e54bf8d69288fbee4904`) as a universal safe fallback for comparison operations. This prevents workflow failures in edge cases like first commits, shallow clones, or rewritten history.
+
+---
+
 ## 🛠️ Development Workflow Best Practices
 
 ### Before Committing
@@ -928,5 +999,5 @@ SKIP=shellcheck git commit
 
 ---
 
-**Last Updated**: June 4, 2026  
-**Lessons Learned From**: Setting up complete test infrastructure, fixing pre-commit hooks, eliminating PHPUnit deprecations, debugging version number corruption, optimizing devcontainer setup, proactive error validation
+**Last Updated**: June 11, 2026  
+**Lessons Learned From**: Setting up complete test infrastructure, fixing pre-commit hooks, eliminating PHPUnit deprecations, debugging version number corruption, optimizing devcontainer setup, proactive error validation, Git reference validation in CI/CD workflows

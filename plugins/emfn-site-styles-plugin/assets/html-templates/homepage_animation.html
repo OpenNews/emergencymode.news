@@ -1,0 +1,84 @@
+<script>
+  (function () {
+    const isInIframe = window.self !== window.top;
+    const isDebug = new URLSearchParams(window.location.search).get("emfnDebug") === "true";
+    if (isInIframe) {
+      console.debug("Running in iframe, skipping animation");
+      return;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const HOLD = 5400; //ms to hold each word before transitioning to the next
+      let idx = 0;
+      let lastSwitchTime = performance.now();
+
+      const words = document.querySelectorAll(".emfn-word");
+      if (!words.length) {
+        if (isDebug) console.debug("No .emfn-word elements found");
+        return;
+      }
+
+      function animate(currentTime) {
+        if (currentTime - lastSwitchTime >= HOLD) {
+          words[idx].classList.remove("emfn-active");
+          idx = (idx + 1) % words.length;
+          words[idx].classList.add("emfn-active");
+          lastSwitchTime = currentTime;
+        }
+        requestAnimationFrame(animate);
+      }
+
+      requestAnimationFrame(animate);
+    });
+  })();
+</script>
+<style>
+  #emfn-hero-h1 {
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    line-height: 1.2;
+    margin: 0;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .emfn-word-backup {
+    pointer-events: none;
+    visibility: hidden;
+  }
+  #emfn-disaster-wrap {
+    color: var(--newspack-primary-color);
+    display: block;
+    height: 1.3em; /* reserves space for one line */
+    position: relative;
+    text-align: center;
+  }
+  .emfn-word {
+    color: var(--newspack-primary-color);
+    left: 0;
+    right: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    text-align: center;
+    transition: opacity 10ms ease-in-out;
+    will-change: opacity;
+  }
+  .emfn-active {
+    color: #c1503d; /* hard-coded to include Admin */
+    opacity: 1;
+  }
+</style>
+<h1 id="emfn-hero-h1">
+  Get help before,<wbr /> during<wbr /> and&nbsp;after<br />
+  <span id="emfn-disaster-wrap">
+    <span aria-hidden="true" class="emfn-word-backup">&nbsp;</span>
+    <span class="emfn-word emfn-active">an&nbsp;emergency</span>
+    <span class="emfn-word">a&nbsp;drought</span>
+    <span class="emfn-word">extreme&nbsp;heat</span>
+    <span class="emfn-word">a&nbsp;flood</span>
+    <span class="emfn-word">a&nbsp;hurricane</span>
+    <span class="emfn-word">a&nbsp;severe&nbsp;storm</span>
+    <span class="emfn-word">a&nbsp;tornado</span>
+    <span class="emfn-word">a&nbsp;wildfire</span>
+    <span class="emfn-word">a&nbsp;winter&nbsp;storm</span>
+  </span>
+</h1>

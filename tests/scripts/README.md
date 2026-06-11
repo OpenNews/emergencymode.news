@@ -4,11 +4,13 @@ Bash-based tests for build and release automation scripts.
 
 ## Test Status
 
-**Total: 34 tests passing** (22 version-bump + 12 build-assets)
+**Total: 65 tests passing**
 
+- ✅ [test-build-assets.sh](test-build-assets.sh) — 18/18 tests passing
+- ✅ [test-detect-changes.sh](test-detect-changes.sh) — 3/3 tests passing
+- ✅ [test-get-plugin-version.sh](test-get-plugin-version.sh) — 4/4 tests passing
+- ✅ [test-sync-version.sh](test-sync-version.sh) — 20/20 tests passing
 - ✅ [test-version-bump.sh](test-version-bump.sh) — 22/22 tests passing
-- ✅ [test-build-assets.sh](test-build-assets.sh) — 12/12 tests passing
-- ⚠️ [test-sync-version.sh](test-sync-version.sh) — Needs refactoring (see Known Issues)
 
 ## Running Tests
 
@@ -37,6 +39,8 @@ Tests use a custom bash testing framework defined in [test-helpers.sh](test-help
 - `assert_failure()` — Assert last command failed (non-zero exit)
 - `assert_equals(expected, actual)` — Assert string equality
 - `assert_contains(haystack, needle)` — Assert substring presence
+- `assert_matches(actual, pattern)` — Assert regex pattern match
+- `assert_empty(actual)` — Assert string is empty
 - `assert_file_exists(path)` — Assert file exists
 - `assert_file_not_exists(path)` — Assert file does not exist
 - `test_summary()` — Print results and return exit code
@@ -71,7 +75,7 @@ test_summary
 
 ### test-version-bump.sh (22 tests)
 
-Tests the version bump logic used in GitHub Actions workflows ([.github/workflows/publish-plugin.yml](../../.github/workflows/publish-plugin.yml)).
+Tests the version bump logic used in GitHub Actions release workflow.
 
 **What it tests:**
 - Initial version (1.0.0) when no tags exist
@@ -82,9 +86,9 @@ Tests the version bump logic used in GitHub Actions workflows ([.github/workflow
 - Case-insensitive keyword detection
 - Word boundary detection (ignores "minority", "majordomo")
 
-**Implementation:** Extracts the version calculation logic from the workflow into a testable bash function.
+**Implementation:** Extracts version calculation logic from workflow into testable bash function.
 
-### test-build-assets.sh (12 tests)
+### test-build-assets.sh (18 tests)
 
 Tests [scripts/build-release-assets.sh](../../scripts/build-release-assets.sh) which creates plugin ZIP files for releases.
 
@@ -95,37 +99,62 @@ Tests [scripts/build-release-assets.sh](../../scripts/build-release-assets.sh) w
 - ZIP content validation (plugin files included)
 - Directory structure preservation
 - Output directory cleaning
-- Nested output path handling
+- `--plugin` flag for single-plugin builds
+- Plugin name validation
 
 **Implementation:** Creates temporary directories, runs build script, validates outputs, cleans up.
 
-### test-sync-version.sh (Known Issues)
+### test-sync-version.sh (20 tests)
 
-**Status:** ⚠️ Tests exist but have implementation issues
+Tests [scripts/sync-release-version.sh](../../scripts/sync-release-version.sh) which updates version numbers across plugin files.
 
-**Problem:** The sync-release-version.sh script has `cd "$repo_root"` hardcoded, which means it always operates on the actual repository files rather than test fixtures in temp directories. This makes isolated testing impossible.
+**What it tests:**
+- Version updates in plugin PHP files
+- Version updates in readme.txt
+- Constant updates (EMFN_ACTION_PACK_PLUGIN_VERSION, etc.)
+- `--plugin` flag for single-plugin updates
+- Major/minor/patch version handling
+- Skip CI tag detection
 
-**Needs:**
-- Refactor sync-release-version.sh to accept a working directory parameter
-- OR: Mock/stub the script for testing
-- OR: Test via integration tests that accept modifying actual repo files
+**Implementation:** Uses temporary git repositories for isolated testing.
 
-**Workaround:** Script is manually tested and works in production. Automated tests deferred until refactoring.
+### test-detect-changes.sh (3 tests)
+
+Tests [scripts/detect-plugin-changes.sh](../../scripts/detect-plugin-changes.sh) which detects which plugins have changed.
+
+**What it tests:**
+- Script exists and is executable
+- Detects plugin changes between git refs
+- Rejects invalid git references
+
+**Implementation:** Tests against HEAD to ensure test reliability in all environments.
+
+### test-get-plugin-version.sh (4 tests)
+
+Tests [scripts/get-plugin-version.sh](../../scripts/get-plugin-version.sh) which extracts version from plugin files.
+
+**What it tests:**
+- Extracts version from action-pack plugin
+- Extracts version from site-styles plugin
+- Rejects invalid plugin names
+- Requires plugin name argument
+
+**Implementation:** Reads actual plugin files to verify version extraction.
 
 ## Coverage
 
 Bash script testing provides regression protection for:
 - ✅ Version bump calculations matching GitHub Actions workflow behavior
 - ✅ Build script ZIP creation and file inclusion
-- ⚠️ Version synchronization across project files (manual testing only)
+- ✅ Version synchronization across project files
+- ✅ Plugin change detection
+- ✅ Version extraction from plugin headers
 
 ## CI Integration
 
-These tests can run in CI without external dependencies:
+These tests run in CI on every PR and commit:
 - No database required
 - No WordPress installation needed
 - No network requests
-- Fast execution (<10 seconds total)
-- No cleanup required (temp directories auto-removed)
-
-**Future:** Add to GitHub Actions workflow for PR validation.
+- Fast execution (<15 seconds total)
+- Integrated in `.github/workflows/ci.yml`

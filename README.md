@@ -8,13 +8,17 @@ Custom WordPress plugins, Python Notebooks and miscellaneous code version contro
 | Release versioning on `main` | [![Release](https://github.com/OpenNews/emergencymode.news/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/OpenNews/emergencymode.news/actions/workflows/release.yml) |
 | CodeQL | [![CodeQL](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql) |
 | Dependabot | [![Dependabot Updates](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates) |
+| License | [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) |
 
 
 ## Overview
 
 This repository contains:
 * the `emfn-action-pack-plugin` — the active front-end integration for the Action Pack assessment flow
+* the `emfn-site-styles-plugin` — site-wide CSS and (eventually?) JS we need to run the site, rather than store code in WordPress inputs   
 * Python notebooks that generate and validate FEMA National Risk Index county-level CSVs consumed by the Action Pack plugin
+* Lotta tests
+* A release cycle that generates ZIPs and release versioning based on which plugin has an update
 
 ### Repository Structure
 
@@ -97,6 +101,47 @@ emergencymode.news/
 ├── pyproject.toml                          # Notebook dependencies
 └── README.md                               # This file
 ```
+
+## Release Workflow
+
+This repository uses **independent plugin versioning** with automated releases on push to `main`.
+
+### Plugin Versioning
+
+Each plugin has its own version number and release cycle. See [Releases](https://github.com/OpenNews/emergencymode.news/releases) for current versions and ZIPs.
+
+### Git Tags
+
+Plugin releases create plugin-specific tags in the format `<plugin-slug>/vX.Y.Z`:
+- `action-pack/v*` - Action Pack plugin releases
+- `site-styles/v*` - Site Styles plugin releases
+
+### Automatic Releases
+
+When changes are merged to `main`:
+
+1. **Detection**: Workflow detects which plugins have changes
+2. **Version bump**: Calculates next version from commit messages:
+   - `[major]` or `major:` → Major version bump (1.0.0 → 2.0.0)
+   - `[minor]` or `minor:` → Minor version bump (1.0.0 → 1.1.0)
+   - Default → Patch version bump (1.0.0 → 1.0.1)
+3. **Update files**: Syncs version across plugin PHP files and readme.txt
+4. **Build assets**: Creates plugin ZIP files in `dist/`
+5. **Create release**: Tags commit and publishes GitHub release with ZIP
+
+### Manual Releases
+
+Trigger releases manually via Actions tab:
+```bash
+Actions → Release → Run workflow
+```
+
+### Version Management Scripts
+
+- `scripts/detect-plugin-changes.sh` - Detects which plugins changed
+- `scripts/generate-version-matrix.sh` - Generates version bump matrix
+- `scripts/sync-release-version.sh` - Updates version in plugin files
+- `scripts/build-release-assets.sh` - Builds plugin ZIP files
 
 ## emfn-action-pack-plugin
 
@@ -242,6 +287,17 @@ county_fips,state,county,AVLN_risk_score,CFLD_risk_score,CWAV_risk_score,DRGT_ri
 - `plugins/emfn-action-pack-plugin/assets/data/_tallCategories.csv`, an export from Google Sheets of every _uniquely_ meaningful Category per quiz response
 - `plugins/emfn-action-pack-plugin/assets/html-templates/` stores HTML snippets which exist within the Gravity Form "HTML field", which provides the DOM for our `#risks` info
 
+## emfn-site-styles-plugin
+
+Site-wide CSS and JavaScript that supports the EMFN Newspack instance. This plugin provides styles and functionality that would otherwise need to be maintained in WordPress admin panels (Additional CSS, Custom HTML blocks, etc.).
+
+**Current assets:**
+- `assets/css/emfn-site-styles-plugin.css` - Site-wide styles including color variables, byline link accessibility improvements, and republishable card formatting
+- `assets/html-templates/homepage_animation.html` - Homepage hero animation with hardware-accelerated CSS and `requestAnimationFrame()` optimizations
+- `assets/js/emfn-site-styles-plugin.js` - Site-wide JavaScript utilities
+
+Future work on migrating to a SASS build system is documented in [MOVE_TO_SASS.md](plugins/emfn-site-styles-plugin/MOVE_TO_SASS.md).
+
 ## Development & Dependencies
 
 ### Python (Notebooks)
@@ -382,7 +438,7 @@ The `.github/workflows/ci.yml` workflow runs on all pull requests and pushes to 
 1. **Lint checks:** `npm run lint` (Prettier, ESLint, shellcheck, notebook cleanliness)
 2. **JavaScript tests:** `npm run test:js` (Jest with 54 tests)
 3. **PHP tests:** `npm run test:php` (PHPUnit with 22 tests)
-4. **Shell script tests:** `npm run test:scripts` (34 shell tests)
+4. **Shell script tests:** `npm run test:scripts` (67 shell tests)
 
 Test results appear in GitHub Checks on PRs, providing immediate feedback before merge. All checks must pass before merging to `main`.
 

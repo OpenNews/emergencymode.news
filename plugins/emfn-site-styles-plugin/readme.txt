@@ -1,14 +1,15 @@
 === EMFN Site Styles Plugin ===
-Contributors: opennews, emergencymode
-Tags: styles, css, newspack, custom-styles
-Requires at least: 6.3
-Tested up to: 6.7
-Requires PHP: 8.0
-Stable tag: 0.1.0
-License: MIT
-License URI: https://opensource.org/licenses/MIT
+Contributors:       tiffehr
+Tags:               newspack, emergency-mode-for-news, nclocal, opennews
+Requires at least:  6.3
+Tested up to:       7.0
+Stable tag:         0.1.0
+Requires PHP:       8.0
+License:            MIT
+License URI:        https://opensource.org/licenses/MIT
 
-Custom site-wide styles for Emergency Mode (EMFN) built with SASS.
+Custom site-wide CSS and JS for Emergency Mode (EMFN). 
+Optional build process to generate both, in the future.
 
 == Description ==
 
@@ -16,46 +17,22 @@ This lightweight plugin provides custom styling for the Emergency Mode website (
 
 **Features:**
 
-* Site-wide custom styles compiled from organized SASS components
+* Site-wide custom styles for EMFN
 * Responsive design with mobile and tablet breakpoints
 * Category-specific color coding for content organization
 * Custom components for Action Pack, hero sections, FAQs and more
 * No complex PHP logic - only asset enqueuing
-* Built with modern SASS workflows
-
-**Components Include:**
-
-* Base layout and typography
-* Navigation and header customization
-* Content cards and category pills
-* Action Pack quiz styling
-* Homepage hero and animations
-* FacetWP search results
-* Jetpack AI search overrides
-* Big CTA buttons with Material Symbols
-* And more...
 
 == Installation ==
 
 1. Upload the `emfn-site-styles-plugin` folder to `/wp-content/plugins/`
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Styles will automatically be applied site-wide
-
-== Development ==
-
-This plugin uses SASS for stylesheet development:
-
-**Build Commands:**
-* `npm run build:styles` - Build production CSS
-* `npm run build:styles:dev` - Build development CSS with source maps
-* `npm run watch:styles` - Watch for changes and auto-rebuild
-
-See README.md for full development documentation.
+4. Remove anything pulled from the _Customize > Additional CSS_ menu that has been saved here and re-Publish the site
 
 == Changelog ==
 
-= 0.1.0 =
-* Initial release
-* SASS-based build system
-* Site-wide custom styles
-* Component-based organization
+= Releases =
+
+* GitHub drives release versions and history
+* Please see GitHub: https://github.com/OpenNews/emergencymode.news/releases

@@ -7,56 +7,37 @@
 
 set -euo pipefail
 
-# shellcheck source=tests/scripts/test-helpers.sh
-source "$(dirname "$0")/test-helpers.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "$SCRIPT_DIR/test-helpers.sh"
 
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SCRIPT_UNDER_TEST="$REPO_ROOT/scripts/get-plugin-version.sh"
 
-test_action_pack_version() {
-  section "Test: Extract action-pack version"
-  
-  result=$("$SCRIPT_UNDER_TEST" emfn-action-pack-plugin)
-  
-  # Should return a semver version
-  assert_matches "$result" "^[0-9]+\.[0-9]+\.[0-9]+$" "Should return semver version"
-  pass "Action pack version extracted: $result"
-}
+echo "Testing scripts/get-plugin-version.sh"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-test_site_styles_version() {
-  section "Test: Extract site-styles version"
-  
-  result=$("$SCRIPT_UNDER_TEST" emfn-site-styles-plugin)
-  
-  # Should return a semver version
-  assert_matches "$result" "^[0-9]+\.[0-9]+\.[0-9]+$" "Should return semver version"
-  pass "Site styles version extracted: $result"
-}
+# Test 1: Extract action-pack version
+test_start "extracts action-pack version"
+result=$("$SCRIPT_UNDER_TEST" emfn-action-pack-plugin 2>/dev/null)
+assert_matches "$result" "^[0-9]+\.[0-9]+\.[0-9]+$"
 
-test_invalid_plugin() {
-  section "Test: Invalid plugin name"
-  
-  # Should exit with error for nonexistent plugin
-  if "$SCRIPT_UNDER_TEST" nonexistent-plugin 2>/dev/null; then
-    fail "Should fail with nonexistent plugin"
-  else
-    pass "Correctly rejects invalid plugin name"
-  fi
-}
+# Test 2: Extract site-styles version
+test_start "extracts site-styles version"
+result=$("$SCRIPT_UNDER_TEST" emfn-site-styles-plugin 2>/dev/null)
+assert_matches "$result" "^[0-9]+\.[0-9]+\.[0-9]+$"
 
-test_missing_argument() {
-  section "Test: Missing argument"
-  
-  # Should exit with error when no argument provided
-  if "$SCRIPT_UNDER_TEST" 2>/dev/null; then
-    fail "Should fail with missing argument"
-  else
-    pass "Correctly rejects missing argument"
-  fi
-}
+# Test 3: Invalid plugin name
+test_start "rejects invalid plugin name"
+("$SCRIPT_UNDER_TEST" nonexistent-plugin 2>/dev/null) && exit_code=$? || exit_code=$?
+[[ $exit_code -ne 0 ]]
+assert_success
 
-# Run tests
-run_tests \
-  test_action_pack_version \
-  test_site_styles_version \
-  test_invalid_plugin \
-  test_missing_argument
+# Test 4: Missing argument
+test_start "rejects missing argument"
+("$SCRIPT_UNDER_TEST" 2>/dev/null) && exit_code=$? || exit_code=$?
+[[ $exit_code -ne 0 ]]
+assert_success
+
+# Print summary and exit with appropriate code
+test_summary

@@ -107,6 +107,61 @@ assert_file_not_exists() {
   fi
 }
 
+# Assert that a string matches a regex pattern
+# shellcheck disable=SC2317
+assert_matches() {
+  local actual="$1"
+  local pattern="$2"
+  
+  if [[ "$actual" =~ $pattern ]]; then
+    echo -e "${GREEN}✓${NC} ${CURRENT_TEST_NAME}"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    echo -e "${RED}✗${NC} ${CURRENT_TEST_NAME}"
+    echo "  Expected to match: $pattern"
+    echo "  Got:               '$actual'"
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+}
+
+# Assert that a string is empty
+# shellcheck disable=SC2317
+assert_empty() {
+  local actual="$1"
+  local message="${2:-Expected empty string}"
+  
+  if [[ -z "$actual" ]]; then
+    echo -e "${GREEN}✓${NC} ${CURRENT_TEST_NAME}"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    echo -e "${RED}✗${NC} ${CURRENT_TEST_NAME}"
+    echo "  $message"
+    echo "  Got: '$actual'"
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+}
+
+# Print a section header
+section() {
+  echo ""
+  echo "Testing: $1"
+}
+
+# Mark test as passed with message
+pass() {
+  local message="$1"
+  echo -e "${GREEN}✓${NC} ${CURRENT_TEST_NAME}: $message"
+  TESTS_PASSED=$((TESTS_PASSED + 1))
+}
+
+# Mark test as failed with message
+fail() {
+  local message="$1"
+  echo -e "${RED}✗${NC} ${CURRENT_TEST_NAME}: $message"
+  TESTS_FAILED=$((TESTS_FAILED + 1))
+  return 1
+}
+
 # Print test summary
 test_summary() {
   echo ""

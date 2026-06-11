@@ -9,48 +9,63 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$SCRIPT_DIR/test-helpers.sh"
 
 SCRIPT_PATH="$REPO_ROOT/scripts/generate-version-matrix.sh"
+GET_VERSION_PATH="$REPO_ROOT/scripts/get-plugin-version.sh"
 
 run_tests() {
   echo "Testing scripts/generate-version-matrix.sh"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   
+  # Get current versions from plugin files (for dynamic test expectations)
+  ACTION_PACK_VERSION=$("$GET_VERSION_PATH" "emfn-action-pack-plugin")
+  SITE_STYLES_VERSION=$("$GET_VERSION_PATH" "emfn-site-styles-plugin")
+  
+  # Parse action-pack version for bump tests
+  IFS='.' read -r AP_MAJOR AP_MINOR AP_PATCH <<< "$ACTION_PACK_VERSION"
+  AP_NEXT_PATCH="${AP_MAJOR}.${AP_MINOR}.$((AP_PATCH + 1))"
+  AP_NEXT_MINOR="${AP_MAJOR}.$((AP_MINOR + 1)).0"
+  AP_NEXT_MAJOR="$((AP_MAJOR + 1)).0.0"
+  
+  # Parse site-styles version for bump tests
+  IFS='.' read -r SS_MAJOR SS_MINOR SS_PATCH <<< "$SITE_STYLES_VERSION"
+  SS_NEXT_PATCH="${SS_MAJOR}.${SS_MINOR}.$((SS_PATCH + 1))"
+  
   # Test: Script reads current version from plugin file, not git tags
   test_start "reads version from action-pack plugin file"
   output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "patch bump")
   current_version=$(echo "$output" | jq -r '.plugin[0].current_version')
-  assert_equals "0.5.0" "$current_version"
+  assert_equals "$ACTION_PACK_VERSION" "$current_version"
   
   test_start "reads version from site-styles plugin file"
   output=$("$SCRIPT_PATH" "emfn-site-styles-plugin" "patch bump")
   current_version=$(echo "$output" | jq -r '.plugin[0].current_version')
-  assert_equals "0.1.0" "$current_version"
+  assert_equals "$SITE_STYLES_VERSION" "$current_version"
   
   # Test: Patch bump from current file version
   test_start "applies patch bump to file version (action-pack)"
   output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "fix: bug fix")
   next_version=$(echo "$output" | jq -r '.plugin[0].next_version')
-  assert_equals "0.5.1" "$next_version"
+  assert_equals "$AP_NEXT_PATCH" "$next_version"
   
   test_start "applies patch bump to file version (site-styles)"
   output=$("$SCRIPT_PATH" "emfn-site-styles-plugin" "fix: bug fix")
   next_version=$(echo "$output" | jq -r '.plugin[0].next_version')
-  assert_equals "0.1.1" "$next_version"
+  assert_equals "$SS_NEXT_PATCH" "$next_version"
   
   # Test: Minor bump from current file version
   test_start "applies minor bump to file version"
   output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "[minor] new feature")
   current_version=$(echo "$output" | jq -r '.plugin[0].current_version')
   next_version=$(echo "$output" | jq -r '.plugin[0].next_version')
-  assert_equals "0.5.0" "$current_version"
-  assert_equals "0.6.0" "$next_version"
+  assert_equals "$ACTION_PACK_VERSION" "$current_version"
+  assert_equals "$AP_NEXT_MINOR" "$next_version"
   
   # Test: Major bump from current file version
   test_start "applies major bump to file version"
   output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "[major] breaking change")
   current_version=$(echo "$output" | jq -r '.plugin[0].current_version')
   next_version=$(echo "$output" | jq -r '.plugin[0].next_version')
-  assert_equals "0.5.0" "$current_version"
-  assert_equals "1.0.0" "$next_version"
+  assert_equals "$ACTION_PACK_VERSION" "$current_version"
+  assert_equals "$AP_NEXT_MAJOR" "$next_version"
   
   # Test: Multiple plugins
   test_start "handles multiple plugins correctly"
@@ -60,19 +75,20 @@ run_tests() {
   
   action_pack_version=$(echo "$output" | jq -r '.plugin[] | select(.name=="emfn-action-pack-plugin") | .next_version')
   site_styles_version=$(echo "$output" | jq -r '.plugin[] | select(.name=="emfn-site-styles-plugin") | .next_version')
-  assert_equals "0.6.0" "$action_pack_version"
-  assert_equals "0.2.0" "$site_styles_version"
+  SS_NEXT_MINOR="${SS_MAJOR}.$((SS_MINOR + 1)).0"
+  assert_equals "$AP_NEXT_MINOR" "$action_pack_version"
+  assert_equals "$SS_NEXT_MINOR" "$site_styles_version"
   
   # Test: Tag format is correct
   test_start "generates correct tag format"
   output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "fix: something")
   tag=$(echo "$output" | jq -r '.plugin[0].tag')
-  assert_equals "action-pack/v0.5.1" "$tag"
+  assert_equals "action-pack/v${AP_NEXT_PATCH}" "$tag"
   
   test_start "generates correct site-styles tag format"
   output=$("$SCRIPT_PATH" "emfn-site-styles-plugin" "fix: something")
   tag=$(echo "$output" | jq -r '.plugin[0].tag')
-  assert_equals "site-styles/v0.1.1" "$tag"
+  assert_equals "site-styles/v${SS_NEXT_PATCH}" "$tag"
   
   # Test: Plugin slug mapping
   test_start "maps action-pack plugin name to slug"

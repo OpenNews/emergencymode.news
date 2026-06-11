@@ -39,13 +39,10 @@ fi
 
 # Get changed files in plugins/ directory
 # - Compare BASE_REF to HEAD
-# - Filter for Added/Modified/Deleted files in plugins/
 # - Extract plugin directory names (2nd path component)
 # - Sort and deduplicate
 changed_plugins=$(
-    git diff --name-status "${BASE_REF}..HEAD" -- plugins/ \
-        | grep '^[AMD]' \
-        | cut -f2 \
+    git diff --name-only "${BASE_REF}..HEAD" -- plugins/ \
         | cut -d/ -f2 \
         | sort -u \
         | tr '\n' ' ' \

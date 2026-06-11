@@ -103,6 +103,7 @@ jobs:
     if: needs.release.outputs.changed_plugins != ''
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 1
       matrix: ${{ fromJson(needs.release.outputs.matrix) }}
 
     steps:
@@ -111,6 +112,19 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Install uv
+        run: pip install uv
 
       - name: Sync plugin version
         run: |
@@ -124,11 +138,7 @@ jobs:
           npx prettier --write package-lock.json
 
       - name: Update uv.lock
-        run: |
-          if command -v uv >/dev/null 2>&1; then
-            pip install uv
-            uv lock
-          fi
+        run: uv lock
 
       - name: Commit version changes
         run: |

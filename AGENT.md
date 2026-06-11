@@ -2,6 +2,8 @@
 
 **Purpose**: Stop making the same mistakes every PR cycle. Think like code review.
 
+**Note**: `/memories/repo/start-here.md` forces this into session context automatically. You'll see it.
+
 ---
 
 ## 🚨 READ THIS FIRST - Mandatory Session Start
@@ -37,8 +39,6 @@ grep "beStrict\|failOn" phpunit.xml
 - Violate documented warnings (using 9.9.9)
 
 **This is not optional.** Every HIGH priority bug in PR reviews came from skipping this audit.
-
-**Also saved in**: `/memories/repo/start-here.md` (loaded automatically at session start)
 
 ---
 
@@ -237,11 +237,13 @@ Before committing:
 1. Add to **"Chronic AI Behavioral Patterns"** section if it's a repeating behavioral issue
 2. Add to **"Before Writing Any Code"** section if it's a technical constraint
 3. Add to **"Quick Checks"** checklist if it's a pre-commit validation
-4. Update `/memories/repo/start-here.md` if it changes session startup requirements
+4. Update `/memories/repo/start-here.md` if the mistake is critical enough to highlight in session startup
 
 **Make it concrete**: Include the actual mistake (what was written), why it failed, and the correct pattern.
 
 **Keep it abstract**: Focus on the class of mistake (exit code masking) not the specific instance (line 47 of script.sh).
+
+**Both files work together**: Repo memory nags at session start → you read this comprehensive guide → you audit before coding → you avoid bugs.
 
 ---
 

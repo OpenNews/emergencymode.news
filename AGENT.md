@@ -855,6 +855,88 @@ git diff "$base_ref"..HEAD
 
 ---
 
+### 20. Version Rollback from Tag-Based Versioning Bug
+
+**THE TRAP**: Using git tags as the source of truth for current version when tag naming scheme changes, causing version rollback.
+
+**What Happened**:
+- Plugin files had version 0.5.0
+- PR #65 merged to main with [minor] in commit message
+- Release workflow ran `generate-version-matrix.sh`
+- Script looked for tags matching `action-pack/v*` format (new scheme)
+- Found ZERO tags (old tags were `v0.5.0`, not `action-pack/v0.5.0`)
+- Defaulted to 0.0.0, applied [minor] bump → 0.1.0
+- Overwrote production files from 0.5.0 → 0.1.0
+- Created release with downgraded version
+
+**Root Cause**:
+- `generate-version-matrix.sh` used git tags as single source of truth
+- Function `get_latest_plugin_version()` returned "0.0.0" when no tags matched new pattern
+- Never checked actual version in plugin files
+- Assumed tags were always up-to-date and correct
+
+**Why This Is Dangerous**:
+- Tag naming schemes can change during refactoring
+- Tags can be deleted or recreated
+- Fresh clones might not fetch all tags
+- Git history can be rewritten
+- Plugin files are the actual deployed artifacts
+
+**The Fix**:
+```bash
+# WRONG: Use tags as source of truth
+get_latest_plugin_version() {
+    latest_tag=$(git tag --list "${plugin_slug}/v[0-9]*" | head -n1)
+    if [[ -z "$latest_tag" ]]; then
+        echo "0.0.0"  # ❌ Assumes version starts at 0.0.0
+    fi
+}
+
+# RIGHT: Use plugin file as source of truth
+get_current_plugin_version() {
+    local plugin_name="$1"
+    # Read version from actual plugin file
+    "$REPO_ROOT/scripts/get-plugin-version.sh" "$plugin_name"
+}
+```
+
+**Test Coverage Required**:
+```bash
+# Test that version comes from file, not tags
+test "reads version from action-pack plugin file"
+output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "patch bump")
+current_version=$(echo "$output" | jq -r '.plugin[0].current_version')
+assert_equals "0.5.0" "$current_version"  # Not 0.0.0!
+
+# Test version bump is applied to file version
+test "applies minor bump to file version"
+output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "[minor] new feature")
+assert_equals "0.5.0" "$(echo "$output" | jq -r '.plugin[0].current_version')"
+assert_equals "0.6.0" "$(echo "$output" | jq -r '.plugin[0].next_version')"
+```
+
+**Source of Truth Hierarchy**:
+1. **Plugin file Version header** - What's actually deployed
+2. **Git tags** - Historical markers, can drift or change
+3. **Hardcoded defaults** - Last resort only
+
+**For This Codebase**:
+- Created `tests/scripts/test-generate-version-matrix.sh` with 13 tests
+- Tests verify version reads from plugin file (0.5.0), not tags (0.0.0)
+- Tests verify version bumps apply to file version, not default version
+- Changed `generate-version-matrix.sh` to use `get-plugin-version.sh`
+
+**Red Flags You're Making This Mistake**:
+- ❌ Script defaults to "0.0.0" or "1.0.0" when tags don't exist
+- ❌ Version detection relies solely on git tag patterns
+- ❌ No validation against actual file versions
+- ❌ Tag naming scheme refactoring breaks versioning
+- ❌ Fresh clone + workflow run produces different version than expected
+
+**Lesson**: The plugin file is the source of truth for current version, not git tags. Tags are historical markers that can become stale, be deleted, or not match current naming schemes. Always read the current version from the actual artifact being released (the plugin file), then calculate bumps from there. Test this behavior explicitly to prevent silent version rollbacks during deployment.
+
+---
+
 ## 🛠️ Development Workflow Best Practices
 
 ### Before Committing
@@ -1000,4 +1082,4 @@ SKIP=shellcheck git commit
 ---
 
 **Last Updated**: June 11, 2026  
-**Lessons Learned From**: Setting up complete test infrastructure, fixing pre-commit hooks, eliminating PHPUnit deprecations, debugging version number corruption, optimizing devcontainer setup, proactive error validation, Git reference validation in CI/CD workflows
+**Lessons Learned From**: Setting up complete test infrastructure, fixing pre-commit hooks, eliminating PHPUnit deprecations, debugging version number corruption, optimizing devcontainer setup, proactive error validation, Git reference validation in CI/CD workflows, preventing version rollback from tag-based versioning bugs

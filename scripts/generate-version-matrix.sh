@@ -48,21 +48,12 @@ declare -A PLUGIN_SLUGS=(
 # Change to repo root
 cd "$REPO_ROOT"
 
-# Function to get latest plugin version from git tags
-get_latest_plugin_version() {
-    local plugin_slug="$1"
-    local latest_tag
+# Function to get current plugin version from plugin file
+get_current_plugin_version() {
+    local plugin_name="$1"
     
-    # Get latest tag for this plugin (format: plugin-slug/vX.Y.Z)
-    latest_tag=$(git tag --list "${plugin_slug}/v[0-9]*.[0-9]*.[0-9]*" --sort=-version:refname | head -n1)
-    
-    if [[ -z "$latest_tag" ]]; then
-        # No tags exist for this plugin yet
-        echo "0.0.0"
-    else
-        # Extract version from tag (remove plugin-slug/v prefix)
-        echo "${latest_tag#"${plugin_slug}"/v}"
-    fi
+    # Use get-plugin-version.sh to read version from plugin file
+    "$REPO_ROOT/scripts/get-plugin-version.sh" "$plugin_name"
 }
 
 # Function to calculate next version based on commit message
@@ -105,7 +96,7 @@ for plugin_name in $CHANGED_PLUGINS; do
     fi
     
     # Get current and next versions
-    current_version=$(get_latest_plugin_version "$plugin_slug")
+    current_version=$(get_current_plugin_version "$plugin_name")
     next_version=$(calculate_next_version "$current_version" "$COMMIT_MESSAGE")
     tag="${plugin_slug}/v${next_version}"
     

@@ -16,7 +16,7 @@
  */
 
 (function () {
-  const version = "0.8.09"; // debugging versioning
+  const version = "0.9.00"; // debugging versioning
   const riskThreshold = 85; // threshold for suggested risks
   const emfnWindow = /** @type {EmfnWindow} */ (window);
 

@@ -13,8 +13,8 @@
       let lastSwitchTime = performance.now();
 
       const words = document.querySelectorAll(".emfn-word");
-      if ((!words.length || words.length === 0) && isDebug) {
-        console.debug("No .emfn-word elements found");
+      if (!words.length) {
+        if (isDebug) console.debug("No .emfn-word elements found");
         return;
       }
 

@@ -2,8 +2,9 @@
  * EMFN style overrides
  *
  * Enqueued after the main theme stylesheet, so these styles will take 
- * precedence over the default styles provided by the theme. 
- * But you may still need `!important` to fight long selectors or third-party plugin CSS
+ * precedence over the default styles provided by the theme, depending on 
+ * selector specificity. You may still need `!important` to fight long 
+ * selectors or third-party plugin CSS
  */
 
 :root {

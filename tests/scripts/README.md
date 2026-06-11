@@ -2,15 +2,11 @@
 
 Bash-based tests for build and release automation scripts.
 
-## Test Status
-
-**Total: 65 tests passing**
-
-- ✅ [test-build-assets.sh](test-build-assets.sh) — 18/18 tests passing
-- ✅ [test-detect-changes.sh](test-detect-changes.sh) — 3/3 tests passing
-- ✅ [test-get-plugin-version.sh](test-get-plugin-version.sh) — 4/4 tests passing
-- ✅ [test-sync-version.sh](test-sync-version.sh) — 20/20 tests passing
-- ✅ [test-version-bump.sh](test-version-bump.sh) — 22/22 tests passing
+- [test-build-assets.sh](test-build-assets.sh)
+- [test-detect-changes.sh](test-detect-changes.sh)
+- [test-get-plugin-version.sh](test-get-plugin-version.sh)
+- [test-sync-version.sh](test-sync-version.sh)
+- [test-version-bump.sh](test-version-bump.sh)
 
 ## Running Tests
 
@@ -73,7 +69,7 @@ test_summary
 
 ## Test Suites
 
-### test-version-bump.sh (22 tests)
+### test-version-bump.sh
 
 Tests the version bump logic used in GitHub Actions release workflow.
 
@@ -88,7 +84,7 @@ Tests the version bump logic used in GitHub Actions release workflow.
 
 **Implementation:** Extracts version calculation logic from workflow into testable bash function.
 
-### test-build-assets.sh (18 tests)
+### test-build-assets.sh
 
 Tests [scripts/build-release-assets.sh](../../scripts/build-release-assets.sh) which creates plugin ZIP files for releases.
 
@@ -104,7 +100,7 @@ Tests [scripts/build-release-assets.sh](../../scripts/build-release-assets.sh) w
 
 **Implementation:** Creates temporary directories, runs build script, validates outputs, cleans up.
 
-### test-sync-version.sh (20 tests)
+### test-sync-version.sh
 
 Tests [scripts/sync-release-version.sh](../../scripts/sync-release-version.sh) which updates version numbers across plugin files.
 
@@ -118,7 +114,7 @@ Tests [scripts/sync-release-version.sh](../../scripts/sync-release-version.sh) w
 
 **Implementation:** Uses temporary git repositories for isolated testing.
 
-### test-detect-changes.sh (3 tests)
+### test-detect-changes.sh
 
 Tests [scripts/detect-plugin-changes.sh](../../scripts/detect-plugin-changes.sh) which detects which plugins have changed.
 
@@ -129,7 +125,7 @@ Tests [scripts/detect-plugin-changes.sh](../../scripts/detect-plugin-changes.sh)
 
 **Implementation:** Tests against HEAD to ensure test reliability in all environments.
 
-### test-get-plugin-version.sh (4 tests)
+### test-get-plugin-version.sh
 
 Tests [scripts/get-plugin-version.sh](../../scripts/get-plugin-version.sh) which extracts version from plugin files.
 

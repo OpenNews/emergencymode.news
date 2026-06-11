@@ -7,9 +7,9 @@ Automated tests for emergencymode.news plugins and infrastructure.
 ✅ **Core Testing Implemented** — See [TESTING_PLAN.md](TESTING_PLAN.md) for detailed documentation.
 
 **Implemented:**
-- ✅ PHP unit tests (PHPUnit) - 15 tests covering payload decoding
-- ✅ JavaScript unit tests (Jest) - 22 tests covering encoding and risk rendering
-- ✅ Shell script tests - 43 tests covering build and version scripts
+- ✅ PHP unit tests (PHPUnit) - Covering payload decoding
+- ✅ JavaScript unit tests (Jest) - Covering encoding and risk rendering
+- ✅ Shell script tests - Covering build and version scripts
 - ✅ CI integration - All tests run on PRs and commits
 - ✅ Pre-commit hooks - Linting and formatting checks
 

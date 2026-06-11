@@ -436,9 +436,9 @@ Dependabot PRs can be auto-merged after CI passes, enabling frequent maintenance
 The `.github/workflows/ci.yml` workflow runs on all pull requests and pushes to `main`/`staging`:
 
 1. **Lint checks:** `npm run lint` (Prettier, ESLint, shellcheck, notebook cleanliness)
-2. **JavaScript tests:** `npm run test:js` (Jest with 54 tests)
-3. **PHP tests:** `npm run test:php` (PHPUnit with 22 tests)
-4. **Shell script tests:** `npm run test:scripts` (67 shell tests)
+2. **JavaScript tests:** `npm run test:js` (Jest)
+3. **PHP tests:** `npm run test:php` (PHPUnit)
+4. **Shell script tests:** `npm run test:scripts` (Bash test framework)
 
 Test results appear in GitHub Checks on PRs, providing immediate feedback before merge. All checks must pass before merging to `main`.
 

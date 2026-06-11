@@ -13,8 +13,7 @@ vendor/bin/phpunit --testdox  # Human-readable test output
 ## Test Suites
 
 ### Action Pack Payload Decoding
-**File:** [`action-pack/PayloadDecodingTest.php`](action-pack/PayloadDecodingTest.php)  
-**Status:** ✅ 22/22 tests passing
+**File:** [`action-pack/PayloadDecodingTest.php`](action-pack/PayloadDecodingTest.php)
 
 Tests the server-side logic that decodes shareable URLs back into category IDs:
 - Base36 → integer conversion

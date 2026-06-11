@@ -22,8 +22,7 @@ These modules mirror the production code from the WordPress plugin but are struc
 ## Test Suites
 
 ### Action Pack Payload Encoding
-**File:** [`action-pack/payload-encoding.test.js`](action-pack/payload-encoding.test.js)  
-**Status:** ✅ 24/24 tests passing | 100% coverage
+**File:** [`action-pack/payload-encoding.test.js`](action-pack/payload-encoding.test.js)
 
 Tests the core logic that encodes quiz responses into compact shareable URLs:
 - Category ID ordering and bit position mapping
@@ -53,8 +52,7 @@ payload-encoding.js  |     100 |      100 |     100 |     100
 ```
 
 ### Risk Rendering and Location Data
-**File:** [`action-pack/risk-rendering.test.js`](action-pack/risk-rendering.test.js)  
-**Status:** ✅ 30/30 tests passing | 100% coverage
+**File:** [`action-pack/risk-rendering.test.js`](action-pack/risk-rendering.test.js)
 
 Tests that risk display correctly populates county and state fields with real location data (regression prevention for bug where template defaults were shown instead of actual values):
 

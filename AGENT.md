@@ -247,4 +247,85 @@ Before committing:
 
 ---
 
+## 📝 How to Write New Rules (Template)
+
+**Ask first**: Is this a one-time bug or a repeating pattern across multiple PRs?
+- **One-time bug** → Fix it, add a comment in the code, move on (don't document here)
+- **Repeating pattern** → Document it using the template below
+
+**Template for "Chronic AI Behavioral Patterns"**:
+
+```markdown
+### N. [Category Name - What Gets Done Wrong]
+**Pattern**: [Concrete example of the mistake] → [What happens/fails]
+**Why**: [Root cause - usually an AI limitation or assumption]
+**Fix**: [Actionable step to prevent it, with command examples]
+```
+
+**Template for "Before Writing Any Code" constraints**:
+
+```markdown
+**[What to check]** ([why it matters]):
+```bash
+# ❌ WRONG - [what breaks]
+[bad code example]
+
+# ✅ RIGHT - [correct approach]
+[good code example]
+```
+```
+
+**Good rule characteristics**:
+- ✅ **Timeless**: Describes a class of problem, not tied to specific code
+- ✅ **Actionable**: Tells you what to DO (grep this, check that) not just what went wrong
+- ✅ **Abstract + Concrete**: General pattern + specific example to illustrate
+- ✅ **Root cause aware**: Explains WHY the mistake happens (AI behavior, environment assumption)
+- ✅ **Teaches thinking**: Shows the thought process, not just the fix
+
+**Bad rule characteristics**:
+- ❌ **Bug report**: "In PR #66 line 47 had a typo" → This is too specific, will become irrelevant
+- ❌ **Code-specific**: "generate-version-matrix.sh line 89 should use $major after line 85" → Brittle, breaks when code changes
+- ❌ **Symptom-focused**: "Test failed" → Doesn't explain why or how to prevent
+- ❌ **One-time event**: "Forgot to update README" → If it only happened once, it's not a pattern
+
+**Decision tree for new entries**:
+
+```
+Is it repeating across multiple PRs/sessions?
+├─ NO → Don't add to AGENT.md (one-time bug)
+└─ YES → Is it about AI behavior or a technical constraint?
+    ├─ AI behavior → Add to "Chronic AI Behavioral Patterns"
+    │   └─ Ask: Does it represent a CLASS of thinking error?
+    │       ├─ YES → Write it abstractly (e.g., "source of truth confusion")
+    │       └─ NO → Too specific, skip it
+    └─ Technical constraint → Add to "Before Writing Any Code"
+        └─ Ask: Will this apply to future code or just current code?
+            ├─ Future → Document the pattern (e.g., "exit codes are contracts")
+            └─ Current only → Add inline comment to the code instead
+```
+
+**Example transformation** (bug report → good rule):
+
+❌ **Too specific**: "In test-generate-version-matrix.sh, I used assert_equals twice after one test_start which made the test count show 17 passed but only 13 run"
+
+✅ **Good rule**: 
+```markdown
+**Test frameworks have rules** (read helpers before writing tests):
+# ❌ WRONG - multiple assertions skew test counts
+test_start "test name"
+assert_equals "foo" "$bar"
+assert_equals "baz" "$qux"  # Each assert increments counters
+
+# ✅ RIGHT - one assertion per test_start
+test_start "test name"
+assert_equals "foo" "$bar"
+
+test_start "another test"
+assert_equals "baz" "$qux"
+```
+
+**Keep it lean**: If 3 PRs have similar mistakes, abstract them into ONE pattern. Don't list all 3 separately.
+
+---
+
 **Last Updated**: June 11, 2026

@@ -70,7 +70,26 @@ jobs:
       - name: Detect changed plugins
         id: detect
         run: |
-          changed_plugins=$(./scripts/detect-plugin-changes.sh origin/main)
+          # For push events, compare against the commit before the push
+          # For workflow_dispatch, compare against HEAD~1
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            base_ref="${{ github.event.before }}"
+            # Handle edge case: force push or first commit (before = 0000...)
+            if [[ "$base_ref" =~ ^0+$ ]]; then
+              echo "::warning::Force push or first commit detected, using HEAD~1"
+              base_ref="HEAD~1"
+            fi
+          else
+            base_ref="HEAD~1"
+          fi
+
+          # Verify base_ref exists, fall back to empty tree if not
+          if ! git rev-parse --verify "$base_ref" >/dev/null 2>&1; then
+            echo "::warning::Reference $base_ref does not exist, comparing against empty tree"
+            base_ref="4b825dc642cb6eb9a060e54bf8d69288fbee4904"  # Git's empty tree SHA
+          fi
+
+          changed_plugins=$(./scripts/detect-plugin-changes.sh "$base_ref")
           echo "changed_plugins=$changed_plugins" >> "$GITHUB_OUTPUT"
 
           if [[ -z "$changed_plugins" ]]; then
@@ -98,19 +117,47 @@ jobs:
           echo "Plugin release matrix:"
           echo "$matrix_json" | jq '.'
 
+      - name: Update lock files
+        if: steps.detect.outputs.changed_plugins != ''
+        run: |
+          npm install --package-lock-only
+          npx prettier --write package-lock.json
+          uv lock
+
+      - name: Commit lock file updates
+        if: steps.detect.outputs.changed_plugins != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add package-lock.json uv.lock || true
+
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: Update lock files for release [skip ci]"
+            git push
+          else
+            echo "No lock file changes to commit"
+          fi
+
   release-plugins:
     needs: release
     if: needs.release.outputs.changed_plugins != ''
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 1
       matrix: ${{ fromJson(needs.release.outputs.matrix) }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
+          ref: main
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Pull latest changes
+        run: |
+          git pull origin main
 
       - name: Sync plugin version
         run: |
@@ -118,25 +165,13 @@ jobs:
             --plugin ${{ matrix.plugin.name }} \
             ${{ matrix.plugin.next_version }}
 
-      - name: Update package-lock.json
-        run: |
-          npm install --package-lock-only
-          npx prettier --write package-lock.json
-
-      - name: Update uv.lock
-        run: |
-          if command -v uv >/dev/null 2>&1; then
-            pip install uv
-            uv lock
-          fi
-
       - name: Commit version changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Add plugin files and lock files
-          git add plugins/${{ matrix.plugin.name }}/ package-lock.json uv.lock || true
+          # Add only plugin files (lock files already committed by release job)
+          git add plugins/${{ matrix.plugin.name }}/
 
           # Only commit and push if there are actual changes
           if ! git diff --cached --quiet; then
@@ -153,6 +188,13 @@ jobs:
             --plugin ${{ matrix.plugin.name }} \
             ${{ matrix.plugin.next_version }} \
             dist
+
+      - name: Verify tag doesn't exist
+        run: |
+          if git rev-parse "${{ matrix.plugin.tag }}" >/dev/null 2>&1; then
+            echo "::error::Tag ${{ matrix.plugin.tag }} already exists"
+            exit 1
+          fi
 
       - name: Create plugin release
         uses: softprops/action-gh-release@v3

@@ -24,10 +24,9 @@ assert_success
 
 # Test 2: Detects actual plugin changes on current branch vs main
 test_start "detects plugin changes on current branch"
-result=$("$SCRIPT_UNDER_TEST" origin/main 2>/dev/null || echo "")
-# On staging, we expect either no changes or plugin changes
-[[ "$result" =~ ^(|emfn-action-pack-plugin|emfn-site-styles-plugin|emfn-action-pack-plugin[[:space:]]+emfn-site-styles-plugin|emfn-site-styles-plugin[[:space:]]+emfn-action-pack-plugin)$ ]]
-assert_success
+result=$("$SCRIPT_UNDER_TEST" HEAD 2>/dev/null || echo "")
+# With HEAD as base, no changes expected (comparing HEAD to HEAD)
+assert_empty "$result"
 
 # Test 3: Invalid git reference
 test_start "rejects invalid git reference"

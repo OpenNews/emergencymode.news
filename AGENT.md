@@ -784,6 +784,159 @@ get_errors()  # Always validate after editing pyproject.toml, package.json, etc.
 
 ---
 
+### 19. Always Validate Git References Before Using Them
+
+**THE TRAP**: Using Git references like `HEAD~1` without verifying they exist, causing workflow failures.
+
+**What Happened**:
+- Release workflow uses `HEAD~1` as fallback for force pushes or workflow_dispatch
+- `HEAD~1` doesn't exist for:
+  - First commit in repository (no parent)
+  - Shallow clones with depth=1
+  - Rewritten history
+- `detect-plugin-changes.sh` would fail the entire release job with "fatal: bad revision 'HEAD~1'"
+
+**Why This Happens**:
+- Git references are not guaranteed to exist
+- `HEAD~1` assumes there's at least one parent commit
+- `github.event.before` can be all zeros (0000...) for force pushes
+- Workflow logic assumes safe defaults without validation
+
+**The Pattern to Use**:
+```bash
+# WRONG: Assume reference exists
+base_ref="HEAD~1"
+git diff "$base_ref"..HEAD  # Will fail if HEAD~1 doesn't exist
+
+# RIGHT: Validate reference, use safe fallback
+base_ref="HEAD~1"
+if ! git rev-parse --verify "$base_ref" >/dev/null 2>&1; then
+  echo "::warning::Reference $base_ref does not exist, comparing against empty tree"
+  base_ref="4b825dc642cb6eb9a060e54bf8d69288fbee4904"  # Git's empty tree SHA
+fi
+git diff "$base_ref"..HEAD  # Now safe
+```
+
+**Safe Fallbacks**:
+- **Empty tree SHA**: `4b825dc642cb6eb9a060e54bf8d69288fbee4904`
+  - Special Git object representing empty repository
+  - Always exists, even in brand new repos
+  - Perfect for "compare against nothing" scenarios
+- **Alternative**: `git diff-tree --no-commit-id --name-only -r HEAD`
+  - Shows all files in current commit
+  - Works even for first commit
+  - But doesn't show "changes" - shows "all files"
+
+**For GitHub Actions**:
+```yaml
+# Check github.event.before for edge cases
+base_ref="${{ github.event.before }}"
+if [[ "$base_ref" =~ ^0+$ ]]; then
+  base_ref="HEAD~1"
+fi
+
+# Validate before using
+if ! git rev-parse --verify "$base_ref" >/dev/null 2>&1; then
+  base_ref="4b825dc642cb6eb9a060e54bf8d69288fbee4904"  # Empty tree
+fi
+
+# Now safe to use
+git diff "$base_ref"..HEAD
+```
+
+**Other Risky References**:
+- `origin/main` - Might not be fetched in shallow clone
+- `main` - Might not exist if branch is named `master`
+- `HEAD^` / `HEAD~1` - Fails for first commit
+- Tag names - Might not exist in all repositories
+- Branch names - Might have been deleted/renamed
+
+**Lesson**: Never assume Git references exist. Always validate with `git rev-parse --verify` before using them in scripts or workflows. Use Git's empty tree SHA (`4b825dc642cb6eb9a060e54bf8d69288fbee4904`) as a universal safe fallback for comparison operations. This prevents workflow failures in edge cases like first commits, shallow clones, or rewritten history.
+
+---
+
+### 20. Version Rollback from Tag-Based Versioning Bug
+
+**THE TRAP**: Using git tags as the source of truth for current version when tag naming scheme changes, causing version rollback.
+
+**What Happened**:
+- Plugin files had version 0.5.0
+- PR #65 merged to main with [minor] in commit message
+- Release workflow ran `generate-version-matrix.sh`
+- Script looked for tags matching `action-pack/v*` format (new scheme)
+- Found ZERO tags (old tags were `v0.5.0`, not `action-pack/v0.5.0`)
+- Defaulted to 0.0.0, applied [minor] bump → 0.1.0
+- Overwrote production files from 0.5.0 → 0.1.0
+- Created release with downgraded version
+
+**Root Cause**:
+- `generate-version-matrix.sh` used git tags as single source of truth
+- Function `get_latest_plugin_version()` returned "0.0.0" when no tags matched new pattern
+- Never checked actual version in plugin files
+- Assumed tags were always up-to-date and correct
+
+**Why This Is Dangerous**:
+- Tag naming schemes can change during refactoring
+- Tags can be deleted or recreated
+- Fresh clones might not fetch all tags
+- Git history can be rewritten
+- Plugin files are the actual deployed artifacts
+
+**The Fix**:
+```bash
+# WRONG: Use tags as source of truth
+get_latest_plugin_version() {
+    latest_tag=$(git tag --list "${plugin_slug}/v[0-9]*" | head -n1)
+    if [[ -z "$latest_tag" ]]; then
+        echo "0.0.0"  # ❌ Assumes version starts at 0.0.0
+    fi
+}
+
+# RIGHT: Use plugin file as source of truth
+get_current_plugin_version() {
+    local plugin_name="$1"
+    # Read version from actual plugin file
+    "$REPO_ROOT/scripts/get-plugin-version.sh" "$plugin_name"
+}
+```
+
+**Test Coverage Required**:
+```bash
+# Test that version comes from file, not tags
+test "reads version from action-pack plugin file"
+output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "patch bump")
+current_version=$(echo "$output" | jq -r '.plugin[0].current_version')
+assert_equals "0.5.0" "$current_version"  # Not 0.0.0!
+
+# Test version bump is applied to file version
+test "applies minor bump to file version"
+output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "[minor] new feature")
+assert_equals "0.5.0" "$(echo "$output" | jq -r '.plugin[0].current_version')"
+assert_equals "0.6.0" "$(echo "$output" | jq -r '.plugin[0].next_version')"
+```
+
+**Source of Truth Hierarchy**:
+1. **Plugin file Version header** - What's actually deployed
+2. **Git tags** - Historical markers, can drift or change
+3. **Hardcoded defaults** - Last resort only
+
+**For This Codebase**:
+- Created `tests/scripts/test-generate-version-matrix.sh` with 13 tests
+- Tests verify version reads from plugin file (0.5.0), not tags (0.0.0)
+- Tests verify version bumps apply to file version, not default version
+- Changed `generate-version-matrix.sh` to use `get-plugin-version.sh`
+
+**Red Flags You're Making This Mistake**:
+- ❌ Script defaults to "0.0.0" or "1.0.0" when tags don't exist
+- ❌ Version detection relies solely on git tag patterns
+- ❌ No validation against actual file versions
+- ❌ Tag naming scheme refactoring breaks versioning
+- ❌ Fresh clone + workflow run produces different version than expected
+
+**Lesson**: The plugin file is the source of truth for current version, not git tags. Tags are historical markers that can become stale, be deleted, or not match current naming schemes. Always read the current version from the actual artifact being released (the plugin file), then calculate bumps from there. Test this behavior explicitly to prevent silent version rollbacks during deployment.
+
+---
+
 ## 🛠️ Development Workflow Best Practices
 
 ### Before Committing
@@ -928,5 +1081,5 @@ SKIP=shellcheck git commit
 
 ---
 
-**Last Updated**: June 4, 2026  
-**Lessons Learned From**: Setting up complete test infrastructure, fixing pre-commit hooks, eliminating PHPUnit deprecations, debugging version number corruption, optimizing devcontainer setup, proactive error validation
+**Last Updated**: June 11, 2026  
+**Lessons Learned From**: Setting up complete test infrastructure, fixing pre-commit hooks, eliminating PHPUnit deprecations, debugging version number corruption, optimizing devcontainer setup, proactive error validation, Git reference validation in CI/CD workflows, preventing version rollback from tag-based versioning bugs

@@ -1,24 +1,38 @@
 # tests/
 
-Future home of automated tests for emergencymode.news plugins and infrastructure.
+Automated tests for emergencymode.news plugins and infrastructure.
 
 ## Current Status
 
-🚧 **Planning Phase** — See [TESTING_PLAN.md](TESTING_PLAN.md) for detailed implementation strategy.
+✅ **Core Testing Implemented** — See [TESTING_PLAN.md](TESTING_PLAN.md) for detailed documentation.
 
-## Quick Start (Future)
+**Implemented:**
+- ✅ PHP unit tests (PHPUnit) - Covering payload decoding
+- ✅ JavaScript unit tests (Jest) - Covering encoding and risk rendering
+- ✅ Shell script tests - Covering build and version scripts
+- ✅ CI integration - All tests run on PRs and commits
+- ✅ Pre-commit hooks - Linting and formatting checks
+
+**Planned:**
+- ⏳ End-to-end browser tests (Playwright)
+- ⏳ Notebook cleanup validation
+
+## Quick Start
 
 ```bash
 # Run all tests
-npm test
+npm test                 # Runs JS + shell script tests
+npm run test:all         # Includes PHP tests
 
 # Run specific test suites
-npm run test:js          # JavaScript unit tests
-npm run test:e2e         # End-to-end browser tests
-npm run test:php         # PHP unit tests
-npm run test:phpcs       # Coding standards
+npm run test:js          # JavaScript unit tests (Jest)
+npm run test:php         # PHP unit tests (PHPUnit)
 npm run test:scripts     # Bash script tests
-npm run test:notebooks   # Notebook reproducibility
+
+# Linting
+npm run lint             # Run all linting checks
+npm run shellcheck       # Shell script linting
+npm run eslint           # JavaScript linting
 ```
 
 ## Why Testing Matters for This Project

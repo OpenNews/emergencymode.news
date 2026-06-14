@@ -459,6 +459,8 @@ On every push to `main`, `.github/workflows/release.yml` executes:
 7. **GitHub Release:** Publishes release with auto-generated notes and ZIP attachments
 8. **Tag updates:** Maintains floating `latest` and `vX` tags
 
+**Required Secrets:** The workflow requires a `RELEASE_TOKEN` repository secret with `contents: write` permission to bypass branch protection when committing version changes. Without this token, the workflow fails at step 5 (commit sync).
+
 **Infinite loop prevention:** The workflow skips when the latest commit is already a version sync, preventing recursive triggers.
 
 **Developer workflow benefits:**

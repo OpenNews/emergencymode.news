@@ -77,11 +77,15 @@ fi
 # Ensure user-level binaries are available in this shell
 export PATH="$HOME/.local/bin:$PATH"
 
-# Create venv and install all project dependencies
-uv sync
+# Skip project setup in CI - only validate container tools are installed
+# CI workflow checks tool versions without needing full project dependencies
+if [[ "${CI:-}" != "true" ]]; then
+  # Create venv and install all project dependencies
+  uv sync
 
-# Register the project venv as a named Jupyter kernel
-uv run python -m ipykernel install \
-  --user \
-  --name=emergencymode-disaster-risk \
-  --display-name="Emergency Mode Disaster Risk"
+  # Register the project venv as a named Jupyter kernel
+  uv run python -m ipykernel install \
+    --user \
+    --name=emergencymode-disaster-risk \
+    --display-name="Emergency Mode Disaster Risk"
+fi

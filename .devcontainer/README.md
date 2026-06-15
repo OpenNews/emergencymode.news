@@ -5,6 +5,8 @@
 | Dev Container | [![Dev Container](https://github.com/OpenNews/emergencymode.news/actions/workflows/devcontainer.yml/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/devcontainer.yml) |
 | Tests on `main` & `staging` | [![CI](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml) |
 
+**⚠️ Dependency Updates**: Dependabot does **not** support `devcontainer.json` format. Base images, features and tools installed by `setup.sh` require manual updates. The weekly devcontainer workflow (`.github/workflows/devcontainer.yml`) detects breakage but doesn't auto-fix it. Monitor workflow failures for drift.
+
 This directory contains the VS Code devcontainer configuration for the EMFN repository.
 
 ## What It Does

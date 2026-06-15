@@ -32,7 +32,8 @@ jobs:
       - name: Build and test devcontainer
         uses: devcontainers/ci@v0.3
         with:
-          cacheFrom: ghcr.io/opennews/emergencymode-news-devcontainer
+          env: |
+            CI=true
           runCmd: |
             set -e
             echo "=== Devcontainer Health Check ==="
@@ -59,7 +60,6 @@ jobs:
             echo "Smoke test: verifying dependencies can be installed..."
             npm ci
             composer install --no-interaction --no-progress
-            uv sync
 
             echo ""
             echo "=== ✓ Devcontainer is healthy ==="

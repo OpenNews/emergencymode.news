@@ -81,11 +81,16 @@ emergencymode.news/
 │   │   └── languages/
 │   └── shared/
 │       └── emfn-types.d.ts                 # Shared Types for JavaScript
-├── scripts/                                # Release and notebook hygiene utilities
-│   ├── sync-release-version.sh             # Updates Release version across many files
-│   ├── build-release-assets.sh             # Builds plugin ZIPs
-│   ├── strip-notebook-outputs.sh           # Cleans notebook execution state
-│   └── check-notebooks-clean.sh            # Checks notebooks for cruft
+├── scripts/                                # Release, notebook, and testing utilities (see scripts/README.md)
+│   ├── README.md                           # Script documentation
+│   ├── build-release-assets.sh
+│   ├── check-notebooks-clean.sh
+│   ├── detect-plugin-changes.sh
+│   ├── generate-version-matrix.sh
+│   ├── get-plugin-version.sh
+│   ├── strip-notebook-outputs.sh
+│   ├── sync-release-version.sh
+│   └── test-devcontainer-workflow.sh
 ├── tests/                                  # Testing infrastructure
 │   ├── js/                                 # JavaScript tests (Jest)
 │   │   ├── setup.js                        # Test environment setup
@@ -168,12 +173,9 @@ Trigger releases manually via Actions tab:
 Actions → Release → Run workflow
 ```
 
-### Version Management Scripts
+### Scripts
 
-- `scripts/detect-plugin-changes.sh` - Detects which plugins changed
-- `scripts/generate-version-matrix.sh` - Generates version bump matrix
-- `scripts/sync-release-version.sh` - Updates version in plugin files
-- `scripts/build-release-assets.sh` - Builds plugin ZIP files
+For release automation, notebook hygiene, and local testing scripts, see [scripts/README.md](scripts/README.md).
 
 ## emfn-action-pack-plugin
 

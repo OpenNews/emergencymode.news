@@ -1,0 +1,77 @@
+Custom HTML Block HTML: none, little warning JS: none CSS: below, no
+<style>
+  tags <style > :root {
+    --header-tan: rgb(239 236 231); /*#efece7*/
+    --header-tan-lighter: rgb(244, 242, 239); /*10% lighter*/
+    --icon-band: rgb(230, 207, 200); /*icon outermost band but 15% lighter*/
+  }
+  @property --gradient-header-tan {
+    syntax: "<color>";
+    initial-value: rgb(239 236 231); /*must be rgb and not a variable*/
+    inherits: false;
+  }
+  @property --gradient-tan-lighter {
+    syntax: "<color>";
+    initial-value: rgb(244, 242, 239); /*must be rgb and not a variable*/
+    inherits: false;
+  }
+  @property --gradient-icon-band {
+    syntax: "<color>";
+    initial-value: rgb(230, 207, 200); /*must be rgb and not a variable*/
+    inherits: false;
+  }
+
+  .big-action-pack-buttons > .wp-block-button {
+    border-width: 0px !important;
+    margin: 10px;
+  }
+  /* link baseline */
+  .big-action-pack-buttons > .wp-block-button a.wp-element-button {
+    height: fit-content;
+    padding: 15px 30px 20px 30px !important;
+    box-shadow:
+      rgb(0, 0, 0) 0px 0px 0px 0px,
+      rgba(0, 0, 0, 0.95) 0px 0px 5px 1px;
+  }
+
+  /*link behavior*/
+  .big-action-pack-buttons > .wp-block-button a.wp-element-button:link,
+  .big-action-pack-buttons > .wp-block-button a.wp-element-button:visited {
+    --gradient-tan-lighter: var(--header-tan-lighter);
+    --gradient-header-tan: var(--header-tan);
+    background: radial-gradient(
+      circle at 50% 40%,
+      var(--gradient-tan-lighter) 0%,
+      var(--gradient-header-tan) 100%
+    ) !important;
+    scale: 1;
+    transition:
+      --gradient-header-tan 0.5s ease-in-out,
+      --gradient-tan-lighter 0.5s ease-in-out,
+      --gradient-icon-band 0.5s ease-in-out,
+      scale 0.3s ease-in-out;
+  }
+  /* !important here has to fight against all button default transitions */
+  .big-action-pack-buttons > .wp-block-button a.wp-element-button:hover,
+  .big-action-pack-buttons > .wp-block-button a.wp-element-button:active,
+  .big-action-pack-buttons > .wp-block-button a.wp-element-button:focus {
+    --gradient-header-tan: var(--icon-band);
+    --gradient-tan-lighter: var(--header-tan-lighter);
+    background: radial-gradient(
+      circle at 50% 40%,
+      var(--gradient-tan-lighter) 0%,
+      var(--gradient-header-tan) 100%
+    ) !important;
+    /* background: radial-gradient(circle at 50% 40%, color-mix(in srgb, #efece7, white 10%), #d8bbb2) !important; */
+    color: var(--newspack-theme-color-secondary-against-white) !important;
+    scale: 1.05;
+  }
+
+  /*subhed, borrowing a code tag*/
+  .big-action-pack-buttons > .wp-block-button code {
+    display: block;
+    font: normal normal 200 var(--newspack-theme-font-size-xs) var(--newspack-theme-font-heading);
+    background-color: transparent;
+    padding-top: 6px;
+  }
+</style>

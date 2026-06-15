@@ -1,0 +1,71 @@
+name: Dev Container
+
+on:
+  pull_request:
+    paths:
+      - ".devcontainer/**"
+      - ".github/workflows/devcontainer.yml"
+  push:
+    branches:
+      - main
+      - staging
+    paths:
+      - ".devcontainer/**"
+      - ".github/workflows/devcontainer.yml"
+  schedule:
+    # Weekly on Mondays at 9 AM UTC to catch broken dependencies
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build and test devcontainer
+        uses: devcontainers/ci@v0.3
+        with:
+          # Build the devcontainer image
+          imageName: ghcr.io/opennews/emergencymode-news-devcontainer
+
+          # Run a basic smoke test inside the container
+          runCmd: |
+            set -e
+            echo "=== Verifying container health ==="
+
+            # Check required tools are installed
+            echo "Checking uv..."
+            uv --version
+
+            echo "Checking Node.js..."
+            node --version
+            npm --version
+
+            echo "Checking PHP..."
+            php --version
+            composer --version
+
+            echo "Checking Python..."
+            python3 --version
+
+            echo "Checking shellcheck..."
+            shellcheck --version
+
+            echo "Checking GitHub CLI..."
+            gh --version
+
+            # Verify uv is the pinned version
+            echo "Verifying uv version matches setup.sh..."
+            UV_VERSION=$(uv --version | awk '{print $2}')
+            if [ "$UV_VERSION" != "0.5.10" ]; then
+              echo "ERROR: Expected uv 0.5.10, got $UV_VERSION"
+              exit 1
+            fi
+
+            echo "=== Container health check passed ==="

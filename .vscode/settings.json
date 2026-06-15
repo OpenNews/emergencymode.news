@@ -56,6 +56,9 @@
   // YAML validation: flags syntax errors and duplicate keys inline as you edit
   // Requires the Red Hat YAML extension (redhat.vscode-yaml)
   "yaml.validate": true,
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.{yml,yaml}"
+  },
 
   // File associations
   "files.associations": {

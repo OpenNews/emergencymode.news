@@ -176,6 +176,31 @@ grep -r "npm test\|composer test\|pytest" .github/workflows/
 
 **The meta-pattern**: Solving symptoms (file has errors) instead of understanding goals (what should this file uniquely accomplish?)
 
+### 10. Generating "To-Do" Lists Without Tracking State
+**Pattern**: Say "needs timeout fix" → implement timeout → regenerate list saying "needs timeout fix" → user points out it's already done → waste time
+**Why**: AI doesn't maintain state of what's ALREADY DONE vs what STILL NEEDS doing when generating feedback
+**Fix**: Before generating ANY list of issues/todos:
+```bash
+# Check CURRENT state first
+git diff --cached     # What's staged?
+git diff             # What's modified?
+cat file.yml | grep "timeout-minutes"  # Is this specific fix already in?
+```
+
+**When generating "anticipated feedback" or "remaining issues"**:
+- Read the CURRENT file state first
+- Mark items as ✅ DONE or ❌ TODO based on actual code
+- Don't copy/paste old lists - regenerate from current reality
+
+**Examples of this waste**:
+- ❌ "List says: Add timeout" → Timeout already on line 25 → "Why is that in the list?" → waste 3 turns
+- ❌ "Still needs error handling fix" → Already removed 10 lines ago → user frustrated
+- ❌ "Todo: remove duplication" → Duplication was removed in previous edit → circular discussion
+
+**The impact**: User has to point out that the work is ALREADY DONE, burning their time and patience on meta-discussion instead of forward progress.
+
+**The meta-lesson**: Check actual state before generating lists. Your mental model of "what needs fixing" lags behind the actual code.
+
 **The meta-lesson**: AI agents solve problems sequentially and forget context between turns. You must actively fight this by re-reading context, validating assumptions, and thinking about failure modes beyond the immediate fix.
 
 ---

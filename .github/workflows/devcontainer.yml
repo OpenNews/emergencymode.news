@@ -19,10 +19,9 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,62 +31,43 @@ jobs:
       - name: Build and test devcontainer
         uses: devcontainers/ci@v0.3
         with:
-          # Build the devcontainer image
-          imageName: ghcr.io/opennews/emergencymode-news-devcontainer
-
-          # Only push on non-PR events (push, schedule, workflow_dispatch)
-          push: ${{ github.event_name != 'pull_request' }}
-
-          # Set environment variables inside the container
-          env: |
-            CI=true
-
-          # Run a basic smoke test inside the container
           runCmd: |
             set -e
-            echo "=== Verifying container health ==="
+            echo "=== Devcontainer Dependency Health Check ==="
+            echo "This workflow verifies the devcontainer builds and all dependencies work."
+            echo "Dependabot cannot manage devcontainer.json - this catches drift."
+            echo ""
 
-            # Verify CI environment variable is set
-            if [ "${CI:-}" != "true" ]; then
-              echo "ERROR: CI environment variable not set correctly"
-              exit 1
-            fi
-            echo "CI environment variable: $CI ✓"
-
-            # Check required tools are installed
-            echo "Checking uv..."
-            uv --version
-
-            echo "Checking Node.js..."
+            # Verify base tools from features are installed
+            echo "Checking base tools..."
             node --version
             npm --version
-
-            echo "Checking PHP..."
             php --version
             composer --version
-
-            echo "Checking Python..."
             python3 --version
 
-            echo "Checking shellcheck..."
+            # Verify tools from setup.sh
+            uv --version
             shellcheck --version
-
-            echo "Checking GitHub CLI..."
             gh --version
 
-            # Verify uv is the pinned version
-            echo "Verifying uv version matches setup.sh..."
-            UV_VERSION=$(uv --version | awk '{print $2}')
-            if [ "$UV_VERSION" != "0.5.10" ]; then
-              echo "ERROR: Expected uv 0.5.10, got $UV_VERSION"
-              exit 1
-            fi
+            # Install project dependencies
+            echo ""
+            echo "Installing Node.js dependencies..."
+            npm install
 
-            # Verify .venv was NOT created (setup.sh should skip uv sync in CI)
-            if [ -d ".venv" ]; then
-              echo "ERROR: .venv should not exist in CI mode"
-              exit 1
-            fi
-            echo ".venv correctly skipped in CI mode ✓"
+            echo "Installing PHP dependencies..."
+            composer install
 
-            echo "=== Container health check passed ==="
+            echo "Installing Python dependencies..."
+            uv sync
+
+            # Run tests to verify environment actually works
+            echo ""
+            echo "Running test suite to verify environment..."
+            npm test
+            composer test
+
+            echo ""
+            echo "=== ✓ Devcontainer health check passed ==="
+            echo "All dependencies installed and tests passed."

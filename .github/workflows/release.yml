@@ -202,5 +202,7 @@ jobs:
           tag_name: ${{ matrix.plugin.tag }}
           name: "${{ matrix.plugin.slug }} ${{ matrix.plugin.next_version }}"
           body: "Release for ${{ matrix.plugin.name }}"
+          make_latest: ${{ matrix.plugin.name == 'emfn-action-pack-plugin' && !matrix.plugin.prerelease }}
+          prerelease: ${{ matrix.plugin.prerelease }}
           files: |
             dist/${{ matrix.plugin.name }}-${{ matrix.plugin.next_version }}.zip

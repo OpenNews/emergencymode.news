@@ -12,7 +12,7 @@
 #   changed-plugins    Space-separated list of plugin directory names
 #                      Example: "emfn-action-pack-plugin emfn-site-styles-plugin"
 #   commit-message     Commit message to check for version bump keywords
-#                      ([major], [minor], or default patch)
+#                      ([major], [minor], [pre], or default patch)
 #
 # Output:
 #   JSON array suitable for GitHub Actions matrix strategy
@@ -82,6 +82,17 @@ calculate_next_version() {
     echo "${major}.${minor}.${patch}"
 }
 
+# Function to detect pre-release flag in commit message
+is_prerelease() {
+    local commit_msg="$1"
+    
+    if echo "$commit_msg" | grep -qiE '\[pre(release)?\]'; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
 # Build JSON array
 plugins_json="["
 first=true
@@ -98,6 +109,7 @@ for plugin_name in $CHANGED_PLUGINS; do
     # Get current and next versions
     current_version=$(get_current_plugin_version "$plugin_name")
     next_version=$(calculate_next_version "$current_version" "$COMMIT_MESSAGE")
+    prerelease=$(is_prerelease "$COMMIT_MESSAGE")
     tag="${plugin_slug}/v${next_version}"
     
     # Add to JSON array
@@ -107,7 +119,7 @@ for plugin_name in $CHANGED_PLUGINS; do
         plugins_json+=","
     fi
     
-    plugins_json+="{\"name\":\"$plugin_name\",\"slug\":\"$plugin_slug\",\"current_version\":\"$current_version\",\"next_version\":\"$next_version\",\"tag\":\"$tag\"}"
+    plugins_json+="{\"name\":\"$plugin_name\",\"slug\":\"$plugin_slug\",\"current_version\":\"$current_version\",\"next_version\":\"$next_version\",\"tag\":\"$tag\",\"prerelease\":$prerelease}"
 done
 
 plugins_json+="]"

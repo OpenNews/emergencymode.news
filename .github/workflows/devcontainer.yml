@@ -23,6 +23,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -31,6 +32,7 @@ jobs:
       - name: Build and test devcontainer
         uses: devcontainers/ci@v0.3
         with:
+          cacheFrom: ghcr.io/opennews/emergencymode-news-devcontainer
           runCmd: |
             set -e
             echo "=== Devcontainer Health Check ==="
@@ -40,17 +42,17 @@ jobs:
 
             # Verify postCreateCommand (setup.sh) completed successfully
             echo "Checking tools installed by setup.sh..."
-            uv --version || { echo "ERROR: uv not installed"; exit 1; }
-            shellcheck --version || { echo "ERROR: shellcheck not installed"; exit 1; }
-            gh --version || { echo "ERROR: gh not installed"; exit 1; }
+            uv --version
+            shellcheck --version
+            gh --version
 
             # Verify base tools from devcontainer features
             echo "Checking devcontainer features..."
-            node --version || { echo "ERROR: node not installed"; exit 1; }
-            npm --version || { echo "ERROR: npm not installed"; exit 1; }
-            php --version || { echo "ERROR: php not installed"; exit 1; }
-            composer --version || { echo "ERROR: composer not installed"; exit 1; }
-            python3 --version || { echo "ERROR: python3 not installed"; exit 1; }
+            node --version
+            npm --version
+            php --version
+            composer --version
+            python3 --version
 
             # Quick smoke test: verify dependencies can be installed
             echo ""

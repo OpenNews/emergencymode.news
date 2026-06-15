@@ -33,41 +33,32 @@ jobs:
         with:
           runCmd: |
             set -e
-            echo "=== Devcontainer Dependency Health Check ==="
-            echo "This workflow verifies the devcontainer builds and all dependencies work."
-            echo "Dependabot cannot manage devcontainer.json - this catches drift."
+            echo "=== Devcontainer Health Check ==="
+            echo "Verifying the devcontainer builds and can be used for development."
+            echo "Full test suite runs in ci.yml - this only validates the container."
             echo ""
 
-            # Verify base tools from features are installed
-            echo "Checking base tools..."
-            node --version
-            npm --version
-            php --version
-            composer --version
-            python3 --version
+            # Verify postCreateCommand (setup.sh) completed successfully
+            echo "Checking tools installed by setup.sh..."
+            uv --version || { echo "ERROR: uv not installed"; exit 1; }
+            shellcheck --version || { echo "ERROR: shellcheck not installed"; exit 1; }
+            gh --version || { echo "ERROR: gh not installed"; exit 1; }
 
-            # Verify tools from setup.sh
-            uv --version
-            shellcheck --version
-            gh --version
+            # Verify base tools from devcontainer features
+            echo "Checking devcontainer features..."
+            node --version || { echo "ERROR: node not installed"; exit 1; }
+            npm --version || { echo "ERROR: npm not installed"; exit 1; }
+            php --version || { echo "ERROR: php not installed"; exit 1; }
+            composer --version || { echo "ERROR: composer not installed"; exit 1; }
+            python3 --version || { echo "ERROR: python3 not installed"; exit 1; }
 
-            # Install project dependencies
+            # Quick smoke test: verify dependencies can be installed
             echo ""
-            echo "Installing Node.js dependencies..."
-            npm install
-
-            echo "Installing PHP dependencies..."
-            composer install
-
-            echo "Installing Python dependencies..."
+            echo "Smoke test: verifying dependencies can be installed..."
+            npm ci
+            composer install --no-interaction --no-progress
             uv sync
 
-            # Run tests to verify environment actually works
             echo ""
-            echo "Running test suite to verify environment..."
-            npm test
-            composer test
-
-            echo ""
-            echo "=== ✓ Devcontainer health check passed ==="
-            echo "All dependencies installed and tests passed."
+            echo "=== ✓ Devcontainer is healthy ==="
+            echo "Container builds successfully and all tools are available."

@@ -10,6 +10,26 @@ npm run test:php:coverage     # Generate coverage report (requires xdebug)
 vendor/bin/phpunit --testdox  # Human-readable test output
 ```
 
+**Viewing Coverage Reports:**
+
+After running `npm run test:php:coverage`, open the HTML report:
+
+```bash
+# Open in default browser (devcontainer)
+"$BROWSER" coverage/php/index.html
+
+# Or manually open the file
+open coverage/php/index.html      # macOS
+xdg-open coverage/php/index.html  # Linux
+start coverage/php/index.html     # Windows
+```
+
+The HTML report shows:
+- Line-by-line coverage highlighting (green = covered, red = not covered)
+- Function and class coverage percentages
+- Clickable file tree for navigation
+- Coverage trends over time
+
 ## Test Suites
 
 ### Action Pack Payload Decoding

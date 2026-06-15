@@ -118,6 +118,16 @@ Think holistically about the **full release process**:
 **Why**: Single safeguards catch single error types. Different failure modes need different safeguards.
 **Fix**: Multiple layers: component size check + release comparison check + file-based source of truth
 
+### 7. Creating Lists Then Immediately Forgetting Them
+**Pattern**: Present 14-item prioritized plan to user → user asks about item #5 → cannot find item #5 → user must copy/paste it back → repeat for items #6, #7, etc.
+**Why**: Long assistant messages get truncated in conversation history, but the AI doesn't realize its own output was truncated and cannot access it
+**Fix**: 
+- DO NOT FORGET key lists as we work through sub-items
+- When creating multi-item plans, save them to session memory IMMEDIATELY: `memory create /memories/session/current-plan.md`
+- When user references "the prior list" or "item #N", check session memory FIRST before asking user to repeat
+- If you presented a numbered plan and cannot find it in transcript, acknowledge the limitation and ask user to confirm what item N was about (don't waste time searching unsuccessfully)
+- For large plans (>10 items), break into phases rather than one giant list that will be truncated
+
 **The meta-lesson**: AI agents solve problems sequentially and forget context between turns. You must actively fight this by re-reading context, validating assumptions, and thinking about failure modes beyond the immediate fix.
 
 ---

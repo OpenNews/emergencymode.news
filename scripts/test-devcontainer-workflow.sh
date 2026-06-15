@@ -7,7 +7,7 @@ set -e
 echo "=== Testing devcontainer workflow locally ==="
 echo ""
 echo "Current environment:"
-echo "  - In devcontainer: $(if [ -f /.dockerenv ]; then echo "YES"; else echo "NO (warning: should run inside devcontainer)"; fi)"
+echo "  - In devcontainer: $(if [ -f /.dockerenv ]; then echo 'YES'; else echo 'NO (warning: should run inside devcontainer)'; fi)"
 echo "  - CI variable: ${CI:-not set}"
 echo ""
 

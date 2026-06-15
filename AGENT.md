@@ -145,6 +145,37 @@ Think holistically about the **full release process**:
 
 **The distinction**: REQUEST = "build this thing", PROBLEM = "this thing needs X, Y, Z to actually work in production"
 
+### 9. Duplicating Functionality Instead of Reading What Already Exists
+**Pattern**: Add full test suite to devcontainer.yml workflow → workflow hangs on tests → realize ci.yml already runs the full test suite
+**Why**: Focused on making ONE file "complete" without mapping the overall system architecture
+**Fix**: Before adding ANY functionality, grep for it across the codebase:
+```bash
+# What workflows already exist?
+ls .github/workflows/*.yml
+
+# What does each workflow do?
+for f in .github/workflows/*.yml; do
+  echo "=== $f ==="
+  grep -A2 "^name:" "$f"
+  grep -A5 "run:" "$f" | head -20
+done
+
+# Does something similar already exist?
+grep -r "npm test\|composer test\|pytest" .github/workflows/
+```
+
+**Ask before implementing**: "What is this file's UNIQUE purpose vs other files?"
+- ci.yml runs full tests on every commit → devcontainer.yml should NOT duplicate this
+- devcontainer.yml tests the CONTAINER works → not the code quality
+- release.yml bumps versions → scripts/*.sh should NOT also bump versions independently
+
+**Examples of duplication waste**:
+- ❌ "Make devcontainer.yml run full test suite" → ✅ "ci.yml already does this, devcontainer.yml should only test container tools"
+- ❌ "Add version validation to multiple scripts" → ✅ "One script does validation, others call it"
+- ❌ "Install dependencies in both Dockerfile and setup.sh" → ✅ "Pick one authoritative place"
+
+**The meta-pattern**: Solving symptoms (file has errors) instead of understanding goals (what should this file uniquely accomplish?)
+
 **The meta-lesson**: AI agents solve problems sequentially and forget context between turns. You must actively fight this by re-reading context, validating assumptions, and thinking about failure modes beyond the immediate fix.
 
 ---

@@ -1,0 +1,49 @@
+name: Dev Container
+
+on:
+  pull_request:
+    paths:
+      - ".devcontainer/**"
+      - ".github/workflows/devcontainer.yml"
+  push:
+    branches:
+      - main
+      - staging
+    paths:
+      - ".devcontainer/**"
+      - ".github/workflows/devcontainer.yml"
+  schedule:
+    # Weekly on Mondays at 9 AM UTC to catch broken dependencies
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build and test devcontainer
+        uses: devcontainers/ci@v0.3
+        timeout-minutes: 10
+        with:
+          skipContainerUserIdUpdate: true
+          env: |
+            CI=true
+          runCmd: |
+            set -e
+            echo "=== Devcontainer Health Check ==="
+            uv --version && echo "✓ uv installed"
+            shellcheck --version | head -1 && echo "✓ shellcheck installed"
+            gh --version | head -1 && echo "✓ gh installed"
+            node --version && echo "✓ node installed"
+            php --version | head -1 && echo "✓ php installed"
+            composer --version | head -1 && echo "✓ composer installed"
+            echo "=== ✓ Devcontainer is healthy ==="
+            echo "Container builds successfully and all tools are available."

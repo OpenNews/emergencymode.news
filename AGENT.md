@@ -118,6 +118,89 @@ Think holistically about the **full release process**:
 **Why**: Single safeguards catch single error types. Different failure modes need different safeguards.
 **Fix**: Multiple layers: component size check + release comparison check + file-based source of truth
 
+### 7. Creating Lists Then Immediately Forgetting Them
+**Pattern**: Present 14-item prioritized plan to user → user asks about item #5 → cannot find item #5 → user must copy/paste it back → repeat for items #6, #7, etc.
+**Why**: Long assistant messages get truncated in conversation history, but the AI doesn't realize its own output was truncated and cannot access it
+**Fix**: 
+- DO NOT FORGET key lists as we work through sub-items
+- When creating multi-item plans, save them to session memory IMMEDIATELY: `memory create /memories/session/current-plan.md`
+- When user references "the prior list" or "item #N", check session memory FIRST before asking user to repeat
+- If you presented a numbered plan and cannot find it in transcript, acknowledge the limitation and ask user to confirm what item N was about (don't waste time searching unsuccessfully)
+- For large plans (>10 items), break into phases rather than one giant list that will be truncated
+
+### 8. Implementing the REQUEST Without Understanding the PROBLEM
+**Pattern**: Create GitHub Actions workflow to build devcontainer → successfully writes workflow file → fails in CI with "unauthorized: unauthenticated" because missing `packages: write` permission
+**Why**: Focused on technical implementation (workflow syntax) without thinking through execution requirements (what permissions does pushing to GHCR need?)
+**Fix**: Before implementing ANY infrastructure code, ask:
+- What external services does this interact with? (GHCR, npm registry, AWS, etc.)
+- What permissions/credentials does it need? (GitHub token scopes, API keys, etc.)
+- What resources does it access? (write to registry, create releases, modify repo, etc.)
+- What could make authentication/authorization fail? (missing scopes, token expiry, IP restrictions, etc.)
+
+**Examples**:
+- ❌ "Create workflow to push Docker image" → ✅ "Workflow needs `packages: write` to push to GHCR"
+- ❌ "Add npm publish step" → ✅ "Needs NPM_TOKEN secret with publish scope"
+- ❌ "Create GitHub release" → ✅ "Needs `contents: write` permission"
+- ❌ "Deploy to S3" → ✅ "Needs AWS credentials with s3:PutObject permission"
+
+**The distinction**: REQUEST = "build this thing", PROBLEM = "this thing needs X, Y, Z to actually work in production"
+
+### 9. Duplicating Functionality Instead of Reading What Already Exists
+**Pattern**: Add full test suite to devcontainer.yml workflow → workflow hangs on tests → realize ci.yml already runs the full test suite
+**Why**: Focused on making ONE file "complete" without mapping the overall system architecture
+**Fix**: Before adding ANY functionality, grep for it across the codebase:
+```bash
+# What workflows already exist?
+ls .github/workflows/*.yml
+
+# What does each workflow do?
+for f in .github/workflows/*.yml; do
+  echo "=== $f ==="
+  grep -A2 "^name:" "$f"
+  grep -A5 "run:" "$f" | head -20
+done
+
+# Does something similar already exist?
+grep -r "npm test\|composer test\|pytest" .github/workflows/
+```
+
+**Ask before implementing**: "What is this file's UNIQUE purpose vs other files?"
+- ci.yml runs full tests on every commit → devcontainer.yml should NOT duplicate this
+- devcontainer.yml tests the CONTAINER works → not the code quality
+- release.yml bumps versions → scripts/*.sh should NOT also bump versions independently
+
+**Examples of duplication waste**:
+- ❌ "Make devcontainer.yml run full test suite" → ✅ "ci.yml already does this, devcontainer.yml should only test container tools"
+- ❌ "Add version validation to multiple scripts" → ✅ "One script does validation, others call it"
+- ❌ "Install dependencies in both Dockerfile and setup.sh" → ✅ "Pick one authoritative place"
+
+**The meta-pattern**: Solving symptoms (file has errors) instead of understanding goals (what should this file uniquely accomplish?)
+
+### 10. Generating "To-Do" Lists Without Tracking State
+**Pattern**: Say "needs timeout fix" → implement timeout → regenerate list saying "needs timeout fix" → user points out it's already done → waste time
+**Why**: AI doesn't maintain state of what's ALREADY DONE vs what STILL NEEDS doing when generating feedback
+**Fix**: Before generating ANY list of issues/todos:
+```bash
+# Check CURRENT state first
+git diff --cached     # What's staged?
+git diff             # What's modified?
+cat file.yml | grep "timeout-minutes"  # Is this specific fix already in?
+```
+
+**When generating "anticipated feedback" or "remaining issues"**:
+- Read the CURRENT file state first
+- Mark items as ✅ DONE or ❌ TODO based on actual code
+- Don't copy/paste old lists - regenerate from current reality
+
+**Examples of this waste**:
+- ❌ "List says: Add timeout" → Timeout already on line 25 → "Why is that in the list?" → waste 3 turns
+- ❌ "Still needs error handling fix" → Already removed 10 lines ago → user frustrated
+- ❌ "Todo: remove duplication" → Duplication was removed in previous edit → circular discussion
+
+**The impact**: User has to point out that the work is ALREADY DONE, burning their time and patience on meta-discussion instead of forward progress.
+
+**The meta-lesson**: Check actual state before generating lists. Your mental model of "what needs fixing" lags behind the actual code.
+
 **The meta-lesson**: AI agents solve problems sequentially and forget context between turns. You must actively fight this by re-reading context, validating assumptions, and thinking about failure modes beyond the immediate fix.
 
 ---

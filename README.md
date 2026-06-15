@@ -5,6 +5,7 @@ Custom WordPress plugins, Python Notebooks and miscellaneous code version contro
 | badge | status |
 | --- | --- |
 | Tests on `main` & `staging` | [![CI](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml) |
+| Dev Container | [![Dev Container](https://github.com/OpenNews/emergencymode.news/actions/workflows/devcontainer.yml/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/devcontainer.yml) |
 | Release versioning on `main` | [![Release](https://github.com/OpenNews/emergencymode.news/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/OpenNews/emergencymode.news/actions/workflows/release.yml) |
 | CodeQL | [![CodeQL](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql) |
 | Dependabot | [![Dependabot Updates](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates) |
@@ -20,15 +21,26 @@ This repository contains:
 * Lotta tests
 * A release cycle that generates ZIPs and release versioning based on which plugin has an update
 
+**Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards and workflow.
+
 ### Repository Structure
 
 ```text
 emergencymode.news/
-├── .devcontainer/                          # Devcontainer config & setup script for local work
+├── .devcontainer/                          # Dev environment config (see CONTRIBUTING.md)
 ├── .github/
-│   ├── dependabot.yml                      # Automated dependency updates (npm, GitHub Actions)
-│   └── workflows/
-│       └── release.yml                     # Automated release workflow on push to main
+│   ├── agents/                             # Custom Copilot agents
+│   │   └── EMFNAgent.agent.md
+│   ├── instructions/                       # Agent instruction files
+│   │   └── wordpress-plugin.instructions.md
+│   ├── workflows/
+│   │   ├── ci.yml                          # Test suite execution
+│   │   ├── devcontainer.yml                # Devcontainer health check
+│   │   └── release.yml                     # Automated release workflow on push to main
+│   └── dependabot.yml                      # Automated dependency updates (npm, GitHub Actions)
+├── .vscode/                                # VS Code workspace settings
+│   ├── extensions.json
+│   └── settings.json
 ├── notebooks/                              # Python notebooks for risk-data generation and research
 │   ├── US_disaster_risk_analysis.ipynb     # Action Pack #risks work
 │   ├── CA-MX_disaster_risk_analysis.ipynb  # Draft of possible expansion 
@@ -53,13 +65,32 @@ emergencymode.news/
 │   │   ├── includes/
 │   │   │   └── class-emfn-action-pack-plugin.php
 │   │   └── languages/
+│   ├── emfn-site-styles-plugin/            # Site-wide CSS/JS
+│   │   ├── emfn-site-styles-plugin.php     # Main plugin file
+│   │   ├── readme.txt                      # WordPress plugin readme
+│   │   ├── MOVE_TO_SASS.md                 # SASS migration roadmap
+│   │   ├── assets/
+│   │   │   ├── css/
+│   │   │   │   └── emfn-site-styles-plugin.css
+│   │   │   ├── html-templates/
+│   │   │   ├── js/
+│   │   │   │   └── emfn-site-styles-plugin.js
+│   │   │   └── scss/                       # SASS source files
+│   │   ├── includes/
+│   │   │   └── class-emfn-site-styles-plugin.php
+│   │   └── languages/
 │   └── shared/
 │       └── emfn-types.d.ts                 # Shared Types for JavaScript
-├── scripts/                                # Release and notebook hygiene utilities
-│   ├── sync-release-version.sh             # Updates Release version across many files
-│   ├── build-release-assets.sh             # Builds plugin ZIPs
-│   ├── strip-notebook-outputs.sh           # Cleans notebook execution state
-│   └── check-notebooks-clean.sh            # Checks notebooks for cruft
+├── scripts/                                # Release, notebook, and testing utilities (see scripts/README.md)
+│   ├── README.md                           # Script documentation
+│   ├── build-release-assets.sh
+│   ├── check-notebooks-clean.sh
+│   ├── detect-plugin-changes.sh
+│   ├── generate-version-matrix.sh
+│   ├── get-plugin-version.sh
+│   ├── strip-notebook-outputs.sh
+│   ├── sync-release-version.sh
+│   └── test-devcontainer-workflow.sh
 ├── tests/                                  # Testing infrastructure
 │   ├── js/                                 # JavaScript tests (Jest)
 │   │   ├── setup.js                        # Test environment setup
@@ -77,21 +108,26 @@ emergencymode.news/
 │   │   └── location-test-data.json         # Geolocation test data
 │   ├── TESTING_PLAN.md                     # Testing strategy
 │   └── README.md                           # Quick start for running tests
+├── dist/                                   # Build output (gitignored, generated by scripts/build-release-assets.sh)
 ├── tmp/                                    # Temporary/scratch files (not deployed)
 │   ├── _tallCategories.csv
 │   └── ga.txt
 ├── tools/                                  # Development utilities (not deployed)
 │   ├── README.md
-│   ├── scripts/
-│   │   ├── README.md
-│   │   └── SheetsWPAppScript.js
-│   ├── styles/
-│   │   └── siteCustomRules.css
-│   └── templates/
-│       └── liteSitesFooter.html
+│   └── scripts/
+│       ├── README.md
+│       └── SheetsWPAppScript.js            # Google AppScript utilities
+├── .editorconfig                           # Cross-editor formatting rules
 ├── .gitignore
+├── .pre-commit-config.yaml                 # Pre-commit hook configuration
+├── .prettierignore
+├── .prettierrc                             # Prettier formatting config
 ├── AGENT.md                                # Agent guide: lessons learned, gotchas, best practices
 ├── composer.json                           # PHP dependencies (PHPUnit, WordPress stubs)
+├── CONTRIBUTING.md                         # Development workflow, coding standards, testing
+├── coverage/                               # Test coverage reports (gitignored, generated by test:coverage)
+│   ├── js/                                 # JavaScript coverage (Jest)
+│   └── php/                                # PHP coverage (PHPUnit)
 ├── eslint.config.js                        # ESLint configuration
 ├── jest.config.cjs                         # Jest test configuration
 ├── jsconfig.json                           # Editor & Type config 
@@ -99,7 +135,8 @@ emergencymode.news/
 ├── package.json                            # npm dependencies & scripts
 ├── phpunit.xml                             # PHPUnit configuration
 ├── pyproject.toml                          # Notebook dependencies
-└── README.md                               # This file
+├── README.md                               # This file
+└── uv.lock                                 # Python dependency lockfile
 ```
 
 ## Release Workflow
@@ -136,12 +173,9 @@ Trigger releases manually via Actions tab:
 Actions → Release → Run workflow
 ```
 
-### Version Management Scripts
+### Scripts
 
-- `scripts/detect-plugin-changes.sh` - Detects which plugins changed
-- `scripts/generate-version-matrix.sh` - Generates version bump matrix
-- `scripts/sync-release-version.sh` - Updates version in plugin files
-- `scripts/build-release-assets.sh` - Builds plugin ZIP files
+For release automation, notebook hygiene, and local testing scripts, see [scripts/README.md](scripts/README.md).
 
 ## emfn-action-pack-plugin
 
@@ -292,7 +326,7 @@ county_fips,state,county,AVLN_risk_score,CFLD_risk_score,CWAV_risk_score,DRGT_ri
 Site-wide CSS and JavaScript that supports the EMFN Newspack instance. This plugin provides styles and functionality that would otherwise need to be maintained in WordPress admin panels (Additional CSS, Custom HTML blocks, etc.).
 
 **Current assets:**
-- `assets/css/emfn-site-styles-plugin.css` - Site-wide styles including color variables, byline link accessibility improvements, and republishable card formatting
+- `assets/css/emfn-site-styles-plugin.css` - Site-wide styles including color variables, byline link accessibility improvements and republishable card formatting
 - `assets/html-templates/homepage_animation.html` - Homepage hero animation with hardware-accelerated CSS and `requestAnimationFrame()` optimizations
 - `assets/js/emfn-site-styles-plugin.js` - Site-wide JavaScript utilities
 
@@ -356,68 +390,53 @@ See the [Dependency updates](#development--dependencies) section above, or refer
 
 The notebooks are managed with `uv` and are not deployed to WordPress—they support data generation and validation only.
 
-## Shared JS Types And Tooling
+## Development
 
-The plugin JavaScript uses JSDoc typing backed by `plugins/shared/emfn-types.d.ts`.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development workflow, code quality standards and testing practices.
 
-`window.emfnData` now localizes only environment-specific runtime values needed by the browser, currently `dataUrl` and the `ap2.` payload prefix.
+### npm Scripts Reference
 
-`jsconfig.json` scopes editor support to plugin JS and shared `.d.ts` files so the repo gets lightweight type assistance without a full TypeScript build.
+| Script | Description |
+|--------|-------------|
+| `npm run format` | Auto-fix formatting with Prettier (HTML, CSS, JS, JSON, YAML, Markdown) |
+| `npm run format:check` | Verify Prettier formatting without changes |
+| `npm run eslint` | Lint JavaScript files in `plugins/` |
+| `npm run eslint:fix` | Auto-fix ESLint issues |
+| `npm run shellcheck` | Lint shell scripts via pre-commit hook |
+| `npm run notebooks:strip` | Remove execution outputs from notebooks |
+| `npm run notebooks:check-clean` | Verify notebooks have no outputs |
+| `npm run lint` | Run all checks (Prettier, ESLint, shellcheck, notebook cleanliness) |
+| `npm run test` | Run JavaScript and shell script tests |
+| `npm run test:all` | Run all tests (JavaScript, PHP, shell scripts) |
+| `npm run test:js` | Run JavaScript tests with Jest |
+| `npm run test:js:watch` | Run Jest in watch mode |
+| `npm run test:js:coverage` | Run Jest with coverage report |
+| `npm run test:php` | Run PHP tests with PHPUnit |
+| `npm run test:php:coverage` | Run PHPUnit with HTML coverage report (see `coverage/php/index.html`) |
+| `npm run test:scripts` | Run shell script tests |
 
-Node-side repo tooling:
-
-**Formatting & Linting:**
-- `npm run format` — Prettier auto-fix for markdown, JSON, HTML, CSS, JS
-- `npm run format:check` — Verify formatting without changes
-- `npm run eslint` — Lint plugin JavaScript files
-- `npm run eslint:fix` — Auto-fix ESLint issues
-- `npm run shellcheck` — Lint all shell scripts
-- `npm run lint` — Run all checks (format, eslint, shellcheck, notebooks)
-
-**Testing:**
-- `npm test` — Run JavaScript and shell script tests
-- `npm run test:all` — Run all tests (JavaScript, PHP, shell scripts)
-- `npm run test:js` — Jest tests only
-- `npm run test:js:watch` — Jest in watch mode
-- `npm run test:js:coverage` — Jest with coverage report
-- `npm run test:php` — PHPUnit tests only
-- `npm run test:php:coverage` — PHPUnit with HTML coverage report
-- `npm run test:scripts` — Shell script tests only
-
-**Notebooks:**
-- `npm run notebooks:strip` — Strip notebook outputs
-- `npm run notebooks:check-clean` — Verify notebooks are clean
-
-#### Recommended notebook workflow
-
-Use the VS Code devcontainer for notebook work. It provides the expected Debian/Python environment and runs the repo setup script automatically.
-
-Typical setup:
+**Quick reference:**
 
 ```bash
-uv sync
-uv run jupyter lab
-```
-
-Python dependencies currently live in `pyproject.toml` and include `jupyterlab`, `pandas`, `requests`, `numpy`, `ipykernel` and `tqdm`.
-
-#### Prevent Notebook Output In Git
-
-This repo uses local pre-commit hooks to keep notebooks clean in commits.
-
-Install hooks with:
-
-```bash
-uv tool install pre-commit
+# Setup
+npm install && composer install && uv sync
 pre-commit install
+
+# Linting
+npm run lint              # Run all checks
+npm run format            # Auto-fix formatting
+
+# Testing
+npm run test:all          # All tests
+npm run test:js           # JavaScript only
+npm run test:php          # PHP only
+
+# Notebooks
+uv sync && uv run jupyter lab
+npm run notebooks:strip   # Remove outputs before commit
 ```
 
-The configured hooks:
-
-- strip notebook outputs and execution metadata from changed notebooks
-- fail the commit if executed notebook state remains
-
-Relevant scripts live in `scripts/strip-notebook-outputs.sh` and `scripts/check-notebooks-clean.sh`.
+The plugin JavaScript uses JSDoc typing backed by `plugins/shared/emfn-types.d.ts`. `jsconfig.json` scopes editor support to plugin JS and shared `.d.ts` files for lightweight type assistance without a full TypeScript build.
 
 ## Automated Maintenance
 
@@ -430,6 +449,18 @@ This repo uses Dependabot (`.github/dependabot.yml`) for automated dependency ma
 - **GitHub Actions:** Weekly checks for workflow dependency updates (if available)
 
 Dependabot PRs can be auto-merged after CI passes, enabling frequent maintenance with minimal manual intervention.
+
+### GitHub Workflows Comparison
+
+| Aspect | `ci.yml` | `release.yml` |
+|--------|----------|---------------|
+| **Triggers** | PRs + pushes to `main`/`staging` | Pushes to `main` only |
+| **Permissions** | Read-only | Write (`contents: write` via `RELEASE_TOKEN`) |
+| **Purpose** | Validate changes before merge | Create versioned releases |
+| **Actions** | Lint + test | Lint + test + version bump + build + release |
+| **Outputs** | GitHub Checks status | GitHub Release with ZIPs |
+| **Blocks merge** | Yes (must pass) | No (runs after merge) |
+| **Safe for auto-merge** | Yes | N/A (only runs on main) |
 
 ### Continuous Integration (CI) Checks
 
@@ -459,6 +490,8 @@ On every push to `main`, `.github/workflows/release.yml` executes:
 7. **GitHub Release:** Publishes release with auto-generated notes and ZIP attachments
 8. **Tag updates:** Maintains floating `latest` and `vX` tags
 
+**Required Secrets:** The workflow requires a `RELEASE_TOKEN` repository secret with `contents: write` permission to bypass branch protection when committing version changes. Without this token, the workflow fails at step 5 (commit sync).
+
 **Infinite loop prevention:** The workflow skips when the latest commit is already a version sync, preventing recursive triggers.
 
 **Developer workflow benefits:**
@@ -485,130 +518,34 @@ The devcontainer, notebooks, scripts, tests and `tmp/` files are **not** deploye
 
 This repository includes comprehensive test coverage across JavaScript, PHP and shell scripts.
 
-### Quick Start
-
 ```bash
 # Run all tests
 npm run test:all
 
 # Run specific test suites
-npm run test:js          # JavaScript tests (Jest)
-npm run test:php         # PHP tests (PHPUnit)
-npm run test:scripts     # Shell script tests
+npm run test:js          # JavaScript (Jest)
+npm run test:php         # PHP (PHPUnit)
+npm run test:scripts     # Shell scripts
 
-# Run with coverage
-npm run test:js:coverage      # Coverage in terminal
-npm run test:php:coverage     # HTML report in coverage/php/
+# With coverage
+npm run test:js:coverage
+npm run test:php:coverage  # HTML report in coverage/php/
 ```
 
-### Test Infrastructure
+**Test infrastructure**: Jest for JavaScript, PHPUnit for PHP, custom bash framework for shell scripts. Test files in `tests/js/`, `tests/php/` and `tests/scripts/`. Fixtures in `tests/fixtures/`.
 
-**JavaScript (Jest)**
-- Plugin JavaScript unit tests
-- JSDom environment for browser APIs
-- Coverage tracking enabled
-- Test files: `tests/js/**/*.test.js`
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed testing workflow and [AGENT.md](AGENT.md) for common gotchas.
 
-**PHP (PHPUnit)**
-- WordPress plugin class tests
-- WordPress function stubs in `tests/php/bootstrap.php`
-- Strict mode enabled (fail on warnings)
-- Test files: `tests/php/**/*Test.php`
+## Contributing
 
-**Shell Scripts**
-- Custom bash test framework (`tests/scripts/test-helpers.sh`)
-- Tests for build, version sync and notebook scripts
-- Automatic test discovery (`test-*.sh` files)
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development workflow, coding standards and pull request guidelines.
 
-**Test Fixtures**
-- `tests/fixtures/payload-test-cases.json` — Action Pack encoding/decoding test cases
-- `tests/fixtures/location-test-data.json` — Geolocation resolution test data
-- `tests/fixtures/test-categories.csv` — Category mapping test data
-
-### Pre-commit Hooks
-
-Pre-commit hooks automatically run tests and linters:
-
-```bash
-# Install hooks (one-time setup)
-pre-commit install
-
-# Hooks will run on git commit:
-# - Prettier formatting
-# - Shellcheck linting
-# - ESLint on changed .js files
-# - Notebook output stripping
-# - Notebook cleanliness check
-```
-
-### Development Workflow
-
-Before committing changes:
-
-```bash
-# Run all checks (same as pre-commit hooks)
-npm run lint
-npm run shellcheck
-npm run test:all
-
-# Or run pre-commit manually
-pre-commit run --all-files
-```
-
-See [AGENT.md](AGENT.md) for lessons learned, common gotchas and troubleshooting tips when working with the test infrastructure.
-
-## Development Notes
-
-### Coding Standards
-
-- Follow WordPress coding standards: https://developer.wordpress.org/coding-standards/
-- Prefix custom functions, classes and hooks with `emfn_` to reduce conflicts
-- Use phpDoc comments for WordPress plugin headers and function documentation
-- JavaScript uses JSDoc typing backed by `plugins/shared/emfn-types.d.ts`
-
-### Version Management
-
-- **Never manually edit version numbers** — the automated release workflow handles this
-- All version references are synced automatically on merge to `main` via `scripts/sync-release-version.sh`
-- Plugin source files use both WordPress `Version:` headers and PHP constants
-- Both version indicators must match and are updated together
-
-**Version sync safeguards:**
-- Validates semver format (X.Y.Z)
-- Rejects unrealistic version components (> 10.99.99)
-- Checks against latest GitHub release (blocks major version jumps > 1)
-- Prevents version downgrades
-- Can bypass checks with `--force` flag (for fixing version history issues only)
-- Automatically skipped in CI workflows
-
-**Manual version sync** (for emergency fixes only):
-```bash
-# Normal usage
-./scripts/sync-release-version.sh 1.2.3
-
-# Force mode (bypasses GitHub release check)
-./scripts/sync-release-version.sh --force 1.2.3
-```
-
-### Development Environment
-
-- Use the VS Code (or sibling editor) `devcontainer` for consistent Python/Node.js/PHP environment
-- WordPress core and third-party plugin versions are managed on the hosted Newspack environment
-- This repo stores EMFN custom code and supporting data-generation assets
-- Pre-commit hooks enforce code quality, linting and test cleanliness (install with `pre-commit install`)
-
-**Devcontainer includes:**
-- Python 3.13 (notebooks, pre-commit)
-- Node.js LTS (npm, jest, eslint, prettier)
-- PHP 8.3 with Composer (PHPUnit, WordPress stubs)
-- Shellcheck (script linting)
-- GitHub CLI (release automation)
-
-**Key configuration files:**
-- `.devcontainer/devcontainer.json` — Container features and VS Code extensions
-- `.devcontainer/setup.sh` — Post-create setup script
-- `.pre-commit-config.yaml` — Pre-commit hook configuration
-- `AGENT.md` — Lessons learned, gotchas and troubleshooting guide
+**Key points:**
+- **Never manually edit version numbers** — automated release workflow handles this
+- Follow WordPress coding standards, prefix functions/classes/hooks with `emfn_`
+- Use the devcontainer for consistent development environment (see [CONTRIBUTING.md](CONTRIBUTING.md#devcontainer) for setup details)
+- Pre-commit hooks enforce code quality (install with `pre-commit install`)
+- Read [AGENT.md](AGENT.md) before making changes to avoid common mistakes
 
 ## Troubleshooting
 

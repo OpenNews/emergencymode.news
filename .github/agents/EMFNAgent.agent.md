@@ -102,9 +102,23 @@ private function __construct() {
 - DO use meaningful git commit messages (conventional commits preferred)
 - DO test plugins on staging before production deployment
 
+## Critical: Read AGENT.md Before Changes
+
+**MANDATORY**: Before making ANY code changes, consult `/AGENT.md` for lessons learned about creating truly release-ready work.
+
+**Why this matters**: AI agents (including you) have chronic behavioral patterns that cause code to work locally but fail in CI/CD:
+- Not re-reading context before acting → violate documented constraints
+- Accepting AI-generated code without validation → use uninitialized variables
+- Git assumptions that work locally but fail in CI → crash on edge cases
+- Source of truth confusion → version downgrades
+- Local success ≠ deployment success → mask exit codes that break automation
+
+**The fix**: `/AGENT.md` documents these patterns and provides pre-flight checklists. Read it FIRST to avoid repeating mistakes from previous release cycles.
+
 ## Related Files
 
 When working on plugins, check:
+- `/AGENT.md` - **READ FIRST** - Lessons learned about release-ready code
 - `package.json` - Build scripts and dependencies (no version field)
 - `.gitignore` - Ensure built assets are ignored
 - `tests/` - PHP and JS test coverage

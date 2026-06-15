@@ -128,6 +128,23 @@ Think holistically about the **full release process**:
 - If you presented a numbered plan and cannot find it in transcript, acknowledge the limitation and ask user to confirm what item N was about (don't waste time searching unsuccessfully)
 - For large plans (>10 items), break into phases rather than one giant list that will be truncated
 
+### 8. Implementing the REQUEST Without Understanding the PROBLEM
+**Pattern**: Create GitHub Actions workflow to build devcontainer → successfully writes workflow file → fails in CI with "unauthorized: unauthenticated" because missing `packages: write` permission
+**Why**: Focused on technical implementation (workflow syntax) without thinking through execution requirements (what permissions does pushing to GHCR need?)
+**Fix**: Before implementing ANY infrastructure code, ask:
+- What external services does this interact with? (GHCR, npm registry, AWS, etc.)
+- What permissions/credentials does it need? (GitHub token scopes, API keys, etc.)
+- What resources does it access? (write to registry, create releases, modify repo, etc.)
+- What could make authentication/authorization fail? (missing scopes, token expiry, IP restrictions, etc.)
+
+**Examples**:
+- ❌ "Create workflow to push Docker image" → ✅ "Workflow needs `packages: write` to push to GHCR"
+- ❌ "Add npm publish step" → ✅ "Needs NPM_TOKEN secret with publish scope"
+- ❌ "Create GitHub release" → ✅ "Needs `contents: write` permission"
+- ❌ "Deploy to S3" → ✅ "Needs AWS credentials with s3:PutObject permission"
+
+**The distinction**: REQUEST = "build this thing", PROBLEM = "this thing needs X, Y, Z to actually work in production"
+
 **The meta-lesson**: AI agents solve problems sequentially and forget context between turns. You must actively fight this by re-reading context, validating assumptions, and thinking about failure modes beyond the immediate fix.
 
 ---

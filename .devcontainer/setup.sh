@@ -16,12 +16,17 @@ if ! command -v gh >/dev/null 2>&1; then
 fi
 
 if [[ "$NEEDS_APT_UPDATE" -eq 1 ]]; then
-  sudo apt-get update
+  # Use timeout and retries for apt operations in case of network issues
+  sudo timeout 120 apt-get update -o Acquire::Retries=3 || {
+    echo "Warning: apt-get update failed, trying once more..." >&2
+    sudo timeout 120 apt-get update -o Acquire::Retries=3
+  }
+  
   if ! command -v shellcheck >/dev/null 2>&1; then
-    sudo apt-get install -y shellcheck
+    sudo timeout 120 apt-get install -y shellcheck
   fi
   if ! command -v gh >/dev/null 2>&1; then
-    sudo apt-get install -y gh
+    sudo timeout 120 apt-get install -y gh
   fi
 fi
 

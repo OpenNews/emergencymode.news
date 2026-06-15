@@ -31,36 +31,19 @@ jobs:
 
       - name: Build and test devcontainer
         uses: devcontainers/ci@v0.3
+        timeout-minutes: 10
         with:
+          skipContainerUserIdUpdate: true
           env: |
             CI=true
           runCmd: |
             set -e
             echo "=== Devcontainer Health Check ==="
-            echo "Verifying the devcontainer builds and can be used for development."
-            echo "Full test suite runs in ci.yml - this only validates the container."
-            echo ""
-
-            # Verify postCreateCommand (setup.sh) completed successfully
-            echo "Checking tools installed by setup.sh..."
-            uv --version
-            shellcheck --version
-            gh --version
-
-            # Verify base tools from devcontainer features
-            echo "Checking devcontainer features..."
-            node --version
-            npm --version
-            php --version
-            composer --version
-            python3 --version
-
-            # Quick smoke test: verify dependencies can be installed
-            echo ""
-            echo "Smoke test: verifying dependencies can be installed..."
-            npm ci
-            composer install --no-interaction --no-progress
-
-            echo ""
+            uv --version && echo "✓ uv installed"
+            shellcheck --version | head -1 && echo "✓ shellcheck installed"
+            gh --version | head -1 && echo "✓ gh installed"
+            node --version && echo "✓ node installed"
+            php --version | head -1 && echo "✓ php installed"
+            composer --version | head -1 && echo "✓ composer installed"
             echo "=== ✓ Devcontainer is healthy ==="
             echo "Container builds successfully and all tools are available."

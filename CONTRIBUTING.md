@@ -352,7 +352,7 @@ Notebooks automatically run `uv sync` and environment verification via `shared_s
 ### Code Samples in Documentation
 
 - Use 2 spaces for indentation (not tabs), even for PHP code samples
-- Follow concise commenting style per `vscode-userdata:/home/tiff/.config/Code/User/prompts/concise.instructions.md`
+- Keep comments concise and actionable
 - Only use Oxford commas when essential for clarity
 
 ### Version Management

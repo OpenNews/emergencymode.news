@@ -35,6 +35,9 @@ jobs:
           # Build the devcontainer image
           imageName: ghcr.io/opennews/emergencymode-news-devcontainer
 
+          # Only push on non-PR events (push, schedule, workflow_dispatch)
+          push: ${{ github.event_name != 'pull_request' }}
+
           # Set environment variables inside the container
           env: |
             CI=true

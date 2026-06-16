@@ -427,7 +427,7 @@ All PRs must pass these checks before merging:
    - Allows GPL/LGPL (common in WordPress ecosystem)
    - Comments on PR with findings
 
-It'll probably reject your commits if any if these are failing, but it won't say which.
+It'll probably reject your commits if any of these are failing, but it won't say which.
 
 **Additional security scanning**:
 

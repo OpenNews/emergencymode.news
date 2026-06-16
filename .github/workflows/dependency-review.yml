@@ -19,10 +19,9 @@ jobs:
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
         with:
-          # Fail on any severity vulnerabilities
+          # Fail on vulnerabilities at low severity or higher
           fail-on-severity: low
-          # Warn on vulnerabilities but allow GPL/LGPL licenses
-          # (Ruby ecosystem commonly uses these)
+          # Deny a small set of licenses while allowing GPL/LGPL (common in the WordPress ecosystem)
           deny-licenses: AGPL-3.0, SSPL-1.0
           # Comment on PR with findings
           comment-summary-in-pr: always

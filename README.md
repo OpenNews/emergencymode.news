@@ -254,7 +254,7 @@ Tier tags act as **quality bands** — all tier-1 content ranks above tier-2, re
 
 **2. Category Relevance Weights (Secondary Sort)**
 
-Your quiz responses create a weighted category list. Categories that match more of your answers (higher "Total Rank" in the scoring table) receive higher weights. For example, if your responses emphasizes staff safety and field reporting challenges, those categories get prioritized.
+Your quiz responses create a weighted category list. Categories that match more of your answers (higher "Total Rank" in the scoring table) receive higher weights. For example, if your responses emphasize staff safety and field reporting challenges, those categories get prioritized.
 
 Within each quality tier, the algorithm calculates a relevance score based on:
 - **Category weight**: How strongly your quiz responses align with that category

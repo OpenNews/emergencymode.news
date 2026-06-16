@@ -12,7 +12,7 @@
 
 ```bash
 # 1. Read this entire file
-cat AGENT.md
+cat AGENT_LESSONS.md
 
 # 2. Check current state
 git status

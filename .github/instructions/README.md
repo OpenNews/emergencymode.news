@@ -57,23 +57,23 @@ If multiple instruction files match a file path, Copilot combines their guidance
 
 ## Creating New Instruction Files
 
-**Before creating**: Read [AGENT.md](../../AGENT.md) to understand common AI behavioral patterns and release-ready code requirements. Instruction files should encode lessons learned to prevent repeating mistakes.
+**Before creating**: Read [AGENT_LESSONS.md](../../AGENT_LESSONS.md) to understand common AI behavioral patterns and release-ready code requirements. Instruction files should encode lessons learned to prevent repeating mistakes.
 
 **When to create**:
 - Repeating coding patterns across multiple files
 - Domain-specific knowledge (API integration, deployment constraints)
 - File-type-specific workflows (build scripts, configuration files)
-- Patterns from AGENT.md that apply to specific file types (e.g., WordPress plugin singleton pattern)
+- Patterns from AGENT_LESSONS.md that apply to specific file types (e.g., WordPress plugin singleton pattern)
 
 **When NOT to create**:
 - One-time fixes (use inline comments instead)
 - General programming knowledge (Copilot already knows this)
-- Project-wide patterns (use AGENT.md or CONTRIBUTING.md instead)
+- Project-wide patterns (use AGENT_LESSONS.md or CONTRIBUTING.md instead)
 
-**Relationship to AGENT.md**:
-- **AGENT.md** = Lessons learned from actual failures (exit code masking, version source of truth, test framework rules)
+**Relationship to AGENT_LESSONS.md**:
+- **AGENT_LESSONS.md** = Lessons learned from actual failures (exit code masking, version source of truth, test framework rules)
 - **Instruction files** = Proactive guidance for specific file types (WordPress patterns, SASS builds, release scripts)
-- **Workflow**: Review AGENT.md chronic patterns → identify file-type-specific rules → encode in instruction files with `applyTo` patterns
+- **Workflow**: Review AGENT_LESSONS.md chronic patterns → identify file-type-specific rules → encode in instruction files with `applyTo` patterns
 
 **Template**:
 
@@ -101,7 +101,7 @@ applyTo:
 
 ## Related Files
 
-- **[AGENT.md](../../AGENT.md)**: Lessons learned about creating release-ready code, common AI mistakes
+- **[AGENT_LESSONS.md](../../AGENT_LESSONS.md)**: Lessons learned about creating release-ready code, common AI mistakes
 - **[CONTRIBUTING.md](../../CONTRIBUTING.md)**: Development workflow, code quality standards, testing practices
 - **[.github/agents/](../agents/)**: Custom Copilot agent definitions (like EMFNAgent)
 

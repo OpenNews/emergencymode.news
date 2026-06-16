@@ -12,7 +12,7 @@
 
 ```bash
 # 1. Read this entire file
-cat AGENT.md
+cat AGENT_LESSONS.md
 
 # 2. Check current state
 git status
@@ -87,9 +87,9 @@ Think holistically about the **full release process**:
 **These mistakes repeat across PR cycles** - awareness is the first step to prevention:
 
 ### 1. Not Re-Reading Context Before Acting
-**Pattern**: Document "NEVER use 9.9.9" in AGENT.md → immediately use 9.9.9 to test version validation
+**Pattern**: Document "NEVER use 9.9.9" in AGENT_LESSONS.md → immediately use 9.9.9 to test version validation
 **Why**: AI doesn't naturally consult existing documentation/context before taking action
-**Fix**: Before testing ANY functionality, grep for warnings about it: `grep -i "version\|9.9.9\|NEVER" AGENT.md`
+**Fix**: Before testing ANY functionality, grep for warnings about it: `grep -i "version\|9.9.9\|NEVER" AGENT_LESSONS.md`
 
 ### 2. Accepting AI-Generated Code Without Validation
 **Pattern**: Copilot suggests using `$major` in calculation → I accept → script crashes because `$major` isn't initialized yet
@@ -375,7 +375,7 @@ Before committing:
 
 ```
 Is it repeating across multiple PRs/sessions?
-├─ NO → Don't add to AGENT.md (one-time bug)
+├─ NO → Don't add to AGENT_LESSONS.md (one-time bug)
 └─ YES → Is it about AI behavior or a technical constraint?
     ├─ AI behavior → Add to "Chronic AI Behavioral Patterns"
     │   └─ Ask: Does it represent a CLASS of thinking error?

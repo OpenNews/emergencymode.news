@@ -29,9 +29,9 @@ This directory contains custom GitHub Copilot agents that provide specialized ex
 
 **When NOT to use**:
 - General coding questions → use default Copilot
-- Repository structure questions → use default Copilot or read AGENT.md
+- Repository structure questions → use default Copilot or read AGENT_LESSONS.md
 - Test infrastructure → use default Copilot
-- Release workflow debugging → consult AGENT.md first
+- Release workflow debugging → consult AGENT_LESSONS.md first
 
 ## File Format
 

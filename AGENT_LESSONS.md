@@ -375,7 +375,7 @@ Before committing:
 
 ```
 Is it repeating across multiple PRs/sessions?
-├─ NO → Don't add to AGENT.md (one-time bug)
+├─ NO → Don't add to AGENT_LESSONS.md (one-time bug)
 └─ YES → Is it about AI behavior or a technical constraint?
     ├─ AI behavior → Add to "Chronic AI Behavioral Patterns"
     │   └─ Ask: Does it represent a CLASS of thinking error?

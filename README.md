@@ -22,7 +22,7 @@ This repository contains:
 ```text
 emergencymode.news/
 ├── README.md                               # This file
-├── AGENTS.md                               # instructions for most agents (aliases: AGENT.md & CLAUDE.md)
+├── AGENTS.md                               # instructions for most agents
 ├── AGENT_LESSONS.md                        # Agent guide: lessons learned, gotchas, errors
 ├── CONTRIBUTING.md                         # Development workflow, coding standards, testing
 │
@@ -125,9 +125,9 @@ When changes are merged to `main`:
 1. **Detection**: Workflow detects which plugins have changes
 2. **Version bump**: Calculates next version from commit messages:
    - `[major]` or `major:` → Major version bump (1.0.0 → 2.0.0)
-   - `[minor]` or `minor:` → Minor version bump (1.0.0 → 1.1.0)
-   - `[patch]` or `patch:` → Patch version bump (1.0.0 → 1.0.1) -- the default
-   - `[pre]` → Pre-release version bump (1.0.0 → 1.0.0-pre) 
+   - `[minor]` or `minor:` or `feat:` → Minor version bump (1.0.0 → 1.1.0) -- the default
+   - `[patch]` or `patch:` → Patch version bump (1.0.0 → 1.0.1)
+   - `[pre]` → Pre-release version bump (e.g., 1.1.0-pre for next minor with pre-release flag)
 3. **Update files**: Syncs version across plugin PHP files and readme.txt
 4. **Build assets**: Creates plugin ZIP files in `dist/`
 5. **Create release**: Tags commit and publishes GitHub release with ZIP

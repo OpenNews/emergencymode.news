@@ -36,7 +36,7 @@ This directory contains custom GitHub Copilot agents that provide specialized ex
 ## File Format
 
 Custom agents use YAML frontmatter with these fields:
-- `name`: Agent identifier (must match filename without .AGENT_LESSONS.md)
+- `name`: Agent identifier (must match filename without .agent.md)
 - `description`: When and how to use this agent
 - `argument-hint`: Suggested prompt format
 

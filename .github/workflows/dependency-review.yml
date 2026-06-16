@@ -1,0 +1,30 @@
+name: Dependency Review
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          # Fail on any severity vulnerabilities
+          fail-on-severity: low
+          # Warn on vulnerabilities but allow GPL/LGPL licenses
+          # (Ruby ecosystem commonly uses these)
+          deny-licenses: AGPL-3.0, SSPL-1.0
+          # Comment on PR with findings
+          comment-summary-in-pr: always
+          # Only fail the build for denied licenses in runtime dependencies
+          fail-on-scopes: runtime

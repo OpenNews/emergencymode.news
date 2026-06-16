@@ -4,14 +4,20 @@ This guide covers the development workflow, code quality standards and testing p
 
 | badge | status |
 | --- | --- |
-| Tests on `main` & `staging` | [![CI](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml) |
-| Dev Container | [![Dev Container](https://github.com/OpenNews/emergencymode.news/actions/workflows/devcontainer.yml/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/devcontainer.yml) |
-
-**Before making changes**: Read [AGENT.md](AGENT.md) for lessons learned about creating release-ready code. It documents common pitfalls that cause code to work locally but fail in CI/CD.
+| Releases on `main` | [![Release](https://github.com/OpenNews/emergencymode.news/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/OpenNews/emergencymode.news/actions/workflows/release.yml) |
+| `.devcontainer` healthcheck | [![Dev Container](https://github.com/OpenNews/emergencymode.news/actions/workflows/devcontainer.yml/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/devcontainer.yml) |
+| Tests on `staging` | [![CI](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml/badge.svg?branch=staging)](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml) |
+| Tests on `main` | [![CI](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml) |
+| CodeQL on `main` | [![CodeQL](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql) |
+| CodeQL on `staging` | [![CodeQL](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql/badge.svg?branch=staging)](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql) |
+| Dependabot on `main` | [![Dependabot Updates](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates/badge.svg?branch=main)](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates) |
+| Dependabot on `staging` | [![Dependabot Updates](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates/badge.svg?branch=staging)](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates) |
 
 ## Quick Start
 
 ### Development Environment Setup
+
+**Branch workflow**: We prefer working directly on `staging` and opening PRs from `staging` to `main`, or opening separate feature branch PRs to `main`. If only one developer is working at a time, working directly on `staging` may suffice.
 
 **Recommended**: Use the VS Code devcontainer for a consistent, fully-configured environment.
 
@@ -204,46 +210,15 @@ The devcontainer ensures these versions match CI/CD exactly.
 
 ### Editor Configuration
 
-**`.editorconfig`** - Cross-editor consistency (2 spaces, LF line endings, UTF-8, max line length 80-120)
-
-**`.vscode/settings.json`** - VS Code workspace preferences:
-- Prettier as default formatter
-- Format on save enabled
-- ESLint enabled for linting (not formatting)
-- Line rulers at 100 and 120 characters
-- Language-specific formatter settings
-
-### Formatting
-
-**`.prettierrc`** - Prettier configuration:
-- Print width: 100 characters
-- Tab width: 2 spaces (spaces, not tabs)
-- Semicolons required
-- Double quotes
-- Trailing commas (ES5)
-- Arrow function parens: avoid
-- LF line endings
-
-**`.prettierignore`** - Files excluded from formatting:
-- Build outputs (`dist/`, `build/`, `vendor/`, `node_modules/`)
-- Markdown files (for now)
-- Minified files (`*.min.js`, `*.min.css`)
-- WordPress core files
-
-### Linting
-
-**`eslint.config.js`** - ESLint for JavaScript:
-- Plugin JavaScript validation
-- JSDoc comment linting
-- TypeScript-aware parsing (for type checking)
-
-**`shellcheck`** - Bash script linting via pre-commit hook
-
-**PHPUnit strict mode** - Configured in `phpunit.xml`:
-- Fail on warnings
-- Fail on risky tests
-- Strict about output during tests
-- Strict about todo-annotated tests
+| File/Tool | Purpose | Key Configuration |
+|-----------|---------|-------------------|
+| `.editorconfig` | Cross-editor consistency | 2 spaces, LF line endings, UTF-8, etc |
+| `.vscode/settings.json` | VS Code workspace preferences | Prettier as default formatter, format on save enabled, etc |
+| `.prettierrc` | Formatting | (Prettier configuration) 2 spaces, 100 chars, semicolons, etc |
+| `.prettierignore` | Files excluded from formatting | Build outputs, Markdown, WordPress core files, etc |
+| `eslint.config.js` | Linting | (ESLint for JavaScript) JS validation, JSDoc comments, TypeScript parsing |
+| `shellcheck` | Bash script linting | Via pre-commit hook |
+| `phpunit.xml` | PHPUnit strict mode | Fail on warnings, fail on risky tests, strict modes, etc |
 
 ## Development Workflow
 
@@ -270,11 +245,11 @@ pre-commit run --all-files
 npm run lint
 
 # Individual checks
-npm run format:check      # Verify Prettier formatting
-npm run format            # Auto-fix Prettier formatting
-npm run eslint            # Lint JavaScript
-npm run eslint:fix        # Auto-fix JavaScript issues
-npm run shellcheck        # Lint shell scripts
+npm run format:check           # Verify Prettier formatting
+npm run format                 # Auto-fix Prettier formatting
+npm run eslint                 # Lint JavaScript
+npm run eslint:fix             # Auto-fix JavaScript issues
+npm run shellcheck             # Lint shell scripts
 npm run notebooks:check-clean  # Verify notebooks are clean
 ```
 
@@ -323,7 +298,7 @@ The report provides line-by-line coverage highlighting, function/class percentag
 - `tests/fixtures/location-test-data.json` - Geolocation resolution
 - `tests/fixtures/test-categories.csv` - Category mapping
 
-See [AGENT.md](AGENT.md) for common testing gotchas and troubleshooting.
+See [AGENT_LESSONS.md](AGENT_LESSONS.md) for common testing gotchas and troubleshooting.
 
 ### Notebook Workflow
 
@@ -340,6 +315,64 @@ npm run notebooks:check-clean # Verify no outputs remain
 
 Notebooks automatically run `uv sync` and environment verification via `shared_setup.py` in early cells.
 
+## Dependency Management
+
+### Python (Notebooks)
+
+Python dependencies are managed with `uv` and defined in `pyproject.toml` using compatible release constraints (`~=`), allowing patch and minor version updates while keeping major versions stable.
+
+**Setup:**
+```bash
+# From repo root
+uv sync
+```
+
+**Within notebooks:**
+- Cell 2 runs `uv sync` to keep the environment in sync with `uv.lock`
+- Cell 3 (using `shared_setup.py`) verifies the environment is healthy; output will recommend next steps if issues are detected
+- Each notebook's output will guide you through any upgrades needed
+
+See [notebooks/README.md](notebooks/README.md) for details on the shared setup utilities.
+
+### JavaScript / npm
+
+Plugin dependencies and dev tools are managed via `npm` with Dependabot automation for regular updates.
+
+```bash
+npm install
+```
+
+### GitHub Actions & Dependabot
+
+Dependency automation is configured in [.github/dependabot.yml](.github/dependabot.yml):
+
+| Ecosystem | Frequency | Notes |
+|-----------|-----------|-------|
+| `npm` | Weekly | Plugin production dependencies + dev tools |
+| `github-actions` | Weekly | Workflow & CI/CD tool updates (if available) |
+| `pip` | Disabled | Python deps manually maintained (notebooks are rarely used) |
+
+## Data Analysis Notebooks
+
+The `notebooks/` directory contains Python workflows that generate and validate NRI risks at use in the Action Pack plugin.
+
+**Current notebooks:**
+
+- `US_disaster_risk_analysis.ipynb` — Downloads FEMA NRI data and generates per-state CSVs for all 50 US states plus DC
+- `CA-MX_disaster_risk_analysis.ipynb` — Stub, exploring Canada and Mexico data; does not currently generate runtime output
+
+**Setup:**
+Each notebook runs `uv sync` on startup to ensure dependencies are in sync, then verifies the environment is healthy via `shared_setup.py`.
+
+**Output location:**
+- `plugins/emfn-action-pack-plugin/assets/data/` (51 US state + DC CSVs)
+- `notebooks/cache/` (cached FEMA source downloads)
+
+**Managing dependencies:**
+See the [Dependency Management](#dependency-management) section above, or refer to [notebooks/README.md](notebooks/README.md) for detailed dependency management instructions.
+
+The notebooks are managed with `uv` and are not deployed to WordPress—they support data generation and validation only.
+
 ## Coding Standards
 
 ### General
@@ -349,21 +382,11 @@ Notebooks automatically run `uv sync` and environment verification via `shared_s
 - Use phpDoc comments for WordPress plugin headers and function documentation
 - JavaScript uses JSDoc typing backed by `plugins/shared/emfn-types.d.ts`
 
-### Code Samples in Documentation
-
-- Use 2 spaces for indentation (not tabs), even for PHP code samples
-- Keep comments concise and actionable
-- Only use Oxford commas when essential for clarity
-
 ### Version Management
 
-**Never manually edit version numbers** - the automated release workflow handles this.
+**Please do not manually edit version numbers** - the automated release workflow handles this.
 
-All version references are synced automatically on merge to `main` via `scripts/sync-release-version.sh`:
-- Plugin PHP headers (`Version:` field)
-- Plugin PHP constants (`EMFN_*_PLUGIN_VERSION`)
-- Plugin `readme.txt` stable tags
-- Plugin `readme.txt` changelog entries
+All version references are synced automatically on merge to `main` via `scripts/sync-release-version.sh`.
 
 **Version sync safeguards**:
 - Validates semver format (X.Y.Z)
@@ -378,24 +401,55 @@ All version references are synced automatically on merge to `main` via `scripts/
 ./scripts/sync-release-version.sh --force 1.2.3  # Bypass GitHub check
 ```
 
+You can probably craft new releases and mess with version numbers via GitHub.com's release-authoring mechanism. But it'll probably throw errors and be a big headache so please don't. 
+
 ## Pull Request Guidelines
 
 ### Before Opening a PR
 
-1. Read [AGENT.md](AGENT.md) to avoid common mistakes
-2. Run `npm run lint` and fix all issues
-3. Run `npm run test:all` and ensure all tests pass
-4. Verify pre-commit hooks are installed and passing
-5. Check that notebooks are clean (no execution outputs)
+1. Run `npm run lint` and fix all issues
+1. Run `npm run test:all` and ensure all tests pass
+1. Verify pre-commit hooks are installed and passing
+1. Check that notebooks are clean (no execution outputs)
+1. If you're comfortable with it, ask an AI Agent to do a pre-Review check on everything, and run all checks and tests it thinks should be run (remind it to look at its history of self-invested problems in AGENT_LESSONS.md)
 
 ### CI Checks
 
 All PRs must pass these checks before merging:
 
 1. **Lint checks**: Prettier, ESLint, shellcheck, notebook cleanliness
-2. **JavaScript tests**: Jest
-3. **PHP tests**: PHPUnit
-4. **Shell script tests**: Bash test framework
+1. **JavaScript tests**: Jest
+1. **PHP tests**: PHPUnit
+1. **Shell script tests**: Bash test framework
+1. **Dependency Review** (on PRs to `main`): Scans for dependency vulnerabilities and license issues
+   - Fails on low severity vulnerabilities or higher
+   - Denies AGPL-3.0 and SSPL-1.0 licenses
+   - Allows GPL/LGPL (common in WordPress ecosystem)
+   - Comments on PR with findings
+
+It'll probably reject your commits if any if these are failing, but it won't say which.
+
+**Additional security scanning**:
+
+- **CodeQL Analysis**: Runs on pushes to `main`, PRs to `main`, and weekly (Tuesdays 6am UTC)
+  - Analyzes GitHub Actions workflows for security issues
+  - Requires `ENABLE_CODEQL_ADVANCED` repository variable to be set to `'true'`
+  - Results appear in GitHub Security tab
+
+### Code Review
+
+**GitHub Copilot Reviews**: This repository is configured to automatically request Copilot code reviews on PRs to `staging` when they're marked as ready for review.
+
+**Using Copilot for review**:
+- Copilot will analyze your changes and provide feedback on potential issues, code quality, and best practices
+- Review Copilot's comments and address any concerns before merging
+- You can manually request a Copilot review at any time using the GitHub UI
+
+**Human review**: While Copilot provides automated feedback, human review is still valuable for:
+- Architecture and design decisions
+- Business logic validation
+- WordPress-specific patterns and practices
+- User experience considerations
 
 ### Commit Messages
 
@@ -410,8 +464,8 @@ chore: update dependencies
 
 Commit message prefixes affect version bumping:
 - `[major]` or `major:` → Major version bump (1.0.0 → 2.0.0)
-- `[minor]` or `minor:` or `feat:` → Minor version bump (1.0.0 → 1.1.0)
-- Default → Patch version bump (1.0.0 → 1.0.1)
+- `[minor]` or `minor:` or `feat:` → Minor version bump (1.0.0 → 1.1.0) -- the default
+- `[pre]` → Pre-release version bump (1.0.0 → 1.0.0-pre) 
 
 ## Release Process
 
@@ -424,15 +478,15 @@ Releases are fully automated on merge to `main`. See [README.md](README.md#autom
 | **Triggers** | PRs + pushes to `main`/`staging` | Pushes to `main` only |
 | **Permissions** | Read-only | Write (`contents: write` via `RELEASE_TOKEN`) |
 | **Purpose** | Validate changes before merge | Create versioned releases |
-| **Actions** | Lint + test | Lint + test + version bump + build + release |
+| **Actions** | Lint + test | Lint + test + + detect plugin changes + version bump (maj, min, pre, patch) + build + release |
 | **Outputs** | GitHub Checks status | GitHub Release with ZIPs |
 | **Blocks merge** | Yes (must pass) | No (runs after merge) |
 | **Safe for auto-merge** | Yes | N/A (only runs on main) |
 
-**Required secrets**: `RELEASE_TOKEN` with `contents: write` permission to bypass branch protection when committing version changes.
+**Required secrets**: `RELEASE_TOKEN` with `contents: write` permission to bypass branch protection when committing version changes. This is set at the org level for OpenNews. If we move orgs, it will need to be set up again.
 
 **Developer workflow**:
-1. Open PR against `main`
+1. Work on `staging` or open a PR against `staging`
 2. CI runs automatically
 3. Merge PR (after approval + passing CI)
 4. Release workflow automatically:
@@ -445,31 +499,10 @@ Releases are fully automated on merge to `main`. See [README.md](README.md#autom
 
 ## Troubleshooting
 
-### Common Issues
-
-**Pre-commit hooks not running**:
-```bash
-pre-commit install
-pre-commit run --all-files  # Test manually
-```
-
-**Formatting inconsistencies**:
-```bash
-npm run format  # Auto-fix with Prettier
-```
-
-**Tests passing locally but failing in CI**:
-- Check [AGENT.md](AGENT.md) for local vs CI differences
-- Verify strict mode settings (exit codes, output suppression)
-- Test in devcontainer to match CI environment
-
-**Notebook has outputs after `notebooks:strip`**:
-- Check that notebook is saved
-- Manual clean: Open in Jupyter → Cell → All Output → Clear
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues and solutions.
 
 ## Getting Help
 
-- **Technical patterns**: Consult [AGENT.md](AGENT.md)
 - **WordPress plugin development**: Use `@EMFNAgent` (see `.github/agents/README.md`)
 - **Repository structure**: See [README.md](README.md)
 - **Testing strategy**: See [tests/TESTING_PLAN.md](tests/TESTING_PLAN.md)

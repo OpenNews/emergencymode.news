@@ -478,7 +478,7 @@ Releases are fully automated on merge to `main`. See [README.md](README.md#autom
 | **Triggers** | PRs + pushes to `main`/`staging` | Pushes to `main` only |
 | **Permissions** | Read-only | Write (`contents: write` via `RELEASE_TOKEN`) |
 | **Purpose** | Validate changes before merge | Create versioned releases |
-| **Actions** | Lint + test | Lint + test + + detect plugin changes + version bump (maj, min, pre, patch) + build + release |
+| **Actions** | Lint + test | Lint + test + detect plugin changes + version bump (maj, min, pre, patch) + build + release |
 | **Outputs** | GitHub Checks status | GitHub Release with ZIPs |
 | **Blocks merge** | Yes (must pass) | No (runs after merge) |
 | **Safe for auto-merge** | Yes | N/A (only runs on main) |

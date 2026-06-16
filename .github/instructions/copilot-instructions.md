@@ -5,7 +5,7 @@ here conflicts with `AGENTS.md`, the `AGENTS.md` version takes precedence.
 Many plugins and themes also have their own `AGENTS.md` with package-specific gotchas, architecture, and patterns. When working within
 a plugin or theme directory, check for and read its local `AGENTS.md` in addition to the root one.
 
-Also read in AGENT_LESSONS.md, to get history of wasted time and troubleshooting efforts where agentic clients focused too much on small fixes rather than holistic solutions to developer experience or dev-ops issues.
+Also read `AGENT_LESSONS.md` to learn from prior troubleshooting and avoid focusing on small fixes over holistic solutions.
 
 Use Oxford commas only when necessary
 Do not end bullets with periods unless they are multi-sentence bullets (and they should very rarely be so)

@@ -111,6 +111,39 @@ run_tests() {
   slug=$(echo "$output" | jq -r '.plugin[0].slug')
   assert_equals "site-styles" "$slug"
   
+  # Test: Pre-release flag
+  test_start "applies pre-release suffix with patch bump (default)"
+  output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "[pre] test feature")
+  next_version=$(echo "$output" | jq -r '.plugin[0].next_version')
+  assert_equals "${AP_NEXT_PATCH}-pre" "$next_version"
+  
+  test_start "sets prerelease flag to true"
+  prerelease=$(echo "$output" | jq -r '.plugin[0].prerelease')
+  assert_equals "true" "$prerelease"
+  
+  test_start "applies pre-release with minor bump"
+  output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "[pre][minor] test feature")
+  next_version=$(echo "$output" | jq -r '.plugin[0].next_version')
+  assert_equals "${AP_NEXT_MINOR}-pre" "$next_version"
+  
+  test_start "applies pre-release with major bump"
+  output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "[pre][major] breaking change")
+  next_version=$(echo "$output" | jq -r '.plugin[0].next_version')
+  assert_equals "${AP_NEXT_MAJOR}-pre" "$next_version"
+  prerelease=$(echo "$output" | jq -r '.plugin[0].prerelease')
+  assert_equals "true" "$prerelease"
+  
+  test_start "sets prerelease flag to false without [pre]"
+  output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "regular release")
+  prerelease=$(echo "$output" | jq -r '.plugin[0].prerelease')
+  assert_equals "false" "$prerelease"
+  
+  # Test: Default is patch bump
+  test_start "default bump is patch (no keywords)"
+  output=$("$SCRIPT_PATH" "emfn-action-pack-plugin" "regular commit message")
+  next_version=$(echo "$output" | jq -r '.plugin[0].next_version')
+  assert_equals "$AP_NEXT_PATCH" "$next_version"
+  
   # Test: Error handling
   test_start "rejects invalid plugin name"
   ("$SCRIPT_PATH" "invalid-plugin" "test" 2>/dev/null) && exit_code=$? || exit_code=$?

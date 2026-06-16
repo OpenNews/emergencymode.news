@@ -464,8 +464,9 @@ chore: update dependencies
 
 Commit message prefixes affect version bumping:
 - `[major]` or `major:` → Major version bump (1.0.0 → 2.0.0)
-- `[minor]` or `minor:` or `feat:` → Minor version bump (1.0.0 → 1.1.0) -- the default
-- `[pre]` → Pre-release version bump (1.0.0 → 1.0.0-pre) 
+- `[minor]` or `minor:` → Minor version bump (1.0.0 → 1.1.0)
+- `[patch]` or `patch:` → Patch version bump (1.0.0 → 1.0.1) -- the default
+- `[pre]` → Marks release as pre-release with `-pre` suffix (e.g., 1.0.1-pre) 
 
 ## Release Process
 

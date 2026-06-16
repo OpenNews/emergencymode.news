@@ -107,7 +107,8 @@ jobs:
           # For each changed plugin:
           # 1. Get latest plugin-specific tag (e.g., action-pack/v0.3.1)
           # 2. Calculate next version using commit message keywords
-          # 3. Output JSON array for matrix strategy
+          # 3. Set prerelease flag if [pre] detected in commit message
+          # 4. Output JSON array for matrix strategy
 
           matrix_json=$(./scripts/generate-version-matrix.sh \
             "${{ steps.detect.outputs.changed_plugins }}" \
@@ -203,6 +204,6 @@ jobs:
           name: "${{ matrix.plugin.slug }} ${{ matrix.plugin.next_version }}"
           body: "Release for ${{ matrix.plugin.name }}"
           make_latest: ${{ matrix.plugin.name == 'emfn-action-pack-plugin' && !matrix.plugin.prerelease }}
-          prerelease: ${{ matrix.plugin.prerelease }}
+          prerelease: ${{ matrix.plugin.prerelease }} # Set by [pre] in commit message
           files: |
             dist/${{ matrix.plugin.name }}-${{ matrix.plugin.next_version }}.zip

@@ -45,17 +45,20 @@ if [[ -z "$version" ]]; then
   echo "Examples:" >&2
   echo "  $0 --plugin emfn-action-pack-plugin 0.3.2" >&2
   echo "  $0 --plugin emfn-site-styles-plugin 0.1.1" >&2
+  echo "  $0 --plugin emfn-action-pack-plugin 0.3.2-pre" >&2
   exit 1
 fi
 
-if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Error: Version must be semver in the form X.Y.Z" >&2
-  echo "Example: $0 1.2.3" >&2
+if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-pre)?$ ]]; then
+  echo "Error: Version must be semver in the form X.Y.Z or X.Y.Z-pre" >&2
+  echo "Example: $0 1.2.3 or $0 1.2.3-pre" >&2
   exit 1
 fi
 
 # Safeguard: Prevent absurdly high version numbers (likely a mistake)
-IFS='.' read -r major minor patch <<< "$version"
+# Strip -pre suffix for numeric validation
+version_base="${version%-pre}"
+IFS='.' read -r major minor patch <<< "$version_base"
 if [[ $major -gt 10 || $minor -gt 99 || $patch -gt 99 ]]; then
   echo "Error: Version $version seems unrealistic (component too large)" >&2
   echo "Maximum allowed: 10.99.99" >&2
@@ -89,7 +92,9 @@ if [[ "$FORCE_MODE" -eq 0 && -z "${GITHUB_ACTIONS:-}" && -z "$PLUGIN_NAME" ]]; t
       latest_patch="${BASH_REMATCH[3]}"
       
       # Parse requested version to get major component (format already validated above)
-      [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]
+      # Strip -pre suffix for comparison
+      version_for_comparison="${version%-pre}"
+      [[ "$version_for_comparison" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]
       requested_major="${BASH_REMATCH[1]}"
       
       # Check if major version jumped by more than 1

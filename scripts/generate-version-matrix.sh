@@ -61,7 +61,8 @@ calculate_next_version() {
     local current_version="$1"
     local commit_msg="$2"
     
-    # Parse current version
+    # Parse current version (strip any -pre suffix if present)
+    current_version="${current_version%-pre}"
     IFS='.' read -r major minor patch <<< "$current_version"
     
     # Check commit message for version bump signals
@@ -79,7 +80,12 @@ calculate_next_version() {
         patch=$((patch + 1))
     fi
     
-    echo "${major}.${minor}.${patch}"
+    # Check for pre-release flag and add suffix
+    if echo "$commit_msg" | grep -qiE '\[pre(release)?\]'; then
+        echo "${major}.${minor}.${patch}-pre"
+    else
+        echo "${major}.${minor}.${patch}"
+    fi
 }
 
 # Function to detect pre-release flag in commit message

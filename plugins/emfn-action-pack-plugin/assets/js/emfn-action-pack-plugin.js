@@ -16,7 +16,7 @@
  */
 
 (function () {
-  const version = "0.9.00"; // debugging versioning
+  const version = "0.9.01"; // debugging versioning
   const riskThreshold = 85; // threshold for suggested risks
   const emfnWindow = /** @type {EmfnWindow} */ (window);
 
@@ -243,6 +243,17 @@
       locData.country = addr.country ?? null;
       locData.fips = await GeolocationFlow.getFipsFromFCC(place.location);
 
+      // Populate street address field when no street_address component exists
+      const streetInput = /** @type {HTMLInputElement | null} */ (
+        formRoot.querySelector("input#input_6_32_1")
+      );
+      if (streetInput && !addr.street_address) {
+        // Use the text the user selected from the autocomplete menu
+        const selectedText =
+          placePrediction?.text?.text || place.formattedAddress || place.displayName || "";
+        streetInput.value = selectedText;
+      }
+
       // set the resolved FIPS code into the hidden form field for submission
       const fipsField = /** @type {HTMLInputElement | null} */ (
         formRoot.querySelector(fipsFieldSelection)
@@ -270,12 +281,28 @@
       const autocompleteEl = /** @type {HTMLElement | null} */ (
         geoInput.querySelector("gmp-place-autocomplete")
       );
-      if (!autocompleteEl || autocompleteEl.dataset.placeBound === "1") return;
+      if (!autocompleteEl || autocompleteEl.dataset.placeBound === "1") {
+        return;
+      }
 
       autocompleteEl.addEventListener("gmp-select", async event => {
         try {
           GeolocationFlow.clearSavedLocation();
           await GeolocationFlow.handlePlaceSelection(event);
+
+          // Fix the autocomplete value if it's "undefined" so Gravity Forms syncs the right value
+          setTimeout(() => {
+            const currentValue = autocompleteEl.getAttribute("value");
+            if (currentValue === "undefined" || !currentValue) {
+              // Get a meaningful value from the place data
+              const { placePrediction } = /** @type {GmpSelectEvent} */ (
+                /** @type {unknown} */ (event)
+              );
+              const displayValue = placePrediction?.text?.text || "Location selected";
+              autocompleteEl.setAttribute("value", displayValue);
+              emfnDebug("Fixed autocomplete value from undefined to:", displayValue);
+            }
+          }, 10);
         } catch (err) {
           console.error("Error handling place selection:", err);
           return null;

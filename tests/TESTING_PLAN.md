@@ -37,7 +37,8 @@ tests/
 │   ├── setup.js                 # Test environment configuration
 │   ├── action-pack/
 │   │   ├── payload-encoding.test.js
-│   │   └── risk-rendering.test.js
+│   │   ├── risk-rendering.test.js
+│   │   └── geolocation.test.js  # ✅ Street address population tests
 │   └── lib/                     # Shared test utilities
 │       ├── payload-encoding.js
 │       └── risk-rendering.js
@@ -156,7 +157,22 @@ describe('CSV Data Parsing', () => {
 })
 ```
 
-**geolocation.test.js** (future)
+**geolocation.test.js** ✅ **IMPLEMENTED**
+```javascript
+describe('GeolocationFlow - Street Address Population', () => {
+  // Tests street address field population from Google Places autocomplete
+  test('populates street input with selected text when no street_address component')
+  test('falls back to formattedAddress if placePrediction.text unavailable')
+  test('falls back to displayName if both text and formattedAddress unavailable')
+  test('sets empty string if no fallback values available')
+  test('does not populate when street_address component exists')
+  test('handles ZIP-only selections (e.g., "07712")')
+  test('handles city selections (e.g., "Asbury Park, NJ")')
+  test('handles full address selections')
+})
+```
+
+**Future geolocation tests:**
 ```javascript
 describe('Geolocation Resolution', () => {
   test('extracts lat/lng from Google Places')

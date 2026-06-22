@@ -161,9 +161,10 @@
      * @returns {Promise<string|null>}
      */
     async getFipsFromFCC(location) {
-      const lat = location.lat() ?? null;
-      const lng = location.lng() ?? null;
-      if (lat === null || lng === null) {
+      // Handle both LatLng (methods) and LatLngLiteral (properties)
+      const lat = typeof location.lat === "function" ? location.lat() : location.lat;
+      const lng = typeof location.lng === "function" ? location.lng() : location.lng;
+      if (lat === null || lng === null || lat === undefined || lng === undefined) {
         console.error("Missing lat/lng from place location");
         return null;
       }
@@ -244,9 +245,23 @@
       locData.fips = await GeolocationFlow.getFipsFromFCC(place.location);
 
       // Populate street address field when no street_address component exists
-      const streetInput = /** @type {HTMLInputElement | null} */ (
-        formRoot.querySelector("input#input_6_32_1")
+      // Use autocomplete attribute to reliably find street input, or fall back to label check
+      let streetInput = /** @type {HTMLInputElement | null} */ (
+        formRoot.querySelector("input[autocomplete*='street-address']")
       );
+
+      // Fallback: check for label containing "Street Address" if autocomplete selector fails
+      if (!streetInput) {
+        const labels = Array.from(formRoot.querySelectorAll("label"));
+        const streetLabel = labels.find(label => /street\s*address/i.test(label.textContent || ""));
+        if (streetLabel) {
+          const inputId = streetLabel.getAttribute("for");
+          streetInput = inputId
+            ? formRoot.querySelector(`#${inputId}`)
+            : streetLabel.querySelector("input");
+        }
+      }
+
       if (streetInput && !addr.street_address) {
         // Use the text the user selected from the autocomplete menu
         const selectedText =

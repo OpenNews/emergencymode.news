@@ -16,6 +16,7 @@ npm run test:js:coverage # Generate coverage report
 Extracted, testable implementations of plugin logic:
 - **[`lib/payload-encoding.js`](lib/payload-encoding.js)** — Core encoding functions (100% coverage)
 - **[`lib/risk-rendering.js`](lib/risk-rendering.js)** — Risk display and location data population (100% coverage)
+- **[`lib/geolocation.js`](lib/geolocation.js)** — Street address field population from Google Places autocomplete (100% coverage)
 
 These modules mirror the production code from the WordPress plugin but are structured for proper unit testing and coverage tracking.
 
@@ -83,7 +84,7 @@ risk-rendering.js    |     100 |      100 |     100 |     100
 ### Geolocation and Street Address Population
 **File:** [`action-pack/geolocation.test.js`](action-pack/geolocation.test.js)
 
-Tests the street address field population logic when users select non-street-address locations (ZIP codes, cities) from Google Places autocomplete. Prevents "undefined" appearing in the street field.
+Tests the street address field population logic when users select non-street-address locations (ZIP codes, cities) from Google Places autocomplete. Tests the extracted `populateStreetAddressField()` function from `lib/geolocation.js`.
 
 **Test Coverage:**
 - ✅ Populates street input with selected autocomplete text when no street_address component
@@ -91,24 +92,30 @@ Tests the street address field population logic when users select non-street-add
 - ✅ Falls back to `displayName` if both text and formattedAddress unavailable
 - ✅ Handles empty/missing fallback values gracefully
 - ✅ Does NOT populate when street_address component exists (Gravity Forms handles it)
-- ✅ Correctly identifies missing vs present street_address components
+- ✅ Uses autocomplete attribute selector as primary strategy
+- ✅ Falls back to label-based selector when autocomplete attribute missing
+- ✅ Returns false when no street input found
+- ✅ Address component parsing validation
 - ✅ Real-world scenarios: ZIP-only, city-only, full address selections
 
-**Key Logic Tested:**
+**Key Function Tested:**
 ```javascript
-if (!addr.street_address) {
-  const selectedText = 
-    placePrediction?.text?.text || 
-    place.formattedAddress || 
-    place.displayName || "";
-  streetInput.value = selectedText;
-}
+populateStreetAddressField(formRoot, addr, placePrediction, place)
+// Returns: boolean (true if populated, false if skipped)
+```
+
+**Coverage Report:**
+```
+File               | % Stmts | % Branch | % Funcs | % Lines
+-------------------|---------|----------|---------|--------
+geolocation.js     |     100 |     87.5 |     100 |     100
 ```
 
 **Regression Prevention:**
 - Prevents "undefined" text appearing in street field
 - Ensures user-selected text is preserved
-- Validates address component parsing logic
+- Validates robust selector fallback strategies
+- Tests actual extracted logic instead of duplicating implementation
 
 ## Coming Next
 

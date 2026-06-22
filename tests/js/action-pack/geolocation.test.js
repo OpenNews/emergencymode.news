@@ -3,19 +3,27 @@
  * Verifies street address field population from Google Places API autocomplete selections
  */
 
+const { populateStreetAddressField } = require("../lib/geolocation");
+
 describe("GeolocationFlow - Street Address Population", () => {
   let mockFormRoot;
   let mockStreetInput;
+  let mockLocationContainer;
 
   beforeEach(() => {
-    // Set up DOM mocks
+    // Set up DOM mocks matching Gravity Forms address field structure
     mockStreetInput = document.createElement("input");
-    mockStreetInput.id = "input_6_32_1";
     mockStreetInput.type = "text";
     mockStreetInput.value = "";
+    mockStreetInput.setAttribute("autocomplete", "street-address address-level4 address-level3");
+
+    // Create .location container (matches GeolocationFlow.gravityGeoInput selector)
+    mockLocationContainer = document.createElement("div");
+    mockLocationContainer.className = "location";
+    mockLocationContainer.appendChild(mockStreetInput);
 
     mockFormRoot = document.createElement("form");
-    mockFormRoot.appendChild(mockStreetInput);
+    mockFormRoot.appendChild(mockLocationContainer);
 
     document.body.appendChild(mockFormRoot);
   });
@@ -43,13 +51,9 @@ describe("GeolocationFlow - Street Address Population", () => {
         formattedAddress: "Ocean Township, NJ 07712, USA",
       };
 
-      // Simulate the logic from handlePlaceSelection
-      if (!addr.street_address) {
-        const selectedText =
-          placePrediction?.text?.text || place.formattedAddress || place.displayName || "";
-        mockStreetInput.value = selectedText;
-      }
+      const wasPopulated = populateStreetAddressField(mockFormRoot, addr, placePrediction, place);
 
+      expect(wasPopulated).toBe(true);
       expect(mockStreetInput.value).toBe("Ocean Township, NJ 07712, USA");
     });
 
@@ -67,12 +71,9 @@ describe("GeolocationFlow - Street Address Population", () => {
         formattedAddress: "Beverly Hills, CA 90210, USA",
       };
 
-      if (!addr.street_address) {
-        const selectedText =
-          placePrediction?.text?.text || place.formattedAddress || place.displayName || "";
-        mockStreetInput.value = selectedText;
-      }
+      const wasPopulated = populateStreetAddressField(mockFormRoot, addr, placePrediction, place);
 
+      expect(wasPopulated).toBe(true);
       expect(mockStreetInput.value).toBe("Beverly Hills, CA 90210, USA");
     });
 
@@ -89,12 +90,9 @@ describe("GeolocationFlow - Street Address Population", () => {
         displayName: "New York, NY 10001",
       };
 
-      if (!addr.street_address) {
-        const selectedText =
-          placePrediction?.text?.text || place.formattedAddress || place.displayName || "";
-        mockStreetInput.value = selectedText;
-      }
+      const wasPopulated = populateStreetAddressField(mockFormRoot, addr, placePrediction, place);
 
+      expect(wasPopulated).toBe(true);
       expect(mockStreetInput.value).toBe("New York, NY 10001");
     });
 
@@ -106,12 +104,9 @@ describe("GeolocationFlow - Street Address Population", () => {
       const placePrediction = {};
       const place = {};
 
-      if (!addr.street_address) {
-        const selectedText =
-          placePrediction?.text?.text || place.formattedAddress || place.displayName || "";
-        mockStreetInput.value = selectedText;
-      }
+      const wasPopulated = populateStreetAddressField(mockFormRoot, addr, placePrediction, place);
 
+      expect(wasPopulated).toBe(true);
       expect(mockStreetInput.value).toBe("");
     });
   });
@@ -130,13 +125,66 @@ describe("GeolocationFlow - Street Address Population", () => {
         },
       };
 
-      // Simulate the logic - should not populate
-      if (!addr.street_address) {
-        const selectedText = placePrediction?.text?.text || "";
-        mockStreetInput.value = selectedText;
-      }
+      const place = {};
 
+      const wasPopulated = populateStreetAddressField(mockFormRoot, addr, placePrediction, place);
+
+      expect(wasPopulated).toBe(false);
       expect(mockStreetInput.value).toBe("");
+    });
+  });
+
+  describe("selector fallback strategies", () => {
+    test("uses label-based fallback when autocomplete attribute is missing", () => {
+      // Create input without autocomplete attribute
+      const inputWithoutAutocomplete = document.createElement("input");
+      inputWithoutAutocomplete.type = "text";
+      inputWithoutAutocomplete.value = "";
+      inputWithoutAutocomplete.id = "street-input-123";
+
+      // Create label pointing to the input
+      const label = document.createElement("label");
+      label.textContent = "Street Address";
+      label.setAttribute("for", "street-input-123");
+
+      const container = document.createElement("div");
+      container.appendChild(label);
+      container.appendChild(inputWithoutAutocomplete);
+
+      const formWithoutAutocomplete = document.createElement("form");
+      formWithoutAutocomplete.appendChild(container);
+      document.body.appendChild(formWithoutAutocomplete);
+
+      const addr = { postal_code: "12345" };
+      const placePrediction = { text: { text: "Test Location" } };
+      const place = {};
+
+      const wasPopulated = populateStreetAddressField(
+        formWithoutAutocomplete,
+        addr,
+        placePrediction,
+        place
+      );
+
+      expect(wasPopulated).toBe(true);
+      expect(inputWithoutAutocomplete.value).toBe("Test Location");
+
+      document.body.removeChild(formWithoutAutocomplete);
+    });
+
+    test("returns false when no street input can be found", () => {
+      const emptyForm = document.createElement("form");
+      document.body.appendChild(emptyForm);
+
+      const addr = { postal_code: "12345" };
+      const placePrediction = { text: { text: "Test Location" } };
+      const place = {};
+
+      const wasPopulated = populateStreetAddressField(emptyForm, addr, placePrediction, place);
+
+      expect(wasPopulated).toBe(false);
+
+      document.body.removeChild(emptyForm);
     });
   });
 
@@ -199,11 +247,11 @@ describe("GeolocationFlow - Street Address Population", () => {
         },
       };
 
-      if (!addr.street_address) {
-        const selectedText = placePrediction?.text?.text || "";
-        mockStreetInput.value = selectedText;
-      }
+      const place = {};
 
+      const wasPopulated = populateStreetAddressField(mockFormRoot, addr, placePrediction, place);
+
+      expect(wasPopulated).toBe(true);
       expect(mockStreetInput.value).toBe("07712");
     });
 
@@ -220,11 +268,11 @@ describe("GeolocationFlow - Street Address Population", () => {
         },
       };
 
-      if (!addr.street_address) {
-        const selectedText = placePrediction?.text?.text || "";
-        mockStreetInput.value = selectedText;
-      }
+      const place = {};
 
+      const wasPopulated = populateStreetAddressField(mockFormRoot, addr, placePrediction, place);
+
+      expect(wasPopulated).toBe(true);
       expect(mockStreetInput.value).toBe("Asbury Park, NJ, USA");
     });
 
@@ -241,12 +289,11 @@ describe("GeolocationFlow - Street Address Population", () => {
         },
       };
 
-      // Should not populate because street_address exists
-      if (!addr.street_address) {
-        const selectedText = placePrediction?.text?.text || "";
-        mockStreetInput.value = selectedText;
-      }
+      const place = {};
 
+      const wasPopulated = populateStreetAddressField(mockFormRoot, addr, placePrediction, place);
+
+      expect(wasPopulated).toBe(false);
       expect(mockStreetInput.value).toBe("");
     });
   });

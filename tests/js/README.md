@@ -80,6 +80,36 @@ File                 | % Stmts | % Branch | % Funcs | % Lines
 risk-rendering.js    |     100 |      100 |     100 |     100
 ```
 
+### Geolocation and Street Address Population
+**File:** [`action-pack/geolocation.test.js`](action-pack/geolocation.test.js)
+
+Tests the street address field population logic when users select non-street-address locations (ZIP codes, cities) from Google Places autocomplete. Prevents "undefined" appearing in the street field.
+
+**Test Coverage:**
+- ✅ Populates street input with selected autocomplete text when no street_address component
+- ✅ Falls back to `formattedAddress` if `placePrediction.text.text` unavailable
+- ✅ Falls back to `displayName` if both text and formattedAddress unavailable
+- ✅ Handles empty/missing fallback values gracefully
+- ✅ Does NOT populate when street_address component exists (Gravity Forms handles it)
+- ✅ Correctly identifies missing vs present street_address components
+- ✅ Real-world scenarios: ZIP-only, city-only, full address selections
+
+**Key Logic Tested:**
+```javascript
+if (!addr.street_address) {
+  const selectedText = 
+    placePrediction?.text?.text || 
+    place.formattedAddress || 
+    place.displayName || "";
+  streetInput.value = selectedText;
+}
+```
+
+**Regression Prevention:**
+- Prevents "undefined" text appearing in street field
+- Ensures user-selected text is preserved
+- Validates address component parsing logic
+
 ## Coming Next
 
 ### Version-Keyed Cache Testing (Day 3)

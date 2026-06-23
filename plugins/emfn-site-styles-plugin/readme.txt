@@ -18,17 +18,24 @@ This lightweight plugin provides custom styling for the Emergency Mode website (
 **Features:**
 
 * Site-wide custom styles for EMFN
-* Responsive design with mobile and tablet breakpoints
-* Category-specific color coding for content organization
-* Custom components for Action Pack, hero sections, FAQs and more
+  * Responsive design with mobile and tablet breakpoints
+  * Category-specific color coding for content organization
+  * Custom components for Action Pack, hero sections, FAQs and more
 * No complex PHP logic - only asset enqueuing
+* No valuable site-wide client-side JS - but stub file for the future
 
 == Installation ==
 
 1. Upload the `emfn-site-styles-plugin` folder to `/wp-content/plugins/`
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Styles will automatically be applied site-wide
-4. Remove anything pulled from the _Customize > Additional CSS_ menu that has been saved here and re-Publish the site
+4. Remove anything pulled from the _Customize > Additional CSS_ menu that has been 
+   saved here and re-Publish the site
+5. Smoke test
+
+== Dependencies ==
+
+None
 
 == Changelog ==
 

@@ -6,7 +6,9 @@
   "editor.formatOnSave": true,
 
   // Limit formatting work during save to changed regions when supported
-  "editor.formatOnSaveMode": "modificationsIfAvailable",
+  // DISABLED: Prettier 3.8.x has a bug with modificationsIfAvailable mode that corrupts arrow function syntax
+  // Keeping "file" mode until Prettier fixes the incremental formatting bug
+  "editor.formatOnSaveMode": "file",
 
   // Enable format on paste
   "editor.formatOnPaste": false,
@@ -40,7 +42,9 @@
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit"
+      // ESLint auto-fix disabled: was corrupting syntax on save
+      // Run `npm run eslint:fix` manually when needed
+      // "source.fixAll.eslint": "explicit"
     }
   },
   "[json]": {

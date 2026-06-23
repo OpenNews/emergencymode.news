@@ -40,10 +40,12 @@ fi
 # Get changed files in plugins/ directory
 # - Compare BASE_REF to HEAD
 # - Extract plugin directory names (2nd path component)
+# - Filter out 'shared' (not a releasable plugin)
 # - Sort and deduplicate
 changed_plugins=$(
     git diff --name-only "${BASE_REF}..HEAD" -- plugins/ \
         | cut -d/ -f2 \
+        | sed '/^shared$/d' \
         | sort -u \
         | tr '\n' ' ' \
         | sed 's/ $//'

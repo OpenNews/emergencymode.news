@@ -18,11 +18,13 @@ Gravity Forms for emergencymode.news:
 - client-side JS to encode form responses into a share-/save-ready Action Pack payload using the CSV-backed token registry
 - server-side PHP to decode Action Pack payloads and filter Newspack Query Loops by mapped categories
 - custom styles for disaster risk reporting
+- backup storage for HTML/CSS snippets in use in various HTML Blocks on key Pages
 
 == Installation ==
 
-1. Upload the `emfn-action-pack-plugin` folder to `wp-content/plugins/`.
-2. Activate the plugin through the *Plugins* menu in WordPress Admin.
+1. Upload the `emfn-action-pack-plugin` folder to `wp-content/plugins/`
+2. Activate the plugin through the *Plugins* menu in WordPress Admin
+3. Smoke test
 
 == External Services ==
 

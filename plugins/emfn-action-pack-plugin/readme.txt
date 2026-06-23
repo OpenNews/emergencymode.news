@@ -18,7 +18,7 @@ Gravity Forms for emergencymode.news:
 - client-side JS to encode form responses into a share-/save-ready Action Pack payload using the CSV-backed token registry
 - server-side PHP to decode Action Pack payloads and filter Newspack Query Loops by mapped categories
 - custom styles for disaster risk reporting
-- backup storage for HTML/CSS snippets at use in various HTML Blocks on key Pages
+- backup storage for HTML/CSS snippets in use in various HTML Blocks on key Pages
 
 == Installation ==
 

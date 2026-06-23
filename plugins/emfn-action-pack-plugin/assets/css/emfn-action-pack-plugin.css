@@ -61,8 +61,13 @@
     opacity 0.2s ease-in-out,
     height 0.2s ease-in-out;
 }
-.emfn-forms_wrapper .emfn-forms #risks li .material-symbols-outlined {
+.emfn-forms_wrapper .emfn-forms #risks li .material-symbols-outlined,
+.emfn-forms_wrapper .emfn-forms #risks li .risk-icon,
+.emfn-forms_wrapper .emfn-forms #risks li .action-icon {
+  display: block;
   flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 0;
   float: none;
 }
 .emfn-forms_wrapper .emfn-forms #risks li .list {
@@ -76,4 +81,42 @@
   opacity: 0;
   height: 0;
   pointer-events: none;
+}
+
+/* action item styles for contextual links */
+.action-item {
+  background-color: var(--emfn-action-pack-mint);
+  border-radius: 16px;
+  padding: 20px;
+  color: var(--emfn-action-pack-green);
+  list-style: none;
+  margin: 0px;
+}
+.action-item p {
+  margin: 0px;
+}
+.action-item a,
+.action-item a:link,
+.action-item a:visited {
+  color: var(--emfn-action-pack-visited);
+}
+.action-item li.template {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.action-item li.template .material-symbols-outlined,
+.action-item li.template .action-icon {
+  flex-shrink: 0;
+  float: none;
+}
+
+/* action icon SVG styling (alternative to icon font) */
+.action-icon {
+  display: block;
+  color: currentColor;
+}
+.action-icon.has-large-font-size {
+  width: 40px;
+  height: 40px;
 }

@@ -9,18 +9,26 @@ describe("GeolocationFlow - Street Address Population", () => {
   let mockFormRoot;
   let mockStreetInput;
   let mockLocationContainer;
+  let mockAddressLine1;
 
   beforeEach(() => {
-    // Set up DOM mocks matching Gravity Forms address field structure
+    // Set up DOM mocks matching actual Gravity Forms address field structure
     mockStreetInput = document.createElement("input");
     mockStreetInput.type = "text";
     mockStreetInput.value = "";
+    mockStreetInput.id = "input_6_32_1"; // Gravity Forms generated ID
     mockStreetInput.setAttribute("autocomplete", "street-address address-level4 address-level3");
 
+    // Create .address_line_1 wrapper (GravityForms CSS class for street field)
+    mockAddressLine1 = document.createElement("span");
+    mockAddressLine1.className = "address_line_1";
+    mockAddressLine1.appendChild(mockStreetInput);
+
     // Create .location container (matches GeolocationFlow.gravityGeoInput selector)
-    mockLocationContainer = document.createElement("div");
+    mockLocationContainer = document.createElement("fieldset");
     mockLocationContainer.className = "location";
-    mockLocationContainer.appendChild(mockStreetInput);
+    mockLocationContainer.setAttribute("data-js", "geolocation-enabled");
+    mockLocationContainer.appendChild(mockAddressLine1);
 
     mockFormRoot = document.createElement("form");
     mockFormRoot.appendChild(mockLocationContainer);

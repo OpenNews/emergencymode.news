@@ -24,12 +24,16 @@ function populateStreetAddressField(formRoot, addr, placePrediction, place) {
     return false;
   }
 
-  // Use autocomplete attribute to reliably find street input, or fall back to label check
+  // Use GravityForms custom classes and autocomplete attribute to reliably find street input
+  // .location = fieldset wrapper (data-js='geolocation-enabled')
+  // .address_line_1 = GravityForms CSS class for street address field (configurable in form editor)
   let streetInput = /** @type {HTMLInputElement | null} */ (
-    formRoot.querySelector("input[autocomplete*='street-address']")
+    formRoot.querySelector(
+      ".location .address_line_1 input[type='text'][id*='input'][autocomplete*='street-address']"
+    )
   );
 
-  // Fallback: check for label containing "Street Address" if autocomplete selector fails
+  // Fallback: check for label containing "Street Address" if primary selector fails
   if (!streetInput) {
     const labels = Array.from(formRoot.querySelectorAll("label"));
     const streetLabel = labels.find(label => /street\s*address/i.test(label.textContent || ""));

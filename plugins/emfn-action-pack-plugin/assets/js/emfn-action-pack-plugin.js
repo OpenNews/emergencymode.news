@@ -16,7 +16,7 @@
  */
 
 (function () {
-  const version = "0.9.01"; // debugging versioning
+  const version = "0.9.02"; // debugging versioning
   const riskThreshold = 85; // threshold for suggested risks
   const emfnWindow = /** @type {EmfnWindow} */ (window);
 
@@ -210,6 +210,7 @@
         return;
       }
 
+      // request specific fields to minimize data usage and ensure street address population
       await place.fetchFields({
         fields: ["addressComponents", "displayName", "formattedAddress", "location"],
       });
@@ -219,6 +220,7 @@
         return;
       }
 
+      // parse address components into a flat object for easier access
       const addr = (place.addressComponents ?? []).reduce(
         /**
          * @param {{[key: string]: string}} acc
@@ -238,19 +240,21 @@
         /** @type {{[key: string]: string}} */ ({})
       );
 
+      // store resolved location data in-memory for later use across form pages
       locData.county = addr.administrative_area_level_2 ?? null;
       locData.state = addr.administrative_area_level_1 ?? null;
       locData.st = addr.administrative_area_level_1_short ?? null;
       locData.country = addr.country ?? null;
       locData.fips = await GeolocationFlow.getFipsFromFCC(place.location);
 
-      // Populate street address field when no street_address component exists
-      // Use autocomplete attribute to reliably find street input, or fall back to label check
+      // use autocomplete attribute to reliably find street input, or fall back to label check
       let streetInput = /** @type {HTMLInputElement | null} */ (
-        formRoot.querySelector("input[autocomplete*='street-address']")
+        formRoot.querySelector(
+          ".location .address_line_1 input[type='text'][id*='input'][autocomplete*='street-address']"
+        )
       );
 
-      // Fallback: check for label containing "Street Address" if autocomplete selector fails
+      // fallback to label containing "Street Address" if autocomplete selector fails
       if (!streetInput) {
         const labels = Array.from(formRoot.querySelectorAll("label"));
         const streetLabel = labels.find(label => /street\s*address/i.test(label.textContent || ""));
@@ -262,8 +266,9 @@
         }
       }
 
+      // populate street address field when no street_address component exists
       if (streetInput && !addr.street_address) {
-        // Use the text the user selected from the autocomplete menu
+        // use the text the user selected from the autocomplete menu (and fallbacks)
         const selectedText =
           placePrediction?.text?.text || place.formattedAddress || place.displayName || "";
         streetInput.value = selectedText;

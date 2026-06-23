@@ -31,12 +31,6 @@ export type EmfnWindow = Window & {
   gform?: GFormRuntime;
 };
 
-/* Minimal Google Maps LatLng shape */
-export interface LatLngLike {
-  lat: () => number | null | undefined;
-  lng: () => number | null | undefined;
-}
-
 /* Parsed county risk row from generated NRI CSVs */
 export type NriCountyRow = Record<string, string>;
 
@@ -59,24 +53,32 @@ export interface FccLookupResponse {
   };
 }
 
-/* Minimal address component shape from Places v2 */
+/* Google Maps Places v2 types using official @types/google.maps */
+export type LatLngLike = google.maps.LatLng | google.maps.LatLngLiteral;
+
+/* Places API (New) address component shape */
 export interface PlaceAddressComponent {
   types: string[];
   longText: string;
   shortText: string;
 }
 
-/* Minimal place object shape used after a Places v2 selection */
+/* Places API (New) Place object shape */
 export interface PlaceLike {
   fetchFields: (options: { fields: string[] }) => Promise<void> | void;
-  location?: LatLngLike;
+  location?: google.maps.LatLng;
   addressComponents?: PlaceAddressComponent[];
+  formattedAddress?: string;
+  displayName?: string;
 }
 
-/* Minimal event shape for a Places v2 selection */
+/* Extended Component Library gmp-select event with PlacePrediction */
 export interface GmpSelectEvent extends Event {
   placePrediction: {
     toPlace: () => PlaceLike;
+    text?: {
+      text?: string;
+    };
   };
 }
 

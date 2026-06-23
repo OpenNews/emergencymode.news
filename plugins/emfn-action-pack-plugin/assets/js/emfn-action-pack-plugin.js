@@ -16,7 +16,7 @@
  */
 
 (function () {
-  const version = "0.9.00"; // debugging versioning
+  const version = "0.9.02"; // debugging versioning
   const riskThreshold = 85; // threshold for suggested risks
   const emfnWindow = /** @type {EmfnWindow} */ (window);
 
@@ -161,9 +161,10 @@
      * @returns {Promise<string|null>}
      */
     async getFipsFromFCC(location) {
-      const lat = location.lat() ?? null;
-      const lng = location.lng() ?? null;
-      if (lat === null || lng === null) {
+      // Handle both LatLng (methods) and LatLngLiteral (properties)
+      const lat = typeof location.lat === "function" ? location.lat() : location.lat;
+      const lng = typeof location.lng === "function" ? location.lng() : location.lng;
+      if (lat === null || lng === null || lat === undefined || lng === undefined) {
         console.error("Missing lat/lng from place location");
         return null;
       }
@@ -209,6 +210,7 @@
         return;
       }
 
+      // request specific fields to minimize data usage and ensure street address population
       await place.fetchFields({
         fields: ["addressComponents", "displayName", "formattedAddress", "location"],
       });
@@ -218,6 +220,7 @@
         return;
       }
 
+      // parse address components into a flat object for easier access
       const addr = (place.addressComponents ?? []).reduce(
         /**
          * @param {{[key: string]: string}} acc
@@ -237,11 +240,39 @@
         /** @type {{[key: string]: string}} */ ({})
       );
 
+      // store resolved location data in-memory for later use across form pages
       locData.county = addr.administrative_area_level_2 ?? null;
       locData.state = addr.administrative_area_level_1 ?? null;
       locData.st = addr.administrative_area_level_1_short ?? null;
       locData.country = addr.country ?? null;
       locData.fips = await GeolocationFlow.getFipsFromFCC(place.location);
+
+      // use autocomplete attribute to reliably find street input, or fall back to label check
+      let streetInput = /** @type {HTMLInputElement | null} */ (
+        formRoot.querySelector(
+          ".location .address_line_1 input[type='text'][id*='input'][autocomplete*='street-address']"
+        )
+      );
+
+      // fallback to label containing "Street Address" if autocomplete selector fails
+      if (!streetInput) {
+        const labels = Array.from(formRoot.querySelectorAll("label"));
+        const streetLabel = labels.find(label => /street\s*address/i.test(label.textContent || ""));
+        if (streetLabel) {
+          const inputId = streetLabel.getAttribute("for");
+          streetInput = inputId
+            ? formRoot.querySelector(`#${inputId}`)
+            : streetLabel.querySelector("input");
+        }
+      }
+
+      // populate street address field when no street_address component exists
+      if (streetInput && !addr.street_address) {
+        // use the text the user selected from the autocomplete menu (and fallbacks)
+        const selectedText =
+          placePrediction?.text?.text || place.formattedAddress || place.displayName || "";
+        streetInput.value = selectedText;
+      }
 
       // set the resolved FIPS code into the hidden form field for submission
       const fipsField = /** @type {HTMLInputElement | null} */ (
@@ -270,12 +301,28 @@
       const autocompleteEl = /** @type {HTMLElement | null} */ (
         geoInput.querySelector("gmp-place-autocomplete")
       );
-      if (!autocompleteEl || autocompleteEl.dataset.placeBound === "1") return;
+      if (!autocompleteEl || autocompleteEl.dataset.placeBound === "1") {
+        return;
+      }
 
       autocompleteEl.addEventListener("gmp-select", async event => {
         try {
           GeolocationFlow.clearSavedLocation();
           await GeolocationFlow.handlePlaceSelection(event);
+
+          // Fix the autocomplete value if it's "undefined" so Gravity Forms syncs the right value
+          setTimeout(() => {
+            const currentValue = autocompleteEl.getAttribute("value");
+            if (currentValue === "undefined" || !currentValue) {
+              // Get a meaningful value from the place data
+              const { placePrediction } = /** @type {GmpSelectEvent} */ (
+                /** @type {unknown} */ (event)
+              );
+              const displayValue = placePrediction?.text?.text || "Location selected";
+              autocompleteEl.setAttribute("value", displayValue);
+              emfnDebug("Fixed autocomplete value from undefined to:", displayValue);
+            }
+          }, 10);
         } catch (err) {
           console.error("Error handling place selection:", err);
           return null;

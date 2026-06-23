@@ -37,10 +37,12 @@ tests/
 │   ├── setup.js                 # Test environment configuration
 │   ├── action-pack/
 │   │   ├── payload-encoding.test.js
-│   │   └── risk-rendering.test.js
+│   │   ├── risk-rendering.test.js
+│   │   └── geolocation.test.js  # ✅ Street address population tests
 │   └── lib/                     # Shared test utilities
 │       ├── payload-encoding.js
-│       └── risk-rendering.js
+│       ├── risk-rendering.js
+│       └── geolocation.js        # Street address population logic
 ├── php/                         # ✅ PHP unit tests (PHPUnit)
 │   ├── README.md
 │   ├── bootstrap.php            # WordPress stubs and test setup
@@ -50,7 +52,7 @@ tests/
     ├── README.md
     ├── test-helpers.sh          # Test framework functions
     ├── test-build-assets.sh     # Build script validation
-    ├── test-sync-version.sh     # Version bump logic tests (20 tests)
+    ├── test-sync-version.sh     # Version bump logic tests
     └── test-version-bump.sh     # Version bump integration tests
 ```
 
@@ -77,7 +79,7 @@ tests/
 
 **Current Implementation:**
 
-**PayloadDecodingTest.php** — 15 tests, 26 assertions
+**PayloadDecodingTest.php**
 - ✅ Decodes single category at position zero
 - ✅ Decodes multiple categories from single segment
 - ✅ Decodes categories across multiple segments
@@ -122,7 +124,7 @@ The following tests are planned but not yet implemented:
 
 **Current Implementation:**
 
-**payload-encoding.test.js** — 13 tests
+**payload-encoding.test.js**
 - ✅ Encodes single category to ap2 format
 - ✅ Encodes multiple categories in rank order
 - ✅ Splits into multiple segments when needed
@@ -131,7 +133,7 @@ The following tests are planned but not yet implemented:
 - ✅ Base36 encoding validation
 - ✅ Round-trip with PHP decoder compatibility
 
-**risk-rendering.test.js** — 9 tests
+**risk-rendering.test.js**
 - ✅ Parses county FIPS from location data
 - ✅ Filters hazards by risk threshold
 - ✅ Renders hazard labels correctly
@@ -156,7 +158,22 @@ describe('CSV Data Parsing', () => {
 })
 ```
 
-**geolocation.test.js** (future)
+**geolocation.test.js** ✅ **IMPLEMENTED**
+```javascript
+describe('GeolocationFlow - Street Address Population', () => {
+  // Tests street address field population from Google Places autocomplete
+  test('populates street input with selected text when no street_address component')
+  test('falls back to formattedAddress if placePrediction.text unavailable')
+  test('falls back to displayName if both text and formattedAddress unavailable')
+  test('sets empty string if no fallback values available')
+  test('does not populate when street_address component exists')
+  test('handles ZIP-only selections (e.g., "07712")')
+  test('handles city selections (e.g., "Asbury Park, NJ")')
+  test('handles full address selections')
+})
+```
+
+**Future geolocation tests:**
 ```javascript
 describe('Geolocation Resolution', () => {
   test('extracts lat/lng from Google Places')
@@ -183,7 +200,7 @@ describe('Geolocation Resolution', () => {
 - ✅ All shellcheck warnings fixed
 
 **test-sync-version.sh** — Version bump logic
-- ✅ Tests major/minor/patch version increment detection (20 tests)
+- ✅ Tests major/minor/patch version increment detection
 - ✅ Validates commit message keyword matching
 - ✅ Tests skip ci detection and tag filtering
 - ✅ Uses temporary git repositories (safe for CI)

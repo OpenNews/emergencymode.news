@@ -426,39 +426,6 @@ body.parent-pageid-284 .entry-header {
   --cat-color: #e7b4e0;
 }
 
-/** ********** SYMBOLS FONT ********** 
- * classes to add to underlying HTML to trigger type changes 
- * used in a few places, but especially in the big CTA buttons (see below)
- */
-.material-symbols-outlined,
-.material-symbols-outlined > a {
-  background-color: transparent;
-  font-family: "Material Symbols Outlined", sans-serif;
-  font-weight: 600;
-  font-style: normal;
-  font-size: 50px;
-  font-variation-settings:
-    "FILL" 0,
-    "wght" 400,
-    "GRAD" 0,
-    "opsz" 24;
-  max-height: 50px;
-  width: auto;
-  overflow: hidden;
-  text-align: center;
-}
-.floated-icon {
-  float: left;
-  padding-right: 10px;
-  max-width: 46px;
-  overflow: hidden;
-}
-.wp-block-columns .wp-block-column .wp-block-heading > span.material-symbols-outlined {
-  margin-top: -5px;
-  float: left;
-  margin-right: 5px;
-}
-
 /** ********** YOAST FAQ ********** 
  * homepage FAQ styles, including the question and answer formatting
  */

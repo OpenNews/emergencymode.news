@@ -45,7 +45,7 @@ fi
 changed_plugins=$(
     git diff --name-only "${BASE_REF}..HEAD" -- plugins/ \
         | cut -d/ -f2 \
-        | grep -v '^shared$' \
+        | sed '/^shared$/d' \
         | sort -u \
         | tr '\n' ' ' \
         | sed 's/ $//'

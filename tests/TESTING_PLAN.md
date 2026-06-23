@@ -41,7 +41,8 @@ tests/
 │   │   └── geolocation.test.js  # ✅ Street address population tests
 │   └── lib/                     # Shared test utilities
 │       ├── payload-encoding.js
-│       └── risk-rendering.js
+│       ├── risk-rendering.js
+│       └── geolocation.js        # Street address population logic
 ├── php/                         # ✅ PHP unit tests (PHPUnit)
 │   ├── README.md
 │   ├── bootstrap.php            # WordPress stubs and test setup

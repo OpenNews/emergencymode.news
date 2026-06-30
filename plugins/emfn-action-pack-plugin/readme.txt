@@ -3,7 +3,7 @@ Contributors:       tiffehr
 Tags:               newspack, emergency-mode-for-news, nclocal, opennews
 Requires at least:  6.3
 Tested up to:       7.0
-Stable tag:         0.6.1
+Stable tag:         0.7.0
 Requires PHP:       8.0
 License:            MIT
 License URI:        https://opensource.org/licenses/MIT

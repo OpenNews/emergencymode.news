@@ -34,12 +34,18 @@
 </script>
 <style>
   #emfn-hero-h1 {
+    background-color: transparent;
     font-size: clamp(2.25rem, 5vw, 3.5rem);
     line-height: 1.2;
-    margin: 0;
     text-align: center;
     text-wrap: balance;
   }
+
+  #emfn-hero-h1 {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .emfn-word-backup {
     pointer-events: none;
     visibility: hidden;
@@ -63,12 +69,12 @@
     will-change: opacity;
   }
   .emfn-active {
-    color: #c1503d; /* hard-coded to include Admin */
+    color: var(--wp--preset--color--primary);
     opacity: 1;
   }
 </style>
 <h1 id="emfn-hero-h1">
-  Get help before,<wbr /> during<wbr /> and&nbsp;after<br />
+  Get help before,<wbr /> during<wbr /> and&nbsp;after<wbr />
   <span id="emfn-disaster-wrap">
     <span aria-hidden="true" class="emfn-word-backup">&nbsp;</span>
     <span class="emfn-word emfn-active">an&nbsp;emergency</span>

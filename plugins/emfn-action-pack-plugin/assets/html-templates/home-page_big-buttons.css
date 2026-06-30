@@ -31,10 +31,9 @@
 /* link baseline */
 .big-action-pack-buttons > .wp-block-button a.wp-element-button {
   height: fit-content;
+  min-height: 210px;
   padding: 15px 30px 20px 30px !important;
-  box-shadow:
-    rgb(0, 0, 0) 0px 0px 0px 0px,
-    rgba(0, 0, 0, 0.95) 0px 0px 5px 1px;
+  min-width: 200px;
 }
 
 /*link behavior*/
@@ -65,7 +64,6 @@
     var(--gradient-tan-lighter) 0%,
     var(--gradient-header-tan) 100%
   ) !important;
-  /* background: radial-gradient(circle at 50% 40%, color-mix(in srgb, #efece7, white 10%), #d8bbb2) !important; */
   color: var(--newspack-theme-color-secondary-against-white) !important;
   scale: 1.05;
 }
@@ -76,4 +74,9 @@
   font: normal normal 400 var(--newspack-theme-font-size-xs) var(--newspack-theme-font-heading);
   background-color: transparent;
   padding-top: 6px;
+}
+
+/* icons */
+.big-action-pack-buttons > .wp-block-button.actionpack-logo img {
+  padding: 20px 0px;
 }

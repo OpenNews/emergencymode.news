@@ -29,6 +29,18 @@ Utility scripts for release management, notebook hygiene, and local testing.
 - `strip-notebook-outputs.sh` runs in pre-commit hook
 - `check-notebooks-clean.sh` runs in CI to enforce clean commits
 
+## Dependency Management
+
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `check-tool-upgrades.sh` | Check available upgrades for TypeScript/ESLint tooling | `./scripts/check-tool-upgrades.sh` |
+
+**Notes:**
+- TypeScript and ESLint packages are not automatically updated by Dependabot to avoid version conflicts
+- Run this script periodically (quarterly or before major refactoring) to check for available updates
+- Shows current vs. latest versions for all tooling packages
+- Provides copy-paste commands for manual updates
+
 ## Development & Testing
 
 | Script | Purpose | Usage |

@@ -22,16 +22,16 @@
     "test:scripts": "status=0; for test in tests/scripts/test-*.sh; do [ \"$(basename $test)\" != \"test-helpers.sh\" ] && { $test || status=1; }; done; exit $status"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "10.0.1",
     "@types/google.maps": "^3.65.2",
-    "@typescript-eslint/eslint-plugin": "^8.63.0",
-    "@typescript-eslint/parser": "^8.61.1",
-    "eslint": "^10.6.0",
-    "eslint-plugin-jsdoc": "^63.0.12",
+    "@typescript-eslint/eslint-plugin": "8.63.0",
+    "@typescript-eslint/parser": "8.63.0",
+    "eslint": "10.7.0",
+    "eslint-plugin-jsdoc": "63.0.13",
     "globals": "^17.7.0",
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
     "prettier": "^3.9.4",
-    "typescript": "^6.0.3"
+    "typescript": "6.0.3"
   }
 }

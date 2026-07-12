@@ -8,12 +8,23 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
     groups:
-      dev-dependencies:
+      test-tools:
         patterns:
-          - "*"
+          - "jest*"
         update-types:
           - "minor"
           - "patch"
+      other-dev:
+        patterns:
+          - "@types/*"
+          - "globals"
+          - "prettier"
+        update-types:
+          - "minor"
+          - "patch"
+    # TypeScript & ESLint packages (typescript, @typescript-eslint/*, @eslint/*, eslint*)
+    # are intentionally NOT assigned to any group to disable automatic updates.
+    # Use scripts/check-tool-upgrades.sh to check for available updates manually.
 
   # Python dependencies (notebooks) are manually maintained since they're rarely used
   # Constrained in pyproject.toml with compatible-release ranges to reduce churn; update only when actively working on notebooks

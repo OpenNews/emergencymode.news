@@ -22,6 +22,26 @@
   text-transform: uppercase;
 }
 
+/*above-header widget banner*/
+.above-header-widgets > div.wrapper {
+  max-width: 100vw !important;
+  margin: 0;
+  width: 100vw;
+}
+.above-header-widgets > div.wrapper p {
+  hyphens: auto;
+  text-wrap: balance;
+}
+.wp-elements-192648feabfe8b91b2dfa69a9e73100d a:where(:not(.wp-element-button)),
+.above-header-widgets > div.wrapper a:link,
+.above-header-widgets > div.wrapper a:visited {
+  text-decoration: underline;
+}
+.above-header-widgets > div.wrapper a:hover,
+.above-header-widgets > div.wrapper a:active {
+  color: color-mix(var(--newspack-theme-color-primary), white 50%);
+}
+
 /* Show Breadcrumbs only on Archive pages*/
 .site-breadcrumb,
 body.author .site-breadcrumb {
@@ -37,8 +57,11 @@ body.archive .site-breadcrumb {
 }
 
 /* for all Posts body copy, control internal hyperlink color*/
-.type-post.post .entry-content .wp-block-paragraph a:link {
-  color: var(--newspack-theme-color-primary);
+.type-post.post .entry-content .wp-block-paragraph a:link,
+.type-post.post .entry-content a:active,
+.type-post.post .entry-content a:hover,
+.type-post.post .entry-content .wp-block-paragraph a:visited {
+  color: inherit !important;
 }
 
 .type-post.post .entry-content a:active,
@@ -242,7 +265,14 @@ body.parent-pageid-284 .entry-header {
 }
 /* Republishable Category link */
 .emfn-content-cards.wpnbha article.category-republishable .cat-links a {
-  display: none;
+  display: inline-block;
+}
+/* change color for Type > Republishable Category on Republishable Cards */
+.emfn-content-cards.wpnbha.show-category
+  .category-republishable
+  .cat-links
+  a[href*="resources/type/republishable"] {
+  --cat-color: var(--republishable-peach-border);
 }
 /* Republishable Card byline */
 .emfn-content-cards.wpnbha article.category-republishable .entry-wrapper .entry-meta .byline {

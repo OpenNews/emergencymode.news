@@ -22,12 +22,17 @@ updates:
         update-types:
           - "minor"
           - "patch"
-    # TypeScript & ESLint packages (typescript, @typescript-eslint/*, @eslint/*, eslint*)
-    # are intentionally NOT assigned to any group to disable automatic updates.
-    # Use scripts/check-tool-upgrades.sh to check for available updates manually.
+    ignore:
+      # TypeScript and ESLint packages have tight coupling with breaking changes in minor versions.
+      # Update manually with scripts/check-tool-upgrades.sh to check compatibility before upgrading.
+      - dependency-name: "typescript"
+      - dependency-name: "@typescript-eslint/*"
+      - dependency-name: "@eslint/*"
+      - dependency-name: "eslint*"
 
   # Python dependencies (notebooks) are manually maintained since they're rarely used
-  # Constrained in pyproject.toml with compatible-release ranges to reduce churn; update only when actively working on notebooks
+  # Constrained in pyproject.toml with compatible-release ranges to reduce churn; update only when
+  # actively working on notebooks
 
   # Maintain GitHub Actions
   - package-ecosystem: "github-actions"

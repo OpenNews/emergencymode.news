@@ -8,15 +8,31 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
     groups:
-      dev-dependencies:
+      test-tools:
         patterns:
-          - "*"
+          - "jest*"
         update-types:
           - "minor"
           - "patch"
+      other-dev:
+        patterns:
+          - "@types/*"
+          - "globals"
+          - "prettier"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # TypeScript and ESLint packages have tight coupling with breaking changes in minor versions.
+      # Update manually with scripts/check-tool-upgrades.sh to check compatibility before upgrading.
+      - dependency-name: "typescript"
+      - dependency-name: "@typescript-eslint/*"
+      - dependency-name: "@eslint/*"
+      - dependency-name: "eslint*"
 
   # Python dependencies (notebooks) are manually maintained since they're rarely used
-  # Constrained in pyproject.toml with compatible-release ranges to reduce churn; update only when actively working on notebooks
+  # Constrained in pyproject.toml with compatible-release ranges to reduce churn; update only when
+  # actively working on notebooks
 
   # Maintain GitHub Actions
   - package-ecosystem: "github-actions"

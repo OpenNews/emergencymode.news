@@ -346,11 +346,22 @@ npm install
 
 Dependency automation is configured in [.github/dependabot.yml](.github/dependabot.yml):
 
-| Ecosystem | Frequency | Notes |
-|-----------|-----------|-------|
-| `npm` | Weekly | Plugin production dependencies + dev tools |
+| Ecosystem | Update Strategy | Notes |
+|-----------|-----------------|-------|
+| `npm` - TypeScript/ESLint | **Manual** (disabled) | Version conflicts with tight coupling; use `scripts/check-tool-upgrades.sh` to check for updates periodically |
+| `npm` - Jest, Prettier, types | Weekly | Safe to auto-update; patch + minor versions only |
 | `github-actions` | Weekly | Workflow & CI/CD tool updates (if available) |
 | `pip` | Disabled | Python deps manually maintained (notebooks are rarely used) |
+
+**TypeScript & ESLint Toolchain Management**:
+
+These packages have tight version coupling with breaking changes in minor versions. Rather than automatic weekly updates, use the manual check script:
+
+```bash
+scripts/check-tool-upgrades.sh
+```
+
+This shows available upgrades without creating Dependabot PRs. Update only when intentionally refactoring TypeScript code or after confirming compatibility between all tooling packages.
 
 ## Data Analysis Notebooks
 

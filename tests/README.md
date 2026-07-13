@@ -37,8 +37,9 @@ npm run eslint           # JavaScript linting
 
 ## Why Testing Matters for This Project
 
-With Dependabot automatically creating PRs for dependency updates, automated testing enables:
-- Safe auto-merge of routine updates
+With Dependabot automatically creating PRs for compatible dependency updates (Jest, Prettier, types), and manual testing for critical tooling (TypeScript, ESLint), automated testing enables:
+- Safe auto-merge of routine updates for application dependencies
+- Manual validation of TypeScript/ESLint upgrades before integration
 - Confidence in automated releases to main
 - Quick validation that plugins work after WordPress core updates
 - Protection against breaking changes in npm/pip dependencies

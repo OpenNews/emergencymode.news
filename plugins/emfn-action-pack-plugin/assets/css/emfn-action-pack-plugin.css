@@ -41,6 +41,12 @@
   padding-top: 16px;
 }
 
+/* hide Action Pack city/state fields from users (when autofilled by Google) */
+.location[data-js="geolocation-enabled"] .ginput_address_city,
+.location[data-js="geolocation-enabled"] .ginput_address_state {
+  display: none;
+}
+
 /** ********** CUSTOM MATCHING & RISK STYLES ***********/
 /* custom geolocation risk logic*/
 .emfn-forms_wrapper .emfn-forms #risks {
@@ -119,4 +125,11 @@
 .action-icon.has-large-font-size {
   width: 40px;
   height: 40px;
+}
+
+/* attempt to fix dangling asterisks in Gravity Forms*/
+legend.gfield_label.gform-field-label {
+  flex-wrap: nowrap !important;
+  display: flex;
+  align-items: center;
 }

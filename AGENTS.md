@@ -4,7 +4,7 @@ This document outlines the AI agents used in the emergencymode.news project. It 
 
 ## Overview
 
-This is a WordPress plugin project with JavaScript, PHP, and Python components. Core stack: Node.js (Jest testing), PHP 8.3 (PHPUnit, Composer), Python 3.13 (uv for notebooks). DevContainer runs Debian GNU/Linux 13 (trixie). Dependencies managed via npm (weekly Dependabot), Composer, and uv 0.5.10. See [README.md](README.md) for full environment details, testing commands, and workflow documentation.
+This is a WordPress plugin project with JavaScript, PHP, and Python components. Core stack: Node.js (Jest testing), PHP 8.3 (PHPUnit, Composer), Python 3.13 (uv for notebooks). DevContainer runs Debian GNU/Linux 13 (trixie). Dependencies managed via npm (Jest/Prettier auto-updated by Dependabot weekly; TypeScript/ESLint manually managed via `scripts/check-tool-upgrades.sh`), Composer, and uv 0.5.10. See [README.md](README.md) for full environment details, testing commands, and workflow documentation.
 
 Agents are autonomous AI systems that perform specific tasks within the emergency news workflow. They are designed to follow guidelines from `.github/instructions` and lessons documented in `AGENT_LESSONS.md`.
 

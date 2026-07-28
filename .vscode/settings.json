@@ -88,5 +88,19 @@
   // PHP: include WordPress stubs for IntelliSense
   "php.stubs": ["*", "wordpress"],
 
-  "remote.autoForwardPortsFallback": 0
+  "remote.autoForwardPortsFallback": 0,
+
+  // Open external links in VS Code's internal browser by default
+  "[http]": {
+    "workbench.editorAssociation": {
+      "pattern": "http://**",
+      "viewers": ["internal.browser"]
+    }
+  },
+  "[https]": {
+    "workbench.editorAssociation": {
+      "pattern": "https://**",
+      "viewers": ["internal.browser"]
+    }
+  }
 }

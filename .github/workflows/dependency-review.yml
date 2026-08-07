@@ -12,6 +12,8 @@ permissions:
 jobs:
   dependency-review:
     runs-on: ubuntu-latest
+    # Skip for Dependabot PRs - Dependabot already performs vulnerability and license checks
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7

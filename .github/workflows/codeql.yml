@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   analyze:
-    if: vars.ENABLE_CODEQL_ADVANCED == 'true' && github.actor != 'dependabot[bot]'
+    if: vars.ENABLE_CODEQL_ADVANCED == 'true'
     name: Analyze (actions)
     runs-on: ubuntu-latest
     permissions:

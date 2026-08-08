@@ -14,10 +14,12 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    # Skip CI on push when Dependabot already validated via PR
+    # Skip redundant CI on staging when Dependabot PR already passed checks
+    # (Dependabot targets staging, so merges show author as dependabot[bot])
     if: |
-      github.event_name == 'pull_request' || 
-      (github.event_name == 'push' && github.actor != 'dependabot[bot]')
+      github.event_name == 'pull_request' ||
+      github.ref != 'refs/heads/staging' ||
+      github.event.head_commit.author.username != 'dependabot[bot]'
 
     steps:
       - name: Checkout

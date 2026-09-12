@@ -8,8 +8,7 @@ This guide covers the development workflow, code quality standards and testing p
 | `.devcontainer` healthcheck | [![Dev Container](https://github.com/OpenNews/emergencymode.news/actions/workflows/devcontainer.yml/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/devcontainer.yml) |
 | Tests on `staging` | [![CI](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml/badge.svg?branch=staging)](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml) |
 | Tests on `main` | [![CI](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml) |
-| CodeQL on `main` | [![CodeQL](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql) |
-| CodeQL on `staging` | [![CodeQL](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql/badge.svg?branch=staging)](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql) |
+| CodeQL (manual-trigger only) | [![CodeQL](https://github.com/OpenNews/emergencymode.news/actions/workflows/codeql.yml/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/codeql.yml) |
 | Dependabot on `main` | [![Dependabot Updates](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates/badge.svg?branch=main)](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates) |
 | Dependabot on `staging` | [![Dependabot Updates](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates/badge.svg?branch=staging)](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates) |
 

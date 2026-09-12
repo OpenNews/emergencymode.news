@@ -8,8 +8,7 @@ This guide covers the development workflow, code quality standards and testing p
 | `.devcontainer` healthcheck | [![Dev Container](https://github.com/OpenNews/emergencymode.news/actions/workflows/devcontainer.yml/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/devcontainer.yml) |
 | Tests on `staging` | [![CI](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml/badge.svg?branch=staging)](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml) |
 | Tests on `main` | [![CI](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/OpenNews/emergencymode.news/actions/workflows/ci.yml) |
-| CodeQL on `main` | [![CodeQL](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql/badge.svg?branch=main)](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql) |
-| CodeQL on `staging` | [![CodeQL](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql/badge.svg?branch=staging)](https://github.com/OpenNews/emergencymode.news/actions/workflows/github-code-scanning/codeql) |
+| CodeQL (manual-trigger only) | [![CodeQL](https://github.com/OpenNews/emergencymode.news/actions/workflows/codeql.yml/badge.svg)](https://github.com/OpenNews/emergencymode.news/actions/workflows/codeql.yml) |
 | Dependabot on `main` | [![Dependabot Updates](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates/badge.svg?branch=main)](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates) |
 | Dependabot on `staging` | [![Dependabot Updates](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates/badge.svg?branch=staging)](https://github.com/OpenNews/emergencymode.news/actions/workflows/dependabot/dependabot-updates) |
 
@@ -442,8 +441,9 @@ It'll probably reject your commits if any of these are failing, but it won't say
 
 **Additional security scanning**:
 
-- **CodeQL Analysis**: Runs on pushes to `main`, PRs to `main`, and weekly (Tuesdays 6am UTC)
+- **CodeQL Analysis**: Manual-trigger-only (`workflow_dispatch`), not run automatically on pushes, PRs, or a schedule, to control Action minute usage
   - Analyzes GitHub Actions workflows for security issues
+  - Must be run manually from the Actions tab when a scan is needed (e.g., before a release or after significant workflow/dependency changes)
   - Requires `ENABLE_CODEQL_ADVANCED` repository variable to be set to `'true'`
   - Results appear in GitHub Security tab
 

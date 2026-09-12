@@ -23,14 +23,14 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@types/google.maps": "^3.65.5",
+    "@types/google.maps": "^3.66.0",
     "@typescript-eslint/eslint-plugin": "8.63.0",
     "@typescript-eslint/parser": "8.63.0",
     "eslint": "10.7.0",
     "eslint-plugin-jsdoc": "63.0.13",
-    "globals": "^17.9.0",
-    "jest": "^30.4.2",
-    "jest-environment-jsdom": "^30.4.1",
+    "globals": "^17.11.0",
+    "jest": "^30.5.1",
+    "jest-environment-jsdom": "^30.5.1",
     "prettier": "^3.9.6",
     "typescript": "6.0.3"
   }

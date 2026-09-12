@@ -30,6 +30,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Build and test devcontainer
+        if: hashFiles('.devcontainer/devcontainer.json') != ''
         uses: devcontainers/ci@v0.3
         timeout-minutes: 10
         with:

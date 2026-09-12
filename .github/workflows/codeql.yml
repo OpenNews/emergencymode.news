@@ -1,5 +1,8 @@
 name: "CodeQL"
 
+# Intentionally manual-trigger-only (workflow_dispatch) to control Action
+# minute usage/billing. Do not add push/pull_request/schedule triggers
+# without explicit sign-off — see repo billing constraints.
 on:
   workflow_dispatch:
 

@@ -442,8 +442,9 @@ It'll probably reject your commits if any of these are failing, but it won't say
 
 **Additional security scanning**:
 
-- **CodeQL Analysis**: Runs on pushes to `main`, PRs to `main`, and weekly (Tuesdays 6am UTC)
+- **CodeQL Analysis**: Manual-trigger-only (`workflow_dispatch`), not run automatically on pushes, PRs, or a schedule, to control Action minute usage
   - Analyzes GitHub Actions workflows for security issues
+  - Must be run manually from the Actions tab when a scan is needed (e.g., before a release or after significant workflow/dependency changes)
   - Requires `ENABLE_CODEQL_ADVANCED` repository variable to be set to `'true'`
   - Results appear in GitHub Security tab
 

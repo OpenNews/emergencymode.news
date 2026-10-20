@@ -2,8 +2,14 @@
 
 Custom WordPress plugins, Python Notebooks and miscellaneous code version control for the Emergency Mode for News (EMFN) Newspack website.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
+| Detail | Value |
+| --- | --- |
+| License | [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) |
+| Plugins run on | [![WordPress](https://img.shields.io/badge/WordPress-6.3+-blue.svg)](plugins/) [![PHP](https://img.shields.io/badge/PHP-8.0+-blue.svg)](plugins/) |
+| Dev environment | [![Node](https://img.shields.io/badge/Node-24-blue.svg)](.node-version) [![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](.python-version) [![PHP](https://img.shields.io/badge/PHP-8.3-blue.svg)](.github/actions/setup-toolchain/action.yml) |
+| Testing | [![Jest](https://img.shields.io/badge/Jest-30-purple.svg)](package.json) [![PHPUnit](https://img.shields.io/badge/PHPUnit-10-purple.svg)](composer.json) |
+| Code quality | [![ESLint](https://img.shields.io/badge/ESLint-10-purple.svg)](package.json) [![Prettier](https://img.shields.io/badge/Prettier-3-purple.svg)](package.json) [![TypeScript](https://img.shields.io/badge/TypeScript-6-purple.svg)](package.json) |
+| Notebooks | [![JupyterLab](https://img.shields.io/badge/JupyterLab-4-purple.svg)](pyproject.toml) [![pandas](https://img.shields.io/badge/pandas-3-purple.svg)](pyproject.toml) |
 
 ## Overview
 

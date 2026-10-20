@@ -12,8 +12,8 @@ This directory contains the VS Code devcontainer configuration for the EMFN repo
 ## What It Does
 
 The devcontainer provides a **consistent, reproducible development environment** with all required tools pre-installed:
-- Python 3.13 with `uv` package manager
-- Node.js LTS with npm
+- Python 3.13 with `uv` package manager (matches `.python-version`)
+- Node.js LTS with npm (currently 24, matches `.node-version`)
 - PHP 8.3 with Composer
 - Shellcheck and GitHub CLI
 - VS Code extensions for Python, PHP, JavaScript, linting and testing

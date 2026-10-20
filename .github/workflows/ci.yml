@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Skip redundant CI on staging when Dependabot PR already passed checks
     # (Dependabot targets staging, so merges show author.name as dependabot[bot])
     if: |
@@ -25,34 +25,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Setup Node
-        uses: actions/setup-node@v7
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-toolchain
         with:
-          node-version: 20
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.3"
-          coverage: xdebug
-          tools: composer
-
-      - name: Setup Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.x"
-
-      - name: Install uv
-        run: pip install uv
-
-      - name: Install Node dependencies
-        run: npm ci
-
-      - name: Install PHP dependencies
-        run: composer install --prefer-dist --no-progress
-
-      - name: Install Python dependencies
-        run: uv sync
+          php-coverage: xdebug
 
       - name: Run lint
         run: npm run lint

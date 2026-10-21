@@ -82,6 +82,41 @@ fi
 # Ensure user-level binaries are available in this shell
 export PATH="$HOME/.local/bin:$PATH"
 
+# Git shortcuts. Values omit the leading "git" (alias.gs = status, not "git status"),
+# and names must not shadow built-in commands (git ignores an alias named gc, add, etc.).
+# Use --system, not --global: creating ~/.gitconfig here would stop the Dev Containers
+# extension from copying the host's gitconfig (user.name/user.email) into the container.
+sudo git config --system alias.gs status
+sudo git config --system alias.gc status
+sudo git config --system alias.gpull pull
+sudo git config --system alias.co checkout
+sudo git config --system alias.br branch
+sudo git config --system alias.ci commit
+sudo git config --system alias.df diff
+sudo git config --system alias.dc "diff --cached"
+sudo git config --system alias.lg "log --oneline --graph --decorate -20"
+sudo git config --system alias.unstage "reset HEAD --"
+
+# Shell shortcuts: the git aliases above only work as "git gs"; these provide bare "gs".
+for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
+  [[ "$rc" == *.zshrc && ! -f "$rc" ]] && continue
+  touch "$rc"
+  if ! grep -qF "# >>> git shortcuts >>>" "$rc"; then
+    cat >> "$rc" <<'EOF'
+# >>> git shortcuts >>>
+alias gs='git status'
+alias co='git checkout'
+alias br='git branch'
+alias ci='git commit'
+alias df='git diff'
+alias dc='git diff --cached'
+alias lg='git log --oneline --graph --decorate -20'
+alias unstage='git reset HEAD --'
+# <<< git shortcuts <<<
+EOF
+  fi
+done
+
 # Skip project setup in CI - only validate container tools are installed
 # CI workflow checks tool versions without needing full project dependencies
 if [[ "${CI:-}" != "true" ]]; then

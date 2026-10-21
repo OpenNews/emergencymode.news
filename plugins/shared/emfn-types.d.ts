@@ -31,6 +31,24 @@ export type EmfnWindow = Window & {
   gform?: GFormRuntime;
 };
 
+/* Network Information API (Chromium); only the fields we read */
+export interface NetworkInformation {
+  saveData?: boolean;
+}
+
+/* Battery Status API (Chromium); only the fields we read */
+export interface BatteryManager extends EventTarget {
+  level: number;
+  charging: boolean;
+}
+
+export type EmfnNavigator = Navigator & {
+  connection?: NetworkInformation;
+  mozConnection?: NetworkInformation;
+  webkitConnection?: NetworkInformation;
+  getBattery?: () => Promise<BatteryManager>;
+};
+
 /* Parsed county risk row from generated NRI CSVs */
 export type NriCountyRow = Record<string, string>;
 

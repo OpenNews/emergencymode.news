@@ -4,14 +4,10 @@
     <testsuite name="Action Pack Plugin Tests">
       <directory>tests/php/action-pack</directory>
     </testsuite>
-    <testsuite name="Site Styles Plugin Tests">
-      <directory>tests/php/site-styles</directory>
-    </testsuite>
   </testsuites>
   <source>
     <include>
       <directory suffix=".php">plugins/emfn-action-pack-plugin</directory>
-      <directory suffix=".php">plugins/emfn-site-styles-plugin</directory>
     </include>
     <exclude>
       <directory>plugins/emfn-action-pack-plugin/vendor</directory>

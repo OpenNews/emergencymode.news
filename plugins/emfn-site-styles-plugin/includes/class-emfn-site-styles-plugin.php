@@ -40,45 +40,6 @@ class EMFN_Site_Styles_Plugin {
 	 */
 	private function __construct() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
-		add_action( 'send_headers', array( $this, 'send_vary_header' ) );
-		add_filter( 'body_class', array( $this, 'add_save_data_body_class' ) );
-	}
-
-	/**
-	 * Whether the request carries the Save-Data client hint (Chromium Data Saver).
-	 *
-	 * @return bool
-	 */
-	private function is_save_data_requested() {
-		if ( ! isset( $_SERVER['HTTP_SAVE_DATA'] ) ) {
-			return false;
-		}
-		return 'on' === strtolower( sanitize_text_field( wp_unslash( $_SERVER['HTTP_SAVE_DATA'] ) ) );
-	}
-
-	/**
-	 * Tell caches the response differs by Save-Data, since the body class below depends on it.
-	 *
-	 * @return void
-	 */
-	public function send_vary_header() {
-		if ( is_admin() ) {
-			return;
-		}
-		header( 'Vary: Save-Data', false );
-	}
-
-	/**
-	 * Add `emfn-save-data` to the body class when the Save-Data hint is on.
-	 *
-	 * @param string[] $classes Existing body classes.
-	 * @return string[]
-	 */
-	public function add_save_data_body_class( $classes ) {
-		if ( $this->is_save_data_requested() ) {
-			$classes[] = 'emfn-save-data';
-		}
-		return $classes;
 	}
 
 	/**

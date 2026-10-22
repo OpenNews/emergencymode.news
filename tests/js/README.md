@@ -98,18 +98,6 @@ Tests the street address field population logic when users select non-street-add
 - ✅ Address component parsing validation
 - ✅ Real-world scenarios: ZIP-only, city-only, full address selections
 
-### Site Styles Script
-**File:** [`site-styles/site-styles.test.js`](site-styles/site-styles.test.js)
-
-Unlike the Action Pack tests, this loads the production `emfn-site-styles-plugin.js` directly into jsdom (no `lib/` copy), so it is not part of coverage tracking.
-
-**Test Coverage:**
-- ✅ `emfn-reduced-motion` body class set from `prefers-reduced-motion`, including when `.lite-site-cta` is absent
-- ✅ Class follows live OS setting changes; no-op without `matchMedia`
-- ✅ `emfn-save-data` body class: server-set class is kept; JS adds it from `navigator.connection.saveData` when the server missed it (add-only, never removed or duplicated); class activates the banner
-- ✅ Lite-site banner activates for reduced motion, `navigator.connection.saveData`, and battery ≤ 20%
-- ✅ Rejected/missing Battery API fails silently
-
 **Key Function Tested:**
 ```javascript
 populateStreetAddressField(formRoot, addr, placePrediction, place)
@@ -128,6 +116,30 @@ geolocation.js     |     100 |     87.5 |     100 |     100
 - Ensures user-selected text is preserved
 - Validates robust selector fallback strategies
 - Tests actual extracted logic instead of duplicating implementation
+
+### Site Styles Script
+**File:** [`site-styles/site-styles.test.js`](site-styles/site-styles.test.js)
+
+Unlike the Action Pack tests, this loads the production `emfn-site-styles-plugin.js` and `emfn-site-styles-plugin.css` directly into jsdom (no `lib/` copy), so it is not part of coverage tracking.
+
+**Test Coverage:**
+- ✅ `emfn-reduced-motion` body class set from `prefers-reduced-motion`, including when `.lite-site-cta` is absent
+- ✅ Class follows live OS setting changes; no-op without `matchMedia`
+- ✅ `emfn-save-data` body class set by JS only, from `navigator.connection.saveData` (not server-side: Batcache ignores `Vary`); stale class removed when `saveData` is off
+- ✅ `emfn-low-battery` body class at battery ≤ 20% when not charging: checked on load, changes debounced (5s), then pinned after the first minute
+- ✅ Rejected/missing Battery API fails silently
+- ✅ Lite-site banner visibility is CSS-only: every `.lite-site-cta` on the page shows for each body class and hides again when the signal clears
+
+### Homepage Hero Word Rotation
+**File:** [`site-styles/homepage-animation.test.js`](site-styles/homepage-animation.test.js)
+
+Loads the `homepage_animation.html` template backup (live copy is pasted into a WordPress HTML block) and runs its script under fake timers.
+
+**Test Coverage:**
+- ✅ Shows each word once, in order, then settles back on the first word and stops (no timers left)
+- ✅ No animation at all with reduced motion, reduced data, `navigator.connection.saveData`, or low battery (≤ 20%, not charging)
+- ✅ Still animates at low battery while charging, or when `getBattery` rejects
+- ✅ Screen readers get one stable heading ("…and after an emergency"): rotating words are `aria-hidden`, a visually hidden copy of the first word carries the meaning
 
 ## Coming Next
 

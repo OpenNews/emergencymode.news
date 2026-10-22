@@ -53,6 +53,13 @@ Tests the server-side logic that decodes shareable URLs back into category IDs:
 - ✅ Category order preservation
 - ✅ Whitespace trimming
 
+### Site Styles Save-Data Support
+**File:** [`site-styles/SaveDataTest.php`](site-styles/SaveDataTest.php)
+
+Tests `EMFN_Site_Styles_Plugin` Save-Data handling:
+- Hook registration (`send_headers`, `body_class`)
+- `emfn-save-data` body class only when `Save-Data: on` (case/whitespace-insensitive)
+- `Vary: Save-Data` response header on the frontend, not in admin. CLI can't report headers, so [`header-router.php`](site-styles/header-router.php) runs on PHP's built-in server and the test reads the real HTTP response.
 ## Test Infrastructure
 
 **WordPress Stubs:** Uses [php-stubs/wordpress-stubs](https://github.com/php-stubs/wordpress-stubs) v6.7
@@ -65,12 +72,13 @@ Tests the server-side logic that decodes shareable URLs back into category IDs:
 Provides WordPress function stubs for testing without a full WP install:
 - Transient API (`get_transient`, `set_transient`, `delete_transient`)
 - Escaping functions (`esc_html`, `esc_attr`, `wp_kses_post`)
-- Hook system (`add_action`, `add_filter`)
+- Hook system (`add_action`, `add_filter`; registrations recorded in `$_test_hooks`)
+- `is_admin` (driven by `$_test_is_admin`), `wp_unslash`, `sanitize_text_field`
 - Script/style enqueuing
 
 **Configuration:** [`../../phpunit.xml`](../../phpunit.xml)  
 PHPUnit 10.5 configuration with:
-- Test discovery in `tests/php/action-pack/`
+- Test discovery in `tests/php/action-pack/` and `tests/php/site-styles/`
 - Plugin source coverage tracking
 - Test constants (`EMFN_ACTION_PACK_PLUGIN_VERSION`, `WP_DEBUG_LOG`)
 

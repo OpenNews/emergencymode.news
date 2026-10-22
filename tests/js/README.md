@@ -98,6 +98,18 @@ Tests the street address field population logic when users select non-street-add
 - ✅ Address component parsing validation
 - ✅ Real-world scenarios: ZIP-only, city-only, full address selections
 
+### Site Styles Script
+**File:** [`site-styles/site-styles.test.js`](site-styles/site-styles.test.js)
+
+Unlike the Action Pack tests, this loads the production `emfn-site-styles-plugin.js` directly into jsdom (no `lib/` copy), so it is not part of coverage tracking.
+
+**Test Coverage:**
+- ✅ `emfn-reduced-motion` body class set from `prefers-reduced-motion`, including when `.lite-site-cta` is absent
+- ✅ Class follows live OS setting changes; no-op without `matchMedia`
+- ✅ `emfn-save-data` body class: server-set class is kept; JS adds it from `navigator.connection.saveData` when the server missed it (add-only, never removed or duplicated); class activates the banner
+- ✅ Lite-site banner activates for reduced motion, `navigator.connection.saveData`, and battery ≤ 20%
+- ✅ Rejected/missing Battery API fails silently
+
 **Key Function Tested:**
 ```javascript
 populateStreetAddressField(formRoot, addr, placePrediction, place)

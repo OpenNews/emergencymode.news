@@ -88,15 +88,37 @@ if ( ! function_exists( 'wp_json_encode' ) ) {
 
 if ( ! function_exists( 'add_action' ) ) {
     function add_action( $tag, $function_to_add, $priority = 10, $accepted_args = 1 ) {
-        // Mock implementation for testing
+        // Records registrations so tests can assert on them
+        global $_test_hooks;
+        $_test_hooks[ $tag ][] = $function_to_add;
         return true;
     }
 }
 
 if ( ! function_exists( 'add_filter' ) ) {
     function add_filter( $tag, $function_to_add, $priority = 10, $accepted_args = 1 ) {
-        // Mock implementation for testing
+        global $_test_hooks;
+        $_test_hooks[ $tag ][] = $function_to_add;
         return true;
+    }
+}
+
+if ( ! function_exists( 'is_admin' ) ) {
+    function is_admin() {
+        global $_test_is_admin;
+        return (bool) $_test_is_admin;
+    }
+}
+
+if ( ! function_exists( 'wp_unslash' ) ) {
+    function wp_unslash( $value ) {
+        return is_string( $value ) ? stripslashes( $value ) : $value;
+    }
+}
+
+if ( ! function_exists( 'sanitize_text_field' ) ) {
+    function sanitize_text_field( $str ) {
+        return trim( strip_tags( (string) $str ) );
     }
 }
 
@@ -131,7 +153,9 @@ if ( ! function_exists( 'plugin_dir_path' ) ) {
 }
 
 // Initialize global test transients
-global $_test_transients;
+global $_test_transients, $_test_hooks, $_test_is_admin;
 $_test_transients = array();
+$_test_hooks      = array();
+$_test_is_admin   = false;
 
 // Note: Plugin class is loaded by individual test files as needed

@@ -63,9 +63,8 @@
   overflow: hidden;
   height: auto;
   opacity: 1;
-  transition:
-    opacity 0.2s ease-in-out,
-    height 0.2s ease-in-out;
+  /* height can't animate to/from auto, so only opacity fades */
+  transition: opacity 0.2s ease-in-out;
 }
 .emfn-forms_wrapper .emfn-forms #risks li .material-symbols-outlined,
 .emfn-forms_wrapper .emfn-forms #risks li .risk-icon,
@@ -87,6 +86,11 @@
   opacity: 0;
   height: 0;
   pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .emfn-forms_wrapper .emfn-forms #risks li {
+    transition: none;
+  }
 }
 
 /* action item styles for contextual links */

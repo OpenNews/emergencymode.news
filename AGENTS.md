@@ -4,7 +4,7 @@ This document outlines the AI agents used in the emergencymode.news project. It 
 
 ## Overview
 
-This is a WordPress plugin project with JavaScript, PHP, and Python components. Core stack: Node.js (Jest testing), PHP 8.3 (PHPUnit, Composer), Python 3.13 (uv for notebooks). DevContainer runs Debian GNU/Linux 13 (trixie). Dependencies managed via npm (Jest/Prettier auto-updated by Dependabot weekly; TypeScript/ESLint manually managed via `scripts/check-tool-upgrades.sh`), Composer, and uv 0.5.10. See [README.md](README.md) for full environment details, testing commands, and workflow documentation.
+This is a WordPress plugin project with JavaScript, PHP, and Python components. Core stack: Node.js 24 (Jest testing; pinned in `.node-version`), PHP 8.3 (PHPUnit, Composer), Python 3.13 (uv for notebooks; pinned in `.python-version`). DevContainer runs Debian GNU/Linux 13 (trixie). Dependencies managed via npm (Jest/Prettier auto-updated by Dependabot weekly; TypeScript/ESLint manually managed via `scripts/check-tool-upgrades.sh`), Composer, and uv 0.5.10. See [README.md](README.md) for full environment details, testing commands, and workflow documentation.
 
 Agents are autonomous AI systems that perform specific tasks within the emergency news workflow. They are designed to follow guidelines from `.github/instructions` and lessons documented in `AGENT_LESSONS.md`.
 
@@ -55,3 +55,4 @@ All commands use the package.json scripts from the repository root or direct use
 - `scripts/sync-release-version.sh` — Sync version numbers across plugin files
 - `scripts/get-plugin-version.sh` — Extract version from plugin header
 - `scripts/generate-version-matrix.sh` — Generate GitHub Actions version matrix 
+- `npm run release:site-styles` / `npm run release:action-pack` — Preview ZIP in `release/` (gitignored) of what merging to `main` would release, versioned `.alpha` (e.g. 0.4.0 → 0.4.1.alpha); add `-- minor` or `-- major` to match the merge message. Repo files are not changed (`scripts/build-local-release.sh`)

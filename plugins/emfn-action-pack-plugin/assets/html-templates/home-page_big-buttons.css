@@ -67,6 +67,20 @@
   color: var(--newspack-theme-color-secondary-against-white) !important;
   scale: 1.05;
 }
+/* reduced motion: keep the gradient color change, drop the grow */
+@media (prefers-reduced-motion: reduce) {
+  .big-action-pack-buttons > .wp-block-button a.wp-element-button:link,
+  .big-action-pack-buttons > .wp-block-button a.wp-element-button:visited,
+  .big-action-pack-buttons > .wp-block-button a.wp-element-button:hover,
+  .big-action-pack-buttons > .wp-block-button a.wp-element-button:active,
+  .big-action-pack-buttons > .wp-block-button a.wp-element-button:focus {
+    scale: 1;
+    transition:
+      --gradient-header-tan 0.5s ease-in-out,
+      --gradient-tan-lighter 0.5s ease-in-out,
+      --gradient-icon-band 0.5s ease-in-out;
+  }
+}
 
 /*subhed, borrowing a code tag*/
 .big-action-pack-buttons > .wp-block-button code {

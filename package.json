@@ -4,6 +4,7 @@
   "description": "emergencymode.news scripts, Notebooks and WordPress customizations",
   "private": true,
   "scripts": {
+    "check": "npm run lint && npm run test",
     "format": "prettier --write '**/*.{html,css,js,json,yml,yaml,md}'",
     "format:check": "prettier --check '**/*.{html,css,js,json,yml,yaml,md}'",
     "eslint": "eslint 'plugins/**/*.js'",
@@ -12,6 +13,8 @@
     "notebooks:strip": "scripts/strip-notebook-outputs.sh",
     "notebooks:check-clean": "scripts/check-notebooks-clean.sh",
     "lint": "npm run format:check && npm run eslint && npm run shellcheck && npm run notebooks:check-clean",
+    "release:site-styles": "scripts/build-local-release.sh emfn-site-styles-plugin",
+    "release:action-pack": "scripts/build-local-release.sh emfn-action-pack-plugin",
     "test": "npm run test:js && npm run test:scripts",
     "test:all": "npm run test:js && npm run test:php && npm run test:scripts",
     "test:js": "jest",
@@ -23,15 +26,15 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@types/google.maps": "^3.66.0",
+    "@types/google.maps": "^3.66.7",
     "@typescript-eslint/eslint-plugin": "8.63.0",
     "@typescript-eslint/parser": "8.63.0",
     "eslint": "10.7.0",
     "eslint-plugin-jsdoc": "63.0.13",
-    "globals": "^17.11.0",
-    "jest": "^30.5.1",
-    "jest-environment-jsdom": "^30.5.1",
-    "prettier": "^3.9.6",
+    "globals": "^17.13.0",
+    "jest": "^30.5.2",
+    "jest-environment-jsdom": "^30.5.2",
+    "prettier": "^3.9.10",
     "typescript": "6.0.3"
   }
 }

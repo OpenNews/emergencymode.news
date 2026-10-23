@@ -11,11 +11,13 @@ Utility scripts for release management, notebook hygiene, and local testing.
 | `detect-plugin-changes.sh` | Detect changed plugins (outputs JSON array) | `./scripts/detect-plugin-changes.sh` |
 | `generate-version-matrix.sh` | Generate GitHub Actions release matrix JSON | `./scripts/generate-version-matrix.sh` |
 | `get-plugin-version.sh` | Extract version from plugin PHP file | `./scripts/get-plugin-version.sh [--plugin <name>]` |
+| `build-local-release.sh` | Preview ZIP of what merging to `main` would release, versioned `.alpha`, for uploading to the site by hand | `npm run release:site-styles` / `npm run release:action-pack` (add `-- minor` or `-- major` to match the merge message) |
 
 **Notes:**
 - `sync-release-version.sh` updates all version references (use `--force` to skip prompts)
 - `build-release-assets.sh` compiles SASS, minifies JS, strips dev dependencies
 - These run automatically in `.github/workflows/release.yml` on merge to `main`
+- `build-local-release.sh` builds on your machine only. It uses the same version rule as the real release, then adds `.alpha` (site-styles 0.4.0 → `release/emfn-site-styles-plugin-0.4.1.alpha.zip`). The repo's files are not changed and nothing is committed or tagged; `release/` is gitignored
 
 ## Notebook Management
 

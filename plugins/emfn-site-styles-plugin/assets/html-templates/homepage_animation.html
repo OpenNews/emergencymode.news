@@ -7,29 +7,59 @@
       return;
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
-      const HOLD = 5400; //ms to hold each word before transitioning to the next
-      let idx = 0;
-      let lastSwitchTime = performance.now();
+    const HOLD = 5400; //ms to hold each word before transitioning to the next
 
+    // Lite-site signals, checked directly: this block can run before the site-styles
+    // plugin JS has set its body classes (the battery one is async).
+    const prefersStill = () => {
+      const conn = navigator.connection ?? navigator.mozConnection ?? navigator.webkitConnection;
+      return (
+        window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true ||
+        window.matchMedia?.("(prefers-reduced-data: reduce)").matches === true ||
+        conn?.saveData === true
+      );
+    };
+
+    // Same rule as the site-styles plugin: 20% or lower and not charging
+    const isLowBattery = async () => {
+      if (typeof navigator.getBattery !== "function") return false;
+      try {
+        const battery = await navigator.getBattery();
+        return Number.isFinite(battery?.level) && battery.level <= 0.2 && battery.charging !== true;
+      } catch {
+        return false;
+      }
+    };
+
+    const start = async () => {
       const words = document.querySelectorAll(".emfn-word");
       if (!words.length) {
         if (isDebug) console.debug("No .emfn-word elements found");
         return;
       }
 
-      function animate(currentTime) {
-        if (currentTime - lastSwitchTime >= HOLD) {
-          words[idx].classList.remove("emfn-active");
-          idx = (idx + 1) % words.length;
-          words[idx].classList.add("emfn-active");
-          lastSwitchTime = currentTime;
-        }
-        requestAnimationFrame(animate);
+      if (prefersStill() || (await isLowBattery())) {
+        if (isDebug) console.debug("Lite-site signal present, skipping animation");
+        return;
       }
 
-      requestAnimationFrame(animate);
-    });
+      // One rotation: show each word once, then settle back on the first and stop
+      let idx = 0;
+      const step = () => {
+        if (prefersStill()) return;
+        words[idx].classList.remove("emfn-active");
+        idx = (idx + 1) % words.length;
+        words[idx].classList.add("emfn-active");
+        if (idx !== 0) setTimeout(step, HOLD);
+      };
+      setTimeout(step, HOLD);
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", start, { once: true });
+    } else {
+      start();
+    }
   })();
 </script>
 <style>
@@ -66,25 +96,38 @@
     position: absolute;
     text-align: center;
     transition: opacity 10ms ease-in-out;
-    will-change: opacity;
   }
   .emfn-active {
     color: var(--wp--preset--color--primary);
     opacity: 1;
   }
+  /* visually hidden, still read by screen readers */
+  .emfn-sr-only {
+    border: 0;
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
 </style>
+<!-- Rotating words are aria-hidden so screen readers hear one stable heading -->
 <h1 id="emfn-hero-h1">
   Get help before,<wbr /> during<wbr /> and&nbsp;after<wbr />
   <span id="emfn-disaster-wrap">
+    <span class="emfn-sr-only">an emergency</span>
     <span aria-hidden="true" class="emfn-word-backup">&nbsp;</span>
-    <span class="emfn-word emfn-active">an&nbsp;emergency</span>
-    <span class="emfn-word">a&nbsp;drought</span>
-    <span class="emfn-word">extreme&nbsp;heat</span>
-    <span class="emfn-word">a&nbsp;flood</span>
-    <span class="emfn-word">a&nbsp;hurricane</span>
-    <span class="emfn-word">a&nbsp;severe&nbsp;storm</span>
-    <span class="emfn-word">a&nbsp;tornado</span>
-    <span class="emfn-word">a&nbsp;wildfire</span>
-    <span class="emfn-word">a&nbsp;winter&nbsp;storm</span>
+    <span aria-hidden="true" class="emfn-word emfn-active">an&nbsp;emergency</span>
+    <span aria-hidden="true" class="emfn-word">a&nbsp;drought</span>
+    <span aria-hidden="true" class="emfn-word">extreme&nbsp;heat</span>
+    <span aria-hidden="true" class="emfn-word">a&nbsp;flood</span>
+    <span aria-hidden="true" class="emfn-word">a&nbsp;hurricane</span>
+    <span aria-hidden="true" class="emfn-word">a&nbsp;severe&nbsp;storm</span>
+    <span aria-hidden="true" class="emfn-word">a&nbsp;tornado</span>
+    <span aria-hidden="true" class="emfn-word">a&nbsp;wildfire</span>
+    <span aria-hidden="true" class="emfn-word">a&nbsp;winter&nbsp;storm</span>
   </span>
 </h1>

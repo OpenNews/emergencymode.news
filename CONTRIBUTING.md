@@ -38,7 +38,7 @@ uv sync
 # Install dependencies
 npm install                                  # Node.js packages
 composer install --prefer-dist --no-progress  # PHP packages
-pip install uv                               # Python package manager
+pip install uv==0.5.10                       # Python package manager (pinned version)
 uv sync                                      # Python packages
 
 # Install pre-commit hooks
@@ -90,11 +90,11 @@ pre-commit install
 
 **Base image**: `mcr.microsoft.com/devcontainers/python:3.13`
 - Debian GNU/Linux 13 (trixie)
-- Python 3.13 with pip and venv
+- Python 3.13 with pip and venv (matches `.python-version`)
 - Git, curl, wget, standard Unix tools
 
 **Installed Features** (via `.devcontainer/devcontainer.json`):
-- **Node.js LTS**: JavaScript runtime and npm package manager
+- **Node.js LTS** (currently 24, matches `.node-version`): JavaScript runtime and npm package manager
 - **PHP 8.3 with Composer**: PHP runtime and dependency manager
 
 **Post-create setup** (`.devcontainer/setup.sh`):
@@ -196,10 +196,10 @@ The setup script runs automatically after container creation and installs:
 ### Manual Setup Alternative
 
 If not using devcontainer, see the **Manual setup** section at the top of this document. You'll need to install:
-- Node.js LTS
+- Node.js 24 (see `.node-version`)
 - PHP 8.3 with Composer
-- Python 3.13 with pip
-- uv (Python package manager)
+- Python 3.13 with pip (see `.python-version`)
+- uv 0.5.10 (Python package manager)
 - shellcheck
 - GitHub CLI (optional, for release workflows)
 
@@ -351,6 +351,20 @@ Dependency automation is configured in [.github/dependabot.yml](.github/dependab
 | `npm` - Jest, Prettier, types | Weekly | Safe to auto-update; patch + minor versions only |
 | `github-actions` | Weekly | Workflow & CI/CD tool updates (if available) |
 | `pip` | Disabled | Python deps manually maintained (notebooks are rarely used) |
+
+**CI toolchain versions**:
+
+Workflows install their toolchain through the shared composite action [.github/actions/setup-toolchain/action.yml](.github/actions/setup-toolchain/action.yml), so `ci.yml` and `release.yml` always use identical versions. Runtime versions are pinned in one place each, which keeps toolchain drift from showing up as CI failures:
+
+| Tool | Where it's pinned |
+|------|-------------------|
+| Python | `.python-version` |
+| Node.js | `.node-version` |
+| PHP | `php-version` in `.github/actions/setup-toolchain/action.yml` |
+| uv | `pip install uv==...` in `.github/actions/setup-toolchain/action.yml` |
+| Runner image | `runs-on: ubuntu-24.04` in each workflow |
+
+CI runs `uv sync --locked`, so a stale `uv.lock` fails with an explicit lockfile error. When bumping a version, update the pin above, the devcontainer (`.devcontainer/devcontainer.json`) and the version mentions in this file, `AGENTS.md` and `.devcontainer/README.md`.
 
 **TypeScript & ESLint Toolchain Management**:
 

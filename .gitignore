@@ -26,6 +26,8 @@ npm-debug.log*
 yarn-error.log
 dist/
 build/
+# local-only test ZIPs from scripts/build-local-release.sh
+release/
 
 # Composer
 vendor/

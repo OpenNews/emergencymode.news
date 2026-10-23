@@ -1,0 +1,43 @@
+name: Setup toolchain
+description: Install pinned Node, PHP, Python and uv, then install project dependencies.
+
+inputs:
+  php-coverage:
+    description: PHP coverage driver for setup-php (xdebug, pcov, none)
+    default: none
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v7
+      with:
+        node-version-file: .node-version
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: "8.3"
+        coverage: ${{ inputs.php-coverage }}
+        tools: composer
+
+    - name: Setup Python
+      uses: actions/setup-python@v7
+      with:
+        python-version-file: .python-version
+
+    - name: Install uv
+      shell: bash
+      run: pip install uv==0.5.10
+
+    - name: Install Node dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Install PHP dependencies
+      shell: bash
+      run: composer install --prefer-dist --no-progress
+
+    - name: Install Python dependencies
+      shell: bash
+      run: uv sync --locked

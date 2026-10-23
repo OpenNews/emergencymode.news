@@ -3,6 +3,7 @@
 Bash-based tests for build and release automation scripts.
 
 - [test-build-assets.sh](test-build-assets.sh)
+- [test-build-local-release.sh](test-build-local-release.sh)
 - [test-detect-changes.sh](test-detect-changes.sh)
 - [test-get-plugin-version.sh](test-get-plugin-version.sh)
 - [test-sync-version.sh](test-sync-version.sh)

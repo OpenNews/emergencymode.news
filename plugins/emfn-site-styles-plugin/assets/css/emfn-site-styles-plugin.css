@@ -51,6 +51,12 @@ body.archive .site-breadcrumb {
   display: inherit !important;
 }
 
+/* knock out hero margins */
+.newspack-front-page .site-content,
+.entry .entry-content > .hero-section {
+  margin-top: 0 !important;
+}
+
 /*capitalize By in all normal bylines*/
 .entry-meta .byline:not(.sponsor-byline) > span {
   text-transform: capitalize;
@@ -393,7 +399,10 @@ body.parent-pageid-284 .entry-header {
   border-radius: 8px;
   margin-bottom: 10px;
   text-decoration: none;
-  transition: all 0.15s ease-in-out;
+  transition:
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out,
+    color 0.15s ease-in-out;
 }
 /* featured media - white text on black */
 @media only screen and (min-width: 782px) {
@@ -628,7 +637,17 @@ body.parent-pageid-284 .entry-header {
   background-color: var(--cat-color) !important;
   border: 1px solid color-mix(in srgb, var(--cat-color), black 15%) !important;
   color: color-mix(in srgb, var(--cat-color), black 66%) !important;
-  transition: all 0.15s ease-in-out;
+  transition:
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out,
+    color 0.15s ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cat-links a,
+  .cat-links a[href],
+  .fwpl-term a[href] {
+    transition: none;
+  }
 }
 .cat-links a[href]:hover,
 .fwpl-term a[href]:hover,
@@ -658,4 +677,25 @@ body.parent-pageid-284 .entry-header {
 .cat-links a[href*="resources/newsroom-condition/"],
 .fwpl-term a[href*="/resources/newsroom-condition/"] {
   --cat-color: #e7b4e0;
+}
+
+/**
+ * LITE SITES CTA and other related styles for low-bandwidth or reduced-motion scenarios
+ * - To test, add one of the lite-site signals to the <body> element in DevTools
+ * - Or open the Command Menu (Ctrl/Cmd+Shift+P), type Rendering, and choose Show Rendering
+ * - Set Emulate CSS media feature `prefers-reduced-motion` or `prefers-reduced-data` to `reduce`
+ *   (reduced-motion is enough to confirm the media-query rule works)
+*/
+.lite-site-cta {
+  display: none !important;
+}
+@media (prefers-reduced-motion: reduce), (prefers-reduced-data: reduce) {
+  .lite-site-cta {
+    display: flex !important;
+  }
+}
+body.emfn-save-data .lite-site-cta,
+body.emfn-reduced-motion .lite-site-cta,
+body.emfn-low-battery .lite-site-cta {
+  display: flex !important;
 }

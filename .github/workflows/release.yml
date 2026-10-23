@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message || '', '[skip ci]')
     outputs:
       changed_plugins: ${{ steps.detect.outputs.changed_plugins }}
@@ -38,33 +38,8 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN }}
 
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 20
-
-      - name: Setup Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.x"
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.3"
-          tools: composer
-
-      - name: Install uv
-        run: pip install uv
-
-      - name: Install Node dependencies
-        run: npm ci
-
-      - name: Install PHP dependencies
-        run: composer install --prefer-dist --no-progress
-
-      - name: Install Python dependencies
-        run: uv sync
+      - name: Setup toolchain
+        uses: ./.github/actions/setup-toolchain
 
       - name: Run lint
         run: npm run lint
@@ -148,7 +123,7 @@ jobs:
   release-plugins:
     needs: release
     if: needs.release.outputs.changed_plugins != ''
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       max-parallel: 1
       matrix: ${{ fromJson(needs.release.outputs.matrix) }}

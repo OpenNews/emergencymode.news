@@ -2,7 +2,13 @@
 
 Custom WordPress plugins, Python Notebooks and miscellaneous code version control for the Emergency Mode for News (EMFN) Newspack website.
 
-| Detail | Value |
+| Plugin | Release | History |
+| --- | --- | --- |
+| **🧩 Action Pack plugin** | [![Latest Action Pack release](https://img.shields.io/github/v/release/OpenNews/emergencymode.news?filter=action-pack%2F*&label=latest)](https://github.com/OpenNews/emergencymode.news/releases?q=action-pack&expanded=true) | [all Action Pack releases](https://github.com/OpenNews/emergencymode.news/releases?q=action-pack&expanded=true) |
+| **🎨 Site Styles plugin** | [![Latest Site Styles release](https://img.shields.io/github/v/release/OpenNews/emergencymode.news?filter=site-styles%2F*&label=latest)](https://github.com/OpenNews/emergencymode.news/releases?q=site-styles&expanded=true) | [all Site Styles releases](https://github.com/OpenNews/emergencymode.news/releases?q=site-styles&expanded=true) |
+
+
+| Metadata | Latest |
 | --- | --- |
 | License | [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) |
 | Plugins run on | [![WordPress](https://img.shields.io/badge/WordPress-6.3+-blue.svg)](plugins/) [![PHP](https://img.shields.io/badge/PHP-8.0+-blue.svg)](plugins/) |

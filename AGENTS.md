@@ -55,3 +55,4 @@ All commands use the package.json scripts from the repository root or direct use
 - `scripts/sync-release-version.sh` — Sync version numbers across plugin files
 - `scripts/get-plugin-version.sh` — Extract version from plugin header
 - `scripts/generate-version-matrix.sh` — Generate GitHub Actions version matrix 
+- `npm run release:site-styles` / `npm run release:action-pack` — Preview ZIP in `release/` (gitignored) of what merging to `main` would release, versioned `.alpha` (e.g. 0.4.0 → 0.4.1.alpha); add `-- minor` or `-- major` to match the merge message. Repo files are not changed (`scripts/build-local-release.sh`)

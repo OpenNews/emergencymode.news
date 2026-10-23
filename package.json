@@ -13,6 +13,8 @@
     "notebooks:strip": "scripts/strip-notebook-outputs.sh",
     "notebooks:check-clean": "scripts/check-notebooks-clean.sh",
     "lint": "npm run format:check && npm run eslint && npm run shellcheck && npm run notebooks:check-clean",
+    "release:site-styles": "scripts/build-local-release.sh emfn-site-styles-plugin",
+    "release:action-pack": "scripts/build-local-release.sh emfn-action-pack-plugin",
     "test": "npm run test:js && npm run test:scripts",
     "test:all": "npm run test:js && npm run test:php && npm run test:scripts",
     "test:js": "jest",

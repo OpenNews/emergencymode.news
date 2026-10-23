@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - main
+      # Dependabot alerts only scan the default branch (main); this catches
+      # vulnerable dependencies on staging before they're released
+      - staging
 
 permissions:
   contents: read
@@ -24,6 +27,9 @@ jobs:
           # Deny a small set of licenses while allowing GPL/LGPL (common in the WordPress ecosystem)
           deny-licenses: AGPL-3.0, SSPL-1.0
           # Comment on PR with findings
+          # NOTE: Dependabot-triggered pull_request runs (e.g. Dependabot PRs into
+          # staging) get a read-only token, so posting this comment may fail. If it
+          # does, switch to `on-failure`; the pass/fail result is unaffected.
           comment-summary-in-pr: always
           # Only fail the build for denied licenses in runtime dependencies
           fail-on-scopes: runtime

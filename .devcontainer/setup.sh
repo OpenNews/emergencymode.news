@@ -86,7 +86,7 @@ export PATH="$HOME/.local/bin:$PATH"
 # and names must not shadow built-in commands (git ignores an alias named gc, add, etc.).
 # Use --system, not --global: creating ~/.gitconfig here would stop the Dev Containers
 # extension from copying the host's gitconfig (user.name/user.email) into the container.
-sudo git config --system alias.gc status
+sudo git config --system alias.gs status
 sudo git config --system alias.gpull pull
 sudo git config --system alias.co checkout
 sudo git config --system alias.br branch

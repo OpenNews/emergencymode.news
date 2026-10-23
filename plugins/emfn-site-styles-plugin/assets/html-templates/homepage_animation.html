@@ -46,6 +46,7 @@
       // One rotation: show each word once, then settle back on the first and stop
       let idx = 0;
       const step = () => {
+        if (prefersStill()) return;
         words[idx].classList.remove("emfn-active");
         idx = (idx + 1) % words.length;
         words[idx].classList.add("emfn-active");

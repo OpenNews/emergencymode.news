@@ -54,7 +54,7 @@ body.archive .site-breadcrumb {
 /* knock out hero margins */
 .newspack-front-page .site-content,
 .entry .entry-content > .hero-section {
-  margin-top: 0;
+  margin-top: 0 !important;
 }
 
 /*capitalize By in all normal bylines*/

@@ -352,6 +352,10 @@ Dependency automation is configured in [.github/dependabot.yml](.github/dependab
 | `github-actions` | Weekly | Workflow & CI/CD tool updates (if available) |
 | `pip` | Disabled | Python deps manually maintained (notebooks are rarely used) |
 
+Version updates target `staging` via `target-branch`. Dependabot **security updates** (e.g. `uv` notebook deps, npm transitive deps) ignore that setting and always open against `main`; [.github/workflows/dependabot-retarget.yml](.github/workflows/dependabot-retarget.yml) moves them to `staging` automatically. That workflow uses `pull_request_target`, so it only takes effect once it's on `main`.
+
+The [Dependabot alerts](https://github.com/OpenNews/emergencymode.news/security/dependabot) page only scans the default branch (`main`). To catch vulnerable dependencies earlier, [.github/workflows/dependency-review.yml](.github/workflows/dependency-review.yml) runs on PRs into both `main` and `staging`.
+
 **CI toolchain versions**:
 
 Workflows install their toolchain through the shared composite action [.github/actions/setup-toolchain/action.yml](.github/actions/setup-toolchain/action.yml), so `ci.yml` and `release.yml` always use identical versions. Runtime versions are pinned in one place each, which keeps toolchain drift from showing up as CI failures:

@@ -1,0 +1,29 @@
+name: Retarget Dependabot PRs
+
+# Dependabot security updates always open against the default branch (main) and
+# ignore `target-branch` in dependabot.yml. Move them to staging automatically.
+#
+# pull_request_target is required because Dependabot-triggered pull_request runs
+# get a read-only token. This workflow never checks out or runs PR code.
+on:
+  pull_request_target:
+    types: [opened, reopened]
+    branches:
+      - main
+
+permissions:
+  pull-requests: write
+
+jobs:
+  retarget:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Change base branch to staging
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr edit "$PR_NUMBER" --base staging
+          gh pr comment "$PR_NUMBER" --body "Retargeted from \`main\` to \`staging\` automatically (Dependabot security updates ignore \`target-branch\`). If this shows conflicts, comment \`@dependabot rebase\`."

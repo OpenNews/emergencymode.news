@@ -1,4 +1,4 @@
-# emergencymode.news
+# Emergengy Mode for News
 
 Custom WordPress plugins, Python Notebooks and miscellaneous code version control for the Emergency Mode for News (EMFN) Newspack website.
 

@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@types/google.maps": "^3.66.9",
+    "@types/google.maps": "^3.66.10",
     "@typescript-eslint/eslint-plugin": "8.63.0",
     "@typescript-eslint/parser": "8.63.0",
     "eslint": "10.7.0",
@@ -34,7 +34,7 @@
     "globals": "^17.14.0",
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2",
-    "prettier": "^3.9.10",
+    "prettier": "^3.10.1",
     "typescript": "6.0.3"
   }
 }
